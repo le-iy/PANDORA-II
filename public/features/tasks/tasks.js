@@ -1,16 +1,9 @@
-import {
-  parseScheduleDate,
-  scheduleDateKey,
-} from "../../services/schedule-events.js";
-
+import { parseScheduleDate, scheduleDateKey } from "../../services/schedule-events.js";
+import { changeTask, readTasks, writeTasks } from "../../services/task-store.js";
+import { openTaskCompletion } from "./task-completion.js";
 import { openTaskEditor } from "./task-editor.js";
-import {
-  openTaskDetails,
-  taskStatus,
-  taskStatusLabel,
-} from "./task-details.js";
+import { openTaskDetails, taskStatus, taskStatusLabel } from "./task-details.js";
 
-const storageKey = "pandora-ii.tasks";
 const dateFormat = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium" });
 
 const filters = [
@@ -19,20 +12,6 @@ const filters = [
   ["in-progress", "In progress"],
   ["completed", "Completed"],
 ];
-
-function readTasks() {
-  const tasks = JSON.parse(localStorage.getItem(storageKey) ?? "[]");
-  if (!Array.isArray(tasks)) throw new Error("Invalid saved tasks.");
-  return tasks;
-}
-
-function changeTask(tasks, id, changes) {
-  if (!tasks.some((task) => task?.id === id)) {
-    throw new Error("Task no longer exists.");
-  }
-
-  return tasks.map((task) => task?.id === id ? { ...task, ...changes } : task);
-}
 
 function describeDeadline(task, date, todayKey) {
   if (!date) return { text: "No deadline" };
@@ -60,7 +39,7 @@ function createAction(label, task, onClick) {
   return button;
 }
 
-function confirmRemoval(task, onRemove, onClose) {
+function confirmRemoval(screen, task, onRemove, onClose) {
   const dialog = document.createElement("dialog");
   dialog.className = "task-editor";
   dialog.setAttribute("aria-labelledby", "task-remove-heading");
@@ -76,10 +55,7 @@ function confirmRemoval(task, onRemove, onClose) {
   `;
 
   dialog.querySelector("[data-task-name]").textContent = task.title;
-
-  dialog.querySelector("[data-cancel]").addEventListener("click", () => {
-    dialog.close();
-  });
+  dialog.querySelector("[data-cancel]").addEventListener("click", () => dialog.close());
 
   dialog.querySelector("[data-remove]").addEventListener("click", () => {
     if (onRemove()) {
@@ -92,10 +68,10 @@ function confirmRemoval(task, onRemove, onClose) {
 
   dialog.addEventListener("close", () => {
     dialog.remove();
-    onClose();
+    if (screen.isConnected) onClose();
   }, { once: true });
 
-  document.body.append(dialog);
+  screen.append(dialog);
   dialog.showModal();
 }
 
@@ -113,7 +89,6 @@ export function renderTasks(container, taskId = null) {
     <section class="tasks-group" aria-label="Study tasks">
       <div class="tasks-toolbar">
         <div class="task-filters" role="group" aria-label="Filter tasks by status"></div>
-
         <label class="task-sort">
           Sort by
           <select>
@@ -133,8 +108,8 @@ export function renderTasks(container, taskId = null) {
   `;
 
   const add = screen.querySelector("[data-add-task]");
-  const filterBar = screen.querySelector(".task-filters");
   const sort = screen.querySelector("select");
+  const filterBar = screen.querySelector(".task-filters");
   const counts = screen.querySelector(".task-counts");
   const list = screen.querySelector(".tasks-list");
   const empty = screen.querySelector("[data-empty]");
@@ -144,15 +119,15 @@ export function renderTasks(container, taskId = null) {
   let activeFilter = "all";
   let tasks = [];
 
-  function setFeedback(message, isError = false) {
-    feedback.toggleAttribute("data-error", isError);
-    feedback.textContent = message;
+  function setFeedback(text, error = false) {
+    feedback.toggleAttribute("data-error", error);
+    feedback.textContent = text;
   }
 
-  function saveChanges(change, message) {
+  function saveChanges(transform, message) {
     try {
-      const updated = change(readTasks());
-      localStorage.setItem(storageKey, JSON.stringify(updated));
+      const updated = transform(readTasks());
+      writeTasks(updated);
       tasks = updated;
     } catch (error) {
       console.error("Could not save task change.", error);
@@ -165,7 +140,7 @@ export function renderTasks(container, taskId = null) {
     return true;
   }
 
-  function focusAfterChange(trigger) {
+  function restoreFocus(trigger) {
     (trigger?.isConnected ? trigger : add).focus();
   }
 
@@ -176,33 +151,47 @@ export function renderTasks(container, taskId = null) {
         "Task updated.",
       );
 
-      if (saved) queueMicrotask(() => focusAfterChange(trigger));
+      if (saved) queueMicrotask(() => restoreFocus(trigger));
       return saved;
     }, trigger);
   }
 
-  function showDetails(task, trigger) {
-    openTaskDetails(task, {
-      onEdit: () => editTask(task, trigger),
-      onClose: () => focusAfterChange(trigger),
+  function completeTask(task, trigger) {
+    openTaskCompletion(screen, task, {
+      onComplete() {
+        return saveChanges((items) => {
+          const current = items.find((item) => item?.id === task.id);
+
+          if (!current) throw new Error("Task no longer exists.");
+          if (current.completed) return items;
+
+          return changeTask(items, task.id, {
+            status: "completed",
+            completed: true,
+            completedAt: new Date().toISOString(),
+          });
+        }, "Task completed.");
+      },
+      onClose: () => restoreFocus(trigger),
     });
   }
 
-  function changeStatus(task, status) {
-    const completed = status === "completed";
-    const messages = {
-      open: "Task reopened.",
-      "in-progress": "Task started.",
-      completed: "Task completed.",
-    };
+  function showDetails(task, trigger) {
+    openTaskDetails(screen, task, {
+      onEdit: () => editTask(task, trigger),
+      onComplete: () => completeTask(task, trigger),
+      onClose: () => restoreFocus(trigger),
+    });
+  }
 
+  function changeOpenStatus(task, status) {
     const saved = saveChanges(
       (items) => changeTask(items, task.id, {
         status,
-        completed,
-        completedAt: completed ? new Date().toISOString() : null,
+        completed: false,
+        completedAt: null,
       }),
-      messages[status],
+      status === "open" ? "Task reopened." : "Task started.",
     );
 
     if (saved) buttons.get(activeFilter)?.focus();
@@ -217,6 +206,7 @@ export function renderTasks(container, taskId = null) {
 
     const title = document.createElement("button");
     title.type = "button";
+    title.className = "task-title-button";
     title.textContent = task.title;
     title.setAttribute("aria-haspopup", "dialog");
     title.addEventListener("click", () => showDetails(task, title));
@@ -239,31 +229,40 @@ export function renderTasks(container, taskId = null) {
 
     if (state === "open") {
       actions.append(createAction("Start task", task, () => {
-        changeStatus(task, "in-progress");
+        changeOpenStatus(task, "in-progress");
       }));
     }
 
-    const next = state === "completed" ? "open" : "completed";
-    const label = state === "completed" ? "Reopen" : "Mark complete";
-    actions.append(createAction(label, task, () => changeStatus(task, next)));
+    if (state === "completed") {
+      actions.append(createAction("Reopen", task, () => changeOpenStatus(task, "open")));
+    } else {
+      const complete = createAction("Mark complete", task, () => {
+        completeTask(task, complete);
+      });
+
+      complete.setAttribute("aria-haspopup", "dialog");
+      actions.append(complete);
+    }
 
     const edit = createAction("Edit", task, () => editTask(task, edit));
     edit.setAttribute("aria-haspopup", "dialog");
 
     const remove = createAction("Remove", task, () => {
       confirmRemoval(
+        screen,
         task,
         () => saveChanges(
           (items) => items.filter((item) => item?.id !== task.id),
           "Task removed.",
         ),
-        () => focusAfterChange(remove),
+        () => restoreFocus(remove),
       );
     });
-    remove.setAttribute("aria-haspopup", "dialog");
 
+    remove.setAttribute("aria-haspopup", "dialog");
     actions.append(edit, remove);
     row.append(details, actions);
+
     return row;
   }
 

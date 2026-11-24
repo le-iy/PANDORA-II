@@ -1,24 +1,11 @@
-import {
-  parseScheduleDate,
-  scheduleDateKey,
-} from "../../services/schedule-events.js";
-
+import { parseScheduleDate, scheduleDateKey } from "../../services/schedule-events.js";
+import { readTasks } from "../../services/task-store.js";
 import { showHomeRows } from "./home-rows.js";
-
-const storageKey = "pandora-ii.tasks";
 
 const dateFormat = new Intl.DateTimeFormat("en-PH", {
   month: "short",
   day: "numeric",
 });
-
-function readTasks() {
-  const tasks = JSON.parse(localStorage.getItem(storageKey) ?? "[]");
-
-  if (!Array.isArray(tasks)) throw new Error("Invalid saved tasks.");
-
-  return tasks.filter((task) => typeof task?.title === "string");
-}
 
 function taskRow(task, deadline, todayKey) {
   let deadlineLabel = "No deadline";
@@ -26,10 +13,11 @@ function taskRow(task, deadline, todayKey) {
 
   if (deadline) {
     const key = scheduleDateKey(deadline);
-    deadlineLabel = `Due ${dateFormat.format(deadline)}`;
+    const formatted = dateFormat.format(deadline);
+    deadlineLabel = `Due ${formatted}`;
 
     if (key < todayKey) {
-      deadlineLabel = `Overdue · ${dateFormat.format(deadline)}`;
+      deadlineLabel = `Overdue · ${formatted}`;
       state = "overdue";
     } else if (key === todayKey) {
       deadlineLabel = "Due today";
@@ -55,7 +43,7 @@ export function renderHomeTasks(dashboard, today = new Date()) {
   const finishedCount = dashboard.querySelector("[data-finished-count]");
 
   try {
-    const tasks = readTasks();
+    const tasks = readTasks().filter((task) => typeof task?.title === "string");
     const unfinished = tasks.filter((task) => !task.completed);
     const todayKey = scheduleDateKey(today);
 
