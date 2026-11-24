@@ -3,8 +3,68 @@ import {
   loadQuizzes,
   quizRewardKey,
 } from "./quiz-catalog.js";
+import { readTaskRewards } from "./task-store.js";
 
-const expPerLevel = 300;
+const maxLevel = 100;
+const rankIcons = new URL("../assets/icons/ranks/", import.meta.url);
+
+const rankNames = [
+  "Scholar",
+  "Bookkeeper",
+  "Quest Finisher",
+  "Study Scout",
+  "Note Keeper",
+  "Quiz Solver",
+  "Researcher",
+  "Steady Scholar",
+  "Course Navigator",
+  "Study Strategist",
+  "Archive Curator",
+  "Quiz Specialist",
+  "Research Fellow",
+  "Academic Mentor",
+  "Knowledge Curator",
+  "Distinguished Scholar",
+  "Academic Virtuoso",
+  "Master Scholar",
+  "Grand Scholar",
+  "Pandora Laureate",
+];
+
+function expRequired(level) {
+  return Math.round((300 + 4700 * (level - 1) / (maxLevel - 2)) / 10) * 10;
+}
+
+export function getRankProgress(totalExp) {
+  let level = 1;
+  let remaining = Math.max(0, totalExp);
+
+  while (level < maxLevel && remaining >= expRequired(level)) {
+    remaining -= expRequired(level);
+    level += 1;
+  }
+
+  const atCap = level === maxLevel;
+  const expPerLevel = expRequired(Math.min(level, maxLevel - 1));
+  const levelExp = atCap ? expPerLevel : remaining;
+  const rankIndex = Math.floor((level - 1) / 5);
+  const rankName = rankNames[rankIndex];
+  const slug = rankName.toLowerCase().replaceAll(" ", "-");
+
+  return {
+    level,
+    atCap,
+    levelExp,
+    expPerLevel,
+    expToNextLevel: expPerLevel - levelExp,
+    rankName,
+    rankIcon: new URL(`rank-${slug}.svg`, rankIcons).href,
+    nextRank: rankNames[rankIndex + 1] ?? null,
+    nextRankLevel: rankIndex < rankNames.length - 1
+      ? (rankIndex + 1) * 5 + 1
+      : null,
+  };
+}
 
 export async function getExperience(today = new Date()) {
   const quizzes = await loadQuizzes({ includeRemoved: true });
@@ -64,15 +124,14 @@ export async function getExperience(today = new Date()) {
     }
   }
 
-  const level = Math.floor(totalExp / expPerLevel) + 1;
-  const levelExp = totalExp % expPerLevel;
+  for (const { exp, earnedAt } of readTaskRewards()) {
+    totalExp += exp;
 
-  return {
-    totalExp,
-    todayExp,
-    level,
-    levelExp,
-    expPerLevel,
-    expToNextLevel: expPerLevel - levelExp,
-  };
+    const time = Date.parse(earnedAt);
+    if (time >= dayStart && time < dayEnd) {
+      todayExp += exp;
+    }
+  }
+
+  return { totalExp, todayExp, ...getRankProgress(totalExp) };
 }

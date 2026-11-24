@@ -433,8 +433,10 @@ export function renderTasks(container, taskId = null) {
       progress.value = experience.levelExp;
       progress.hidden = false;
       level.textContent =
+        experience.atCap ? "Level 100 · Maximum level" :
         `Level ${experience.level} · ${experience.levelExp} / ${experience.expPerLevel} EXP`;
       screen.querySelector("[data-next-level]").textContent =
+        experience.atCap ? "All 20 ranks unlocked" :
         `${experience.expToNextLevel} EXP to Level ${experience.level + 1}`;
     } catch (error) {
       console.error("Could not load quest rewards.", error);

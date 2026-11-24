@@ -1,12 +1,16 @@
+import { createRankLadderButton } from "../../components/rank-ladder.js";
 import { getExperience } from "../../services/experience.js";
 import { readPreferences } from "../../services/preferences.js";
 import {
   countTasksCompletedToday,
   formatGoalProgress,
-  getScholarBadge,
 } from "../../services/study-goals.js";
 
 const numberFormat = new Intl.NumberFormat("en-PH");
+
+function format(value) {
+  return numberFormat.format(value);
+}
 
 function createGoalPanel(title) {
   const block = document.createElement("div");
@@ -39,17 +43,18 @@ function createGoalPanel(title) {
 export async function renderHomeLevel(panel) {
   const today = new Date();
   const settings = readPreferences();
-  const badge = getScholarBadge(settings.badge);
 
   const badgeImage = panel.querySelector("[data-home-badge]");
-  badgeImage.addEventListener("error", () => badgeImage.remove(), { once: true });
-  badgeImage.src = badge.url;
-  panel.querySelector("[data-home-badge-name]").textContent = badge.label;
-
+  const badgeName = panel.querySelector("[data-home-badge-name]");
   const level = panel.querySelector("[data-level]");
   const total = panel.querySelector("[data-exp-total]");
   const progress = panel.querySelector("[data-level-progress]");
   const status = panel.querySelector('[role="status"]');
+
+  badgeImage.hidden = true;
+  badgeImage.addEventListener("error", () => {
+    badgeImage.hidden = true;
+  }, { once: true });
 
   const questGoal = createGoalPanel("Daily Quest");
   const expGoal = createGoalPanel("Daily EXP Goal");
@@ -70,19 +75,31 @@ export async function renderHomeLevel(panel) {
   try {
     const experience = await getExperience(today);
 
-    level.textContent = `Level ${numberFormat.format(experience.level)}`;
-    total.textContent = `${numberFormat.format(experience.totalExp)} total EXP`;
+    badgeImage.src = experience.rankIcon;
+    badgeImage.hidden = false;
+    badgeName.textContent = experience.rankName;
+
+    level.textContent = `Level ${format(experience.level)}`;
+    total.textContent = `${format(experience.totalExp)} total EXP`;
 
     progress.max = experience.expPerLevel;
     progress.value = experience.levelExp;
     progress.hidden = false;
 
-    status.textContent =
-      `${numberFormat.format(experience.levelExp)} / ` +
-      `${numberFormat.format(experience.expPerLevel)} EXP · ` +
-      `${numberFormat.format(experience.expToNextLevel)} EXP to ` +
-      `Level ${numberFormat.format(experience.level + 1)}`;
+    if (experience.atCap) {
+      status.textContent = "Maximum level reached · All 20 ranks unlocked";
+    } else {
+      const nextRank = experience.nextRank
+        ? ` · Next rank: ${experience.nextRank} (Lv. ${experience.nextRankLevel})`
+        : "";
 
+      status.textContent =
+        `${format(experience.levelExp)} / ${format(experience.expPerLevel)} EXP · ` +
+        `${format(experience.expToNextLevel)} EXP to Level ${format(experience.level + 1)}` +
+        nextRank;
+    }
+
+    questGoal.block.before(createRankLadderButton(experience.level));
     expGoal.show(experience.todayExp, settings.dailyExpGoal, "EXP earned");
   } catch (error) {
     console.error("Could not load EXP.", error);

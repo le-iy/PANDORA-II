@@ -3,6 +3,7 @@ import { openSearch } from "./search-dialog.js";
 import { openReminders } from "./reminders-dialog.js";
 import { getExperience } from "../services/experience.js";
 import { readPreferences } from "../services/preferences.js";
+import { getProfileIcon } from "../services/study-goals.js";
 import { readStudyReminders } from "../services/study-reminders.js";
 
 const headerListeners = new WeakMap();
@@ -68,7 +69,6 @@ export function renderHeader(container) {
   function refreshReminders() {
     const settings = readPreferences();
     reminders.hidden = !settings.taskReminders && !settings.eventReminders;
-
     if (reminders.hidden) return;
 
     const count = readStudyReminders(settings).reduce(
@@ -93,14 +93,25 @@ export function renderHeader(container) {
   profile.setAttribute("aria-label", "Open scholar profile");
   profile.setAttribute("aria-haspopup", "dialog");
 
+  const profileImage = document.createElement("img");
+  profileImage.className = "header-scholar-icon";
+  profileImage.alt = "";
+
+  const fallbackIcon = getProfileIcon().url;
+
+  profileImage.addEventListener("error", () => {
+    if (profileImage.src !== fallbackIcon) profileImage.src = fallbackIcon;
+  });
+
   const levelBadge = document.createElement("span");
   levelBadge.className = "header-level";
   levelBadge.textContent = "Profile";
+  profile.append(profileImage, levelBadge);
 
-  profile.append(
-    createIcon("gamification/scholar-badge.svg", "header-scholar-icon"),
-    levelBadge,
-  );
+  function refreshProfileIcon() {
+    const { url } = getProfileIcon(readPreferences().badge);
+    if (profileImage.src !== url) profileImage.src = url;
+  }
 
   let latestRequest = 0;
 
@@ -108,11 +119,16 @@ export function renderHeader(container) {
     const request = ++latestRequest;
 
     try {
-      const { level } = await getExperience();
+      const { level, rankName } = await getExperience();
       if (request !== latestRequest || controller.signal.aborted) return;
 
       levelBadge.textContent = `LVL ${String(level).padStart(2, "0")}`;
-      profile.setAttribute("aria-label", `Open scholar profile, level ${level}`);
+      profile.setAttribute(
+        "aria-label",
+        rankName
+          ? `Open scholar profile, ${rankName}, level ${level}`
+          : `Open scholar profile, level ${level}`,
+      );
     } catch (error) {
       console.error("Could not load your level.", error);
     }
@@ -140,18 +156,28 @@ export function renderHeader(container) {
   actions.append(reminders, profile);
   container.replaceChildren(search, actions);
 
+  function refreshHeaderPreferences() {
+    refreshProfileIcon();
+    refreshReminders();
+  }
+
   window.addEventListener("hashchange", refreshReminders, options);
   window.addEventListener("hashchange", refreshLevel, options);
-  window.addEventListener("focus", refreshReminders, options);
-  window.addEventListener("storage", refreshReminders, options);
-  window.addEventListener("pandora:preferences-changed", refreshReminders, options);
+  window.addEventListener("focus", refreshHeaderPreferences, options);
+  window.addEventListener("focus", refreshLevel, options);
+  window.addEventListener("storage", refreshHeaderPreferences, options);
+  window.addEventListener("storage", refreshLevel, options);
+  window.addEventListener(
+    "pandora:preferences-changed",
+    refreshHeaderPreferences,
+    options,
+  );
 
-  // Also refresh while staying on a page, for example after adding a task.
   const timer = window.setInterval(refreshReminders, 15_000);
   controller.signal.addEventListener("abort", () => window.clearInterval(timer), {
     once: true,
   });
 
-  refreshReminders();
+  refreshHeaderPreferences();
   refreshLevel();
 }

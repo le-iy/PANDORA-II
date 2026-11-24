@@ -1,12 +1,16 @@
+import { createRankLadderButton } from "./rank-ladder.js";
 import { getExperience } from "../services/experience.js";
 import { readPreferences } from "../services/preferences.js";
-import { formatGoalProgress, getScholarBadge } from "../services/study-goals.js";
+import {
+  formatGoalProgress,
+  getProfileIcon,
+} from "../services/study-goals.js";
 
 const numberFormat = new Intl.NumberFormat("en-PH");
 
 export async function openProfile(trigger) {
   const profile = readPreferences();
-  const badge = getScholarBadge(profile.badge);
+  const portrait = getProfileIcon(profile.badge);
   const dialog = document.createElement("dialog");
 
   dialog.className = "header-search-dialog scholar-profile-dialog";
@@ -14,15 +18,14 @@ export async function openProfile(trigger) {
 
   dialog.innerHTML = `
     <div class="search-dialog-heading">
-      <h2 id="scholar-profile-heading">Scholar profile</h2>
+      <h2 id="scholar-profile-heading">Profile</h2>
       <button type="button" data-close autofocus>Close</button>
     </div>
 
     <div class="profile-identity">
-      <img width="48" height="48" alt="" data-profile-badge>
+      <img width="56" height="56" alt="" data-profile-badge>
       <div>
         <p class="profile-name" data-display-name></p>
-        <p class="profile-badge-label" data-badge-label></p>
       </div>
       <strong class="profile-level" data-level hidden></strong>
     </div>
@@ -31,14 +34,19 @@ export async function openProfile(trigger) {
 
     <section class="profile-progress" aria-label="Level progress" hidden>
       <div class="profile-progress-label">
+        <img width="36" height="36" alt="" data-rank-icon>
+        <strong data-rank-name></strong>
+      </div>
+      <div class="profile-progress-label">
         <strong data-total-exp></strong>
         <span data-level-exp></span>
       </div>
-      <progress aria-label="EXP progress toward the next level"></progress>
+      <progress aria-label="Level progress"></progress>
       <p data-next-level></p>
     </section>
 
-    <section class="home-daily-quest" aria-labelledby="profile-exp-goal" hidden>
+    <section class="home-daily-quest" aria-labelledby="profile-exp-goal"
+      hidden style="display: none">
       <h3 id="profile-exp-goal">Daily EXP Goal</h3>
       <p data-daily-exp></p>
       <progress aria-label="Daily EXP goal"></progress>
@@ -47,18 +55,26 @@ export async function openProfile(trigger) {
     <a class="profile-settings" href="#/settings">Open Settings</a>
   `;
 
-  const badgeImage = dialog.querySelector("[data-profile-badge]");
-  badgeImage.src = badge.url;
-  badgeImage.addEventListener("error", () => badgeImage.remove(), { once: true });
+  const avatar = dialog.querySelector("[data-profile-badge]");
+  const rankIcon = dialog.querySelector("[data-rank-icon]");
+  const level = dialog.querySelector("[data-level]");
+  const status = dialog.querySelector('[role="status"]');
+  const panel = dialog.querySelector(".profile-progress");
+  const progress = panel.querySelector("progress");
+  const goal = dialog.querySelector("#profile-exp-goal").parentElement;
+  const goalBar = goal.querySelector("progress");
 
+  avatar.addEventListener("error", () => { avatar.hidden = true; }, { once: true });
+  rankIcon.addEventListener("error", () => { rankIcon.hidden = true; }, { once: true });
+  avatar.src = portrait.url;
+  avatar.style.imageRendering = "pixelated";
+  rankIcon.style.objectFit = "contain";
+  rankIcon.style.imageRendering = "pixelated";
   dialog.querySelector("[data-display-name]").textContent = profile.displayName;
-  dialog.querySelector("[data-badge-label]").textContent = badge.label;
 
   let restoreFocus = true;
 
-  dialog.querySelector("[data-close]").addEventListener("click", () => {
-    dialog.close();
-  });
+  dialog.querySelector("[data-close]").addEventListener("click", () => dialog.close());
 
   dialog.querySelector(".profile-settings").addEventListener("click", (event) => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
@@ -75,40 +91,48 @@ export async function openProfile(trigger) {
   document.body.append(dialog);
   dialog.showModal();
 
-  const status = dialog.querySelector('[role="status"]');
-  const level = dialog.querySelector("[data-level]");
-  const panel = dialog.querySelector(".profile-progress");
-  const progress = panel.querySelector("progress");
-  const goal = dialog.querySelector('[aria-labelledby="profile-exp-goal"]');
-  const goalBar = goal.querySelector("progress");
-
-  // The shared goal block uses display:grid. Keep it hidden until EXP loads.
-  goal.style.display = "none";
-
   try {
     const experience = await getExperience();
     if (!dialog.open) return;
 
-    level.textContent = `Level ${numberFormat.format(experience.level)}`;
+    const format = (value) => numberFormat.format(value);
 
+    rankIcon.src = experience.rankIcon;
+    panel.querySelector("[data-rank-name]").textContent = experience.rankName;
+    level.textContent = `Level ${format(experience.level)}`;
     panel.querySelector("[data-total-exp]").textContent =
-      `${numberFormat.format(experience.totalExp)} total EXP`;
+      `${format(experience.totalExp)} total EXP`;
 
-    panel.querySelector("[data-level-exp]").textContent =
-      `${numberFormat.format(experience.levelExp)} / ` +
-      `${numberFormat.format(experience.expPerLevel)} EXP`;
+    const current = panel.querySelector("[data-level-exp]");
+    const next = panel.querySelector("[data-next-level]");
 
-    panel.querySelector("[data-next-level]").textContent =
-      `${numberFormat.format(experience.expToNextLevel)} EXP to ` +
-      `Level ${numberFormat.format(experience.level + 1)}`;
+    if (experience.atCap) {
+      current.textContent = "Maximum level reached";
+      next.textContent = "All 20 ranks unlocked";
+    } else {
+      current.textContent =
+        `${format(experience.levelExp)} / ${format(experience.expPerLevel)} EXP`;
+      next.textContent =
+        `${format(experience.expToNextLevel)} EXP to Level ${format(experience.level + 1)}`;
+
+      if (experience.nextRank) {
+        next.textContent +=
+          ` · Next rank: ${experience.nextRank} (Lv. ${experience.nextRankLevel})`;
+      }
+    }
 
     progress.max = experience.expPerLevel;
     progress.value = experience.levelExp;
 
-    goal.querySelector("[data-daily-exp]").textContent = formatGoalProgress(
-      experience.todayExp, profile.dailyExpGoal, "EXP earned",
-    );
+    const ladder = createRankLadderButton(experience.level);
+    ladder.style.marginBlockStart = "12px";
+    panel.append(ladder);
 
+    goal.querySelector("[data-daily-exp]").textContent = formatGoalProgress(
+      experience.todayExp,
+      profile.dailyExpGoal,
+      "EXP earned",
+    );
     goalBar.max = profile.dailyExpGoal;
     goalBar.value = Math.min(experience.todayExp, profile.dailyExpGoal);
 
@@ -119,9 +143,6 @@ export async function openProfile(trigger) {
     status.hidden = true;
   } catch (error) {
     console.error("Could not load profile EXP.", error);
-
-    if (dialog.open) {
-      status.textContent = "Couldn’t load your EXP right now.";
-    }
+    if (dialog.open) status.textContent = "Couldn’t load your EXP right now.";
   }
 }

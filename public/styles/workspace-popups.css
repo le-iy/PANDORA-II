@@ -130,3 +130,66 @@
     padding: 4px;
   }
 }
+
+.scholar-profile-dialog .profile-identity {
+  gap: 10px 12px;
+}
+
+.scholar-profile-dialog [data-profile-badge] {
+  box-sizing: border-box;
+  flex: none;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  image-rendering: pixelated;
+}
+
+.scholar-profile-dialog .profile-progress [data-rank-icon] {
+  flex: none;
+}
+
+.scholar-profile-dialog .profile-progress-label:has([data-rank-name]) {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-block-end: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.scholar-profile-dialog [data-rank-name] {
+  min-width: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.scholar-profile-dialog .profile-progress button[aria-haspopup="dialog"] {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scholar-profile-dialog .profile-progress button[aria-haspopup="dialog"]:hover {
+  border-color: var(--color-primary);
+}
+
+.header-search-dialog[aria-labelledby="rank-ladder-heading"]
+  .search-dialog-heading {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  margin-block-end: 8px;
+  padding-block-end: 8px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.header-search-dialog[aria-labelledby="rank-ladder-heading"] {
+  scroll-padding-block-start: 80px;
+}

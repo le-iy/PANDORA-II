@@ -213,7 +213,8 @@ export async function renderQuizzes(
       const experience = await getExperience();
       if (request !== experienceRequest || screen.parentElement !== container) return;
 
-      expLabel.textContent = `${experience.levelExp} / ${experience.expPerLevel} EXP`;
+      expLabel.textContent = experience.atCap ? "Level 100 · Maximum level" :
+        `${experience.levelExp} / ${experience.expPerLevel} EXP`;
       expProgress.max = experience.expPerLevel;
       expProgress.value = experience.levelExp;
       expProgress.hidden = false;

@@ -6,9 +6,9 @@ import {
 } from "../../services/preferences.js";
 
 import {
-  getScholarBadge,
+  getProfileIcon,
   goalLimits,
-  scholarBadges,
+  profileIcons,
 } from "../../services/study-goals.js";
 
 const backupUrl = new URL("../../backup.html", import.meta.url);
@@ -70,9 +70,9 @@ export function renderSettings(container) {
               <div class="settings-profile-fields">
                 <div class="settings-badge-preview">
                   <img width="48" height="48" alt="">
-                  <span data-badge-label></span>
-                  <button class="settings-action" type="button" data-badge-trigger
-                    aria-haspopup="dialog">Change badge</button>
+                  <span data-profile-icon-label></span>
+                  <button class="settings-action" type="button" data-icon-trigger
+                    aria-haspopup="dialog">Change profile icon</button>
                 </div>
 
                 <label>
@@ -85,6 +85,7 @@ export function renderSettings(container) {
 
             <fieldset class="settings-card" data-section="appearance">
               <legend tabindex="-1">Appearance</legend>
+
               <label>
                 Theme
                 <select name="theme">
@@ -93,6 +94,7 @@ export function renderSettings(container) {
                   <option value="dark">Dark</option>
                 </select>
               </label>
+
               <label>
                 Accent color
                 <select name="accent">
@@ -101,6 +103,7 @@ export function renderSettings(container) {
                   <option value="sage">Sage</option>
                 </select>
               </label>
+
               <label>
                 Motion
                 <select name="motion">
@@ -125,16 +128,19 @@ export function renderSettings(container) {
 
             <fieldset class="settings-card" data-section="study">
               <legend tabindex="-1">Study preferences</legend>
+
               <label>
                 Daily quest goal (tasks)
                 <input name="dailyTaskGoal" type="number"
                   min="${taskGoal.min}" max="${taskGoal.max}" step="1" required>
               </label>
+
               <label>
                 Daily EXP goal
                 <input name="dailyExpGoal" type="number"
                   min="${expGoal.min}" max="${expGoal.max}" step="1" required>
               </label>
+
               <label>
                 Schedule week starts on
                 <select name="weekStart">
@@ -160,16 +166,18 @@ export function renderSettings(container) {
       </div>
     </div>
 
-    <dialog class="settings-reset-dialog" data-badge-dialog
-      aria-labelledby="settings-badge-heading">
-      <h2 id="settings-badge-heading">Choose a scholar badge</h2>
+    <dialog class="settings-reset-dialog" data-icon-dialog
+      aria-labelledby="settings-icon-heading">
+      <h2 id="settings-icon-heading">Choose a profile icon</h2>
 
       <form method="dialog">
-        <div class="settings-badge-options" data-badge-options></div>
+        <div class="settings-badge-options" data-icon-options
+          role="group" aria-label="Profile icons"></div>
+
         <div class="settings-actions">
           <button class="settings-action" type="submit" value="cancel">Cancel</button>
           <button class="settings-action settings-action-primary"
-            type="submit" value="choose">Use badge</button>
+            type="submit" value="choose">Use icon</button>
         </div>
       </form>
     </dialog>
@@ -178,6 +186,7 @@ export function renderSettings(container) {
       aria-labelledby="settings-reset-heading"
       aria-describedby="settings-reset-description">
       <h2 id="settings-reset-heading">Restore default settings?</h2>
+
       <p id="settings-reset-description">
         Load the default preferences. Select Save changes to apply them.
       </p>
@@ -194,19 +203,19 @@ export function renderSettings(container) {
 
   const form = screen.querySelector(".settings-form");
   const displayName = form.elements.namedItem("displayName");
-  const badgeField = form.elements.namedItem("badge");
-  const badgeImage = form.querySelector(".settings-badge-preview img");
-  const badgeLabel = form.querySelector("[data-badge-label]");
-  const badgeTrigger = form.querySelector("[data-badge-trigger]");
-  const badgeDialog = screen.querySelector("[data-badge-dialog]");
-  const badgeOptions = badgeDialog.querySelector("[data-badge-options]");
+  const iconField = form.elements.namedItem("badge");
+  const iconImage = form.querySelector(".settings-badge-preview img");
+  const iconLabel = form.querySelector("[data-profile-icon-label]");
+  const iconTrigger = form.querySelector("[data-icon-trigger]");
+  const iconDialog = screen.querySelector("[data-icon-dialog]");
+  const iconOptions = iconDialog.querySelector("[data-icon-options]");
   const resetDialog = screen.querySelector("[data-reset-dialog]");
   const resetTrigger = form.querySelector("[data-open-reset]");
   const links = screen.querySelector("[data-settings-links]");
   const status = screen.querySelector(".settings-feedback");
   const saveButton = screen.querySelector("[data-save]");
   const navButtons = new Map();
-  const badgeInputs = new Map();
+  const iconInputs = new Map();
 
   screen.querySelector("[data-backup]").href = backupUrl.href;
 
@@ -237,30 +246,30 @@ export function renderSettings(container) {
 
   selectSection("profile");
 
-  for (const [id, { label }] of Object.entries(scholarBadges)) {
+  for (const [id, { label }] of Object.entries(profileIcons)) {
     const option = document.createElement("label");
     const input = document.createElement("input");
     const image = document.createElement("img");
     const text = document.createElement("span");
 
     input.type = "radio";
-    input.name = "badgeChoice";
+    input.name = "profileIconChoice";
     input.value = id;
-    image.src = getScholarBadge(id).url;
+    image.src = getProfileIcon(id).url;
     image.width = 36;
     image.height = 36;
     image.alt = "";
     text.textContent = label;
 
     option.append(input, image, text);
-    badgeOptions.append(option);
-    badgeInputs.set(id, input);
+    iconOptions.append(option);
+    iconInputs.set(id, input);
   }
 
-  function updateBadgePreview() {
-    const badge = getScholarBadge(badgeField.value);
-    badgeImage.src = badge.url;
-    badgeLabel.textContent = badge.label;
+  function updateIconPreview() {
+    const icon = getProfileIcon(iconField.value);
+    iconImage.src = icon.url;
+    iconLabel.textContent = icon.label;
   }
 
   function fillForm(settings) {
@@ -272,7 +281,7 @@ export function renderSettings(container) {
       else field.value = value;
     }
 
-    updateBadgePreview();
+    updateIconPreview();
   }
 
   function setStatus(message, isError = false) {
@@ -282,25 +291,25 @@ export function renderSettings(container) {
 
   fillForm(readPreferences());
 
-  badgeTrigger.addEventListener("click", () => {
-    const current = badgeInputs.get(badgeField.value);
+  iconTrigger.addEventListener("click", () => {
+    const current = iconInputs.get(iconField.value) ?? iconInputs.values().next().value;
     if (current) current.checked = true;
 
-    badgeDialog.returnValue = "";
-    badgeDialog.showModal();
+    iconDialog.returnValue = "";
+    iconDialog.showModal();
     current?.focus();
   });
 
-  badgeDialog.addEventListener("close", () => {
-    const choice = badgeOptions.querySelector("input:checked");
+  iconDialog.addEventListener("close", () => {
+    const choice = iconOptions.querySelector("input:checked");
 
-    if (badgeDialog.returnValue === "choose" && choice) {
-      badgeField.value = choice.value;
-      updateBadgePreview();
-      setStatus("Badge selected. Select Save changes to apply it.");
+    if (iconDialog.returnValue === "choose" && choice) {
+      iconField.value = choice.value;
+      updateIconPreview();
+      setStatus("Profile icon selected. Select Save changes to apply it.");
     }
 
-    badgeTrigger.focus();
+    iconTrigger.focus();
   });
 
   resetTrigger.addEventListener("click", () => {
