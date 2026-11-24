@@ -1,3 +1,4 @@
+import { themeAsset } from "../../services/theme-packs.js";
 import { loadQuizHistory } from "../../services/quiz-catalog.js";
 import { loadCourseCatalog, normalizeCourseCode } from "../../services/course-catalog.js";
 import { createCourseIcon } from "../courses/course-icon.js";
@@ -129,7 +130,7 @@ export function openQuizHistory(trigger) {
   heading.id = "quiz-history-heading";
   heading.tabIndex = -1;
   const icon = make("img", "quiz-history-icon");
-  icon.src = new URL("../../assets/icons/navigation/quizzes-tab.svg", import.meta.url).href;
+  icon.src = themeAsset("icons/navigation/quizzes-tab.svg");
   icon.alt = "";
   const back = createButton("← Quiz History", showList, "quiz-history-button");
   back.hidden = true;

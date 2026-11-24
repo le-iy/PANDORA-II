@@ -1,3 +1,4 @@
+import { themeAsset } from "../../services/theme-packs.js";
 import {
   loadCourseCatalog,
   normalizeCourseCode,
@@ -46,7 +47,7 @@ function element(tag, className, text) {
 
 function createQuizIcon(path) {
   const icon = element("img", "quiz-pixel-icon");
-  icon.src = new URL("../../assets/icons/" + path + ".svg", import.meta.url).href;
+  icon.src = themeAsset(`icons/${path}.svg`);
   icon.alt = "";
   return icon;
 }

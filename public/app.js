@@ -75,3 +75,8 @@ function renderPage(pageId, {
 applySavedSettings();
 renderHeader(header);
 startRouter(Object.keys(pages), renderPage);
+
+window.addEventListener("pandora:theme-pack-changed", () => {
+  renderSidebar(sidebar, currentRoute?.split("/")[0] ?? "home");
+  renderHeader(header);
+});

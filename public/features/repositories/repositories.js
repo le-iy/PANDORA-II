@@ -1,13 +1,9 @@
+import { themeAsset } from "../../services/theme-packs.js";
 import { loadResourceCatalog } from "../../services/resource-catalog.js";
 import { createResourceCard, resourceRouteId } from "./resource-card.js";
 import { openResourceDialog } from "./resource-dialog.js";
 import { createRepositoryFilters } from "./repository-filters.js";
 import { showRepositoryOverview } from "./repository-overview.js";
-
-const folderIcon = new URL(
-  "../../assets/icons/resources/repository-folder.svg",
-  import.meta.url,
-);
 
 export async function renderRepositories(container, requestedId = null) {
   const screen = document.createElement("section");
@@ -71,7 +67,7 @@ export async function renderRepositories(container, requestedId = null) {
 
       <aside class="repository-aside" aria-label="Collection tools" hidden>
         <section class="repository-upload">
-          <img src="${folderIcon.href}" width="40" height="40" alt="">
+          <img src="${themeAsset("icons/resources/repository-folder.svg")}" width="40" height="40" alt="">
           <h2>Add study materials</h2>
           <button class="resource-primary" type="button" data-browse
             aria-haspopup="dialog">Browse files</button>

@@ -1,3 +1,4 @@
+import { themeAsset } from "./theme-packs.js";
 import {
   loadQuizHistory,
   loadQuizzes,
@@ -6,7 +7,6 @@ import {
 import { readTaskRewards } from "./task-store.js";
 
 const maxLevel = 100;
-const rankIcons = new URL("../assets/icons/ranks/", import.meta.url);
 
 const rankNames = [
   "Scholar",
@@ -58,7 +58,7 @@ export function getRankProgress(totalExp) {
     expPerLevel,
     expToNextLevel: expPerLevel - levelExp,
     rankName,
-    rankIcon: new URL(`rank-${slug}.svg`, rankIcons).href,
+    rankIcon: themeAsset(`icons/ranks/rank-${slug}.svg`),
     nextRank: rankNames[rankIndex + 1] ?? null,
     nextRankLevel: rankIndex < rankNames.length - 1
       ? (rankIndex + 1) * 5 + 1

@@ -1,3 +1,5 @@
+import { activeThemePack, celestialIcons, themeAsset } from "./theme-packs.js";
+
 const trinkets = {
   scholar: { label: "Sleepy cat", file: "sleepy-cat-charm.svg" },
   books: { label: "Book stack", file: "book-stack.svg" },
@@ -97,22 +99,22 @@ export const goalLimits = Object.freeze({
   dailyExpGoal: { min: 10, max: 1000 },
 });
 
-const trinketDirectory = new URL("../assets/illustrations/trinkets/", import.meta.url);
-const portraitDirectory = new URL("../assets/icons/profile/", import.meta.url);
+export function getProfileIcons(pack = activeThemePack()) {
+  return pack === "galaxy" ? { ...celestialIcons, ...portraits } : profileIcons;
+}
 
-export function getProfileIcon(id) {
-  const icon = Object.hasOwn(profileIcons, id)
-    ? profileIcons[id]
-    : profileIcons.scholar;
+export function getProfileIcon(id, pack = activeThemePack()) {
+  const options = getProfileIcons(pack);
+  const icon = Object.hasOwn(options, id)
+    ? options[id]
+    : options[pack === "galaxy" ? "celestial-ringed-planet" : "scholar"];
+  const path = icon.file.includes("/")
+    ? icon.file
+    : Object.hasOwn(portraits, id)
+      ? `icons/profile/${icon.file}`
+      : `illustrations/trinkets/${icon.file}`;
 
-  const directory = Object.hasOwn(portraits, id)
-    ? portraitDirectory
-    : trinketDirectory;
-
-  return {
-    label: icon.label,
-    url: new URL(icon.file, directory).href,
-  };
+  return { label: icon.label, url: themeAsset(path, pack) };
 }
 
 export const getScholarBadge = getProfileIcon;

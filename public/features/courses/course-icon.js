@@ -1,4 +1,5 @@
-const assets = new URL("../../assets/", import.meta.url);
+import { activeThemePack, celestialIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
+
 const storageKey = "pandora-ii.course-icons";
 
 const defaults = new Map([
@@ -57,16 +58,30 @@ const groups = [
   }),
 }));
 
-const options = new Map(groups.flatMap(({ options }) =>
+const celestialGroup = {
+  label: "Celestial",
+  options: Object.values(celestialIcons).map(({ label, file }) => ({ label, id: file })),
+};
+
+function availableGroups() {
+  return activeThemePack() === "galaxy" ? [...groups, celestialGroup] : groups;
+}
+
+const options = new Map([...groups, celestialGroup].flatMap(({ options }) =>
   options.map((option) => [option.id, option]),
 ));
+
+function hasIcon(id) {
+  return options.has(id) &&
+    (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy");
+}
 
 function courseKey(code) {
   return String(code ?? "").trim().toUpperCase();
 }
 
 function readIconChoices() {
-  const saved = JSON.parse(localStorage.getItem(storageKey) ?? "{}");
+  const saved = JSON.parse(localStorage.getItem(themeStorageKey(storageKey)) ?? "{}");
 
   if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
     throw new Error("Invalid saved course icons.");
@@ -78,7 +93,7 @@ function readIconChoices() {
 export function getCourseIconChoice(code) {
   try {
     const id = readIconChoices().get(courseKey(code));
-    return options.has(id) ? id : "";
+    return hasIcon(id) ? id : "";
   } catch (error) {
     console.error("Could not read course icons.", error);
     return "";
@@ -92,7 +107,7 @@ export function getCourseIconLabel(id) {
 export function saveCourseIconChoice(code, id) {
   const key = courseKey(code);
 
-  if (!key || (id !== "" && !options.has(id))) {
+  if (!key || (id !== "" && !hasIcon(id))) {
     throw new Error("Invalid course icon selection.");
   }
 
@@ -101,7 +116,7 @@ export function saveCourseIconChoice(code, id) {
   if (id) choices.set(key, id);
   else choices.delete(key);
 
-  localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(choices)));
+  localStorage.setItem(themeStorageKey(storageKey), JSON.stringify(Object.fromEntries(choices)));
 }
 
 export function createCourseIcon(code, choice = getCourseIconChoice(code)) {
@@ -111,7 +126,7 @@ export function createCourseIcon(code, choice = getCourseIconChoice(code)) {
   icon.setAttribute("aria-hidden", "true");
 
   const defaultFile = defaults.get(key);
-  const path = options.has(choice)
+  const path = hasIcon(choice)
     ? choice
     : defaultFile ? `icons/subjects/${defaultFile}.svg` : "";
 
@@ -129,7 +144,7 @@ export function createCourseIcon(code, choice = getCourseIconChoice(code)) {
   image.width = 32;
   image.height = 32;
   image.addEventListener("error", showFallback, { once: true });
-  image.src = new URL(path, assets).href;
+  image.src = themeAsset(path);
   icon.append(image);
   return icon;
 }
@@ -168,7 +183,7 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }
   const selection = form.querySelector("[data-selection]");
   const status = form.querySelector('[role="status"]');
 
-  let selected = options.has(choice) ? choice : "";
+  let selected = hasIcon(choice) ? choice : "";
 
   dialog.querySelector("[data-course-name]").textContent =
     name ? `Pick an icon for ${name}.` : "Pick an icon for this course.";
@@ -179,11 +194,12 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }
     gap: "8px",
   });
 
-  for (const [index, group] of groups.entries()) {
+  const iconGroups = availableGroups();
+  for (const [index, group] of iconGroups.entries()) {
     category.add(new Option(group.label, String(index)));
   }
 
-  const initialCategory = groups.findIndex(({ options }) =>
+  const initialCategory = iconGroups.findIndex(({ options }) =>
     options.some(({ id }) => id === selected),
   );
   category.value = String(Math.max(0, initialCategory));
@@ -200,7 +216,7 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }
   }
 
   function showIcons() {
-    const buttons = groups[Number(category.value)].options.map(({ id, label }) => {
+    const buttons = iconGroups[Number(category.value)].options.map(({ id, label }) => {
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.icon = id;

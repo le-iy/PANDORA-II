@@ -1,3 +1,4 @@
+import { themeAsset } from "../services/theme-packs.js";
 import { openProfile } from "./profile.js";
 import { openSearch } from "./search-dialog.js";
 import { openReminders } from "./reminders-dialog.js";
@@ -13,7 +14,7 @@ function createIcon(path, className) {
   icon.className = className;
   icon.alt = "";
   icon.addEventListener("error", () => icon.remove(), { once: true });
-  icon.src = new URL(`../assets/icons/${path}`, import.meta.url).href;
+  icon.src = themeAsset(`icons/${path}`);
   return icon;
 }
 

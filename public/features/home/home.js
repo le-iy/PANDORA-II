@@ -1,13 +1,10 @@
+import { themeAsset } from "../../services/theme-packs.js";
 import { renderHomeCalendar } from "./home-calendar.js";
 import { renderHomeTasks } from "./home-tasks.js";
 import { renderHomeLibrary } from "./home-library.js";
 import { renderHomeLevel } from "./home-level.js";
 
-const assets = new URL("../../assets/", import.meta.url);
 
-function asset(path) {
-  return new URL(path, assets).href;
-}
 
 export function renderHome(container) {
   const dashboard = document.createElement("section");
@@ -21,17 +18,17 @@ export function renderHome(container) {
       <a class="home-stat" data-tone="pink" href="#/tasks">
         <span>Tasks Due</span>
         <strong data-open-count>…</strong>
-        <img src="${asset("icons/gamification/tasks-due.svg")}" alt="">
+        <img src="${themeAsset("icons/gamification/tasks-due.svg")}" alt="">
       </a>
       <a class="home-stat" data-tone="mint" href="#/tasks">
         <span>Tasks Finished</span>
         <strong data-finished-count>…</strong>
-        <img src="${asset("icons/gamification/tasks-finished.svg")}" alt="">
+        <img src="${themeAsset("icons/gamification/tasks-finished.svg")}" alt="">
       </a>
       <a class="home-stat" data-tone="lavender" href="#/courses">
         <span>Total Courses</span>
         <strong data-course-count>…</strong>
-        <img src="${asset("icons/gamification/course-books.svg")}" alt="">
+        <img src="${themeAsset("icons/gamification/course-books.svg")}" alt="">
       </a>
     </section>
 
@@ -39,12 +36,12 @@ export function renderHome(container) {
       <div class="home-tabs" role="tablist" aria-label="Library views">
         <button type="button" id="home-subjects-tab" role="tab"
           aria-selected="true" aria-controls="home-subjects-panel">
-          <img src="${asset("icons/navigation/courses.svg")}" alt="">
+          <img src="${themeAsset("icons/navigation/courses.svg")}" alt="">
           Subjects
         </button>
         <button type="button" id="home-repo-tab" role="tab" tabindex="-1"
           aria-selected="false" aria-controls="home-repo-panel">
-          <img src="${asset("icons/resources/repository-folder.svg")}" alt="">
+          <img src="${themeAsset("icons/resources/repository-folder.svg")}" alt="">
           Repo
         </button>
       </div>
@@ -99,7 +96,7 @@ export function renderHome(container) {
           aria-hidden="true"></div>
         <div class="home-calendar-grid" data-calendar-days></div>
         <img class="home-calendar-art"
-          src="${asset("illustrations/calendar-cozy-scene.svg")}" alt="">
+          src="${themeAsset("illustrations/calendar-cozy-scene.svg")}" alt="">
 
         <h3 data-agenda-heading></h3>
         <ul class="home-data-list" data-agenda-list></ul>

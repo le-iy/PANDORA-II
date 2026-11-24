@@ -1,4 +1,5 @@
-const iconFolder = new URL("../assets/icons/navigation/", import.meta.url);
+import { themeAsset } from "../services/theme-packs.js";
+
 
 const icons = {
   courses: "courses.svg",
@@ -25,7 +26,7 @@ export function showSearchResults(container, entries, onNavigate) {
     const icon = document.createElement("img");
     const route = entry.href.split("/")[1];
     icon.className = "workspace-search-result-icon";
-    icon.src = new URL(icons[route] ?? "search.svg", iconFolder).href;
+    icon.src = themeAsset(`icons/navigation/${icons[route] ?? "search.svg"}`);
     icon.width = 20;
     icon.height = 20;
     icon.alt = "";

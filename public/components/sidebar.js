@@ -1,3 +1,4 @@
+import { themeAsset } from "../services/theme-packs.js";
 const pages = [
   { id: "home", label: "Home", icon: "home.svg" },
   { id: "courses", label: "Courses", icon: "courses.svg" },
@@ -8,13 +9,12 @@ const pages = [
   { id: "settings", label: "Settings", icon: "settings.svg" },
 ];
 
-const iconDirectory = new URL("../assets/icons/navigation/", import.meta.url);
 const mobileBreakpoint = "(max-width: 720px)";
 
 function createIcon(filename, className) {
   const icon = document.createElement("img");
   icon.className = className;
-  icon.src = new URL(filename, iconDirectory).href;
+  icon.src = themeAsset(`icons/navigation/${filename}`);
   icon.alt = "";
 
   icon.addEventListener("error", () => icon.remove(), { once: true });

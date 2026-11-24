@@ -88,3 +88,49 @@
 :root .home-summary-card:nth-child(2) {
   background-color: var(--color-tasks-finished);
 }
+:root[data-theme-pack="galaxy"] {
+  --color-background: light-dark(#f7f4ff, #050b1a);
+  --color-surface: light-dark(#fff, #0f0a30);
+  --color-surface-muted: light-dark(#f0e8fc, #171b4a);
+  --color-border: light-dark(#dad1ea, #334a73);
+  --color-text: light-dark(#171b4a, #f7f4ff);
+  --color-text-muted: light-dark(#334a73, #c9c6d9);
+  --color-sidebar: light-dark(#171b4a, #0f0a30);
+  --color-sidebar-text: #f7f4ff;
+  --color-sidebar-active: light-dark(#e8d5ff, #6b4fa0);
+  --color-sidebar-active-text: light-dark(#171b4a, #fff);
+  --color-primary: light-dark(#6c4ab6, #e8d5ff);
+  --color-primary-text: light-dark(#fff, #0f0a30);
+  --color-success: light-dark(#00594b, #7fd6be);
+  --color-success-surface: light-dark(#d9f4ec, #00204a);
+  --color-danger: light-dark(#882a6b, #ffb3d9);
+  --color-overlay: rgb(5 11 26 / 65%);
+  --color-tasks-due: light-dark(#f0e8fc, #1a0a5a);
+  --color-tasks-finished: light-dark(#d9f4ec, #00204a);
+}
+
+:root[data-theme-pack="galaxy"][data-accent="aurora"] {
+  --color-primary: light-dark(#005792, #00bbf0);
+  --color-sidebar-active: light-dark(#d9f4ec, #005792);
+}
+
+:root[data-theme-pack="galaxy"][data-accent="starlight"] {
+  --color-primary: light-dark(#882a6b, #e98bcb);
+  --color-sidebar-active: light-dark(#ffdbed, #882a6b);
+}
+
+:root[data-theme-pack="galaxy"][data-accent="freestar"] {
+  --color-primary: light-dark(#77501b, #d3a54f);
+  --color-sidebar-active: light-dark(#fff3d9, #77501b);
+}
+
+:root[data-theme-pack="galaxy"] .home-dashboard {
+  --home-lavender: var(--color-surface-muted);
+  --home-yellow: light-dark(#fff3d9, #1f2c41);
+}
+
+:root[data-theme-pack="galaxy"] .courses-screen {
+  --course-lavender: var(--color-surface-muted);
+  --course-mint: light-dark(#d9f4ec, #00204a);
+  --course-rose: light-dark(#ffedf7, #3d1040);
+}

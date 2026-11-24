@@ -1,3 +1,4 @@
+import { activeThemePack, themeStorageKey } from "../../services/theme-packs.js";
 import {
   createCourseIcon,
   getCourseIconChoice,
@@ -8,13 +9,19 @@ import {
 
 const colorKey = "pandora-ii.course-card-colors";
 const hexColor = /^#[0-9a-f]{6}$/i;
-const presets = [
+const pixelPresets = [
   ["Lavender", "#c9a7e5"],
   ["Rose", "#e7a6c8"],
   ["Mint", "#94d2b4"],
   ["Butter yellow", "#e8c761"],
   ["Sky blue", "#91bfe9"],
   ["Peach", "#ecae85"],
+];
+
+const galaxyPresets = [
+  ["Galaxy Violet", "#6c4ab6"], ["Stardust", "#e8d5ff"],
+  ["Aurora", "#00bbf0"], ["Seafoam", "#7fd6be"],
+  ["Starlight Rose", "#e98bcb"], ["Golden Freestar", "#d3a54f"],
 ];
 
 function element(tag, className, text) {
@@ -25,7 +32,7 @@ function element(tag, className, text) {
 }
 
 function readColors() {
-  const saved = JSON.parse(localStorage.getItem(colorKey) ?? "{}");
+  const saved = JSON.parse(localStorage.getItem(themeStorageKey(colorKey)) ?? "{}");
 
   if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
     throw new Error("Invalid saved course colors.");
@@ -51,7 +58,7 @@ function saveColor(code, color) {
   if (color) colors.set(code, color);
   else colors.delete(code);
 
-  localStorage.setItem(colorKey, JSON.stringify(Object.fromEntries(colors)));
+  localStorage.setItem(themeStorageKey(colorKey), JSON.stringify(Object.fromEntries(colors)));
 }
 
 function tint(color) {
@@ -134,6 +141,7 @@ function openAppearance(card, trigger, course) {
   card.style.background = previousBackground;
 
   preset.add(new Option("Default", ""));
+  const presets = activeThemePack() === "galaxy" ? galaxyPresets : pixelPresets;
   for (const [label, color] of presets) preset.add(new Option(label, color));
   preset.add(new Option("Custom color", "custom"));
 

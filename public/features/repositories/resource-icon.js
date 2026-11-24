@@ -1,4 +1,5 @@
-const iconDirectory = new URL("../../assets/icons/resources/", import.meta.url);
+import { themeAsset } from "../../services/theme-packs.js";
+
 
 export function createResourceIcon(resource) {
   const isPdf = resource.type === "pdf";
@@ -16,7 +17,7 @@ export function createResourceIcon(resource) {
     wrapper.textContent = isPdf ? "PDF" : "↗";
   }, { once: true });
 
-  image.src = new URL(isPdf ? "pdf.svg" : "link.svg", iconDirectory).href;
+  image.src = themeAsset(`icons/resources/${isPdf ? "pdf.svg" : "link.svg"}`);
   wrapper.append(image);
 
   return wrapper;

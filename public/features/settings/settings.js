@@ -8,8 +8,10 @@ import {
 import {
   getProfileIcon,
   goalLimits,
-  profileIcons,
+  getProfileIcons,
 } from "../../services/study-goals.js";
+
+import { themePacks } from "../../services/theme-packs.js";
 
 const backupUrl = new URL("../../backup.html", import.meta.url);
 const stylesUrl = new URL("../../styles/settings-dashboard.css", import.meta.url);
@@ -87,7 +89,16 @@ export function renderSettings(container) {
               <legend tabindex="-1">Appearance</legend>
 
               <label>
-                Theme
+                Theme pack
+                <select name="themePack">
+                  <option value="pixel">Pixel</option>
+                  <option value="galaxy">Galaxy</option>
+                </select>
+              </label>
+              <p>Each pack remembers its appearance when you save changes.</p>
+
+              <label>
+                Color mode
                 <select name="theme">
                   <option value="system">System</option>
                   <option value="light">Light</option>
@@ -97,11 +108,7 @@ export function renderSettings(container) {
 
               <label>
                 Accent color
-                <select name="accent">
-                  <option value="lavender">Lavender</option>
-                  <option value="rose">Rose</option>
-                  <option value="sage">Sage</option>
-                </select>
+                <select name="accent"></select>
               </label>
 
               <label>
@@ -204,6 +211,11 @@ export function renderSettings(container) {
   const form = screen.querySelector(".settings-form");
   const displayName = form.elements.namedItem("displayName");
   const iconField = form.elements.namedItem("badge");
+  const packField = form.elements.namedItem("themePack");
+  const modeField = form.elements.namedItem("theme");
+  const accentField = form.elements.namedItem("accent");
+  let draftPack = "pixel";
+  let appearances = {};
   const iconImage = form.querySelector(".settings-badge-preview img");
   const iconLabel = form.querySelector("[data-profile-icon-label]");
   const iconTrigger = form.querySelector("[data-icon-trigger]");
@@ -246,42 +258,71 @@ export function renderSettings(container) {
 
   selectSection("profile");
 
-  for (const [id, { label }] of Object.entries(profileIcons)) {
-    const option = document.createElement("label");
-    const input = document.createElement("input");
-    const image = document.createElement("img");
-    const text = document.createElement("span");
+  function rebuildProfileOptions() {
+    iconInputs.clear();
+    iconOptions.replaceChildren();
 
-    input.type = "radio";
-    input.name = "profileIconChoice";
-    input.value = id;
-    image.src = getProfileIcon(id).url;
-    image.width = 36;
-    image.height = 36;
-    image.alt = "";
-    text.textContent = label;
+    for (const [id, { label }] of Object.entries(getProfileIcons(draftPack))) {
+      const option = document.createElement("label");
+      const input = document.createElement("input");
+      const image = document.createElement("img");
+      const text = document.createElement("span");
 
-    option.append(input, image, text);
-    iconOptions.append(option);
-    iconInputs.set(id, input);
+      input.type = "radio";
+      input.name = "profileIconChoice";
+      input.value = id;
+      image.src = getProfileIcon(id, draftPack).url;
+      image.width = 36;
+      image.height = 36;
+      image.alt = "";
+      text.textContent = label;
+
+      option.append(input, image, text);
+      iconOptions.append(option);
+      iconInputs.set(id, input);
+    }
   }
 
   function updateIconPreview() {
-    const icon = getProfileIcon(iconField.value);
+    const icon = getProfileIcon(iconField.value, draftPack);
     iconImage.src = icon.url;
     iconLabel.textContent = icon.label;
   }
 
+  function rememberAppearance() {
+    appearances[draftPack] = {
+      theme: modeField.value,
+      accent: accentField.value,
+      badge: iconField.value,
+    };
+  }
+
+  function showAppearance(pack) {
+    draftPack = pack;
+    packField.value = pack;
+    const config = themePacks[pack];
+    const saved = appearances[pack];
+    accentField.replaceChildren(...Object.entries(config.accents)
+      .map(([value, label]) => new Option(label, value)));
+    modeField.value = saved?.theme ?? "system";
+    accentField.value = saved?.accent ?? config.defaultAccent;
+    iconField.value = saved?.badge ?? config.defaultBadge;
+    rebuildProfileOptions();
+    updateIconPreview();
+  }
+
   function fillForm(settings) {
+    appearances = { ...settings.appearances };
+    showAppearance(settings.themePack);
+
     for (const [name, value] of Object.entries(settings)) {
+      if (["appearances", "themePack", "theme", "accent", "badge"].includes(name)) continue;
       const field = form.elements.namedItem(name);
       if (!field) continue;
 
       if (field.type === "checkbox") field.checked = value;
       else field.value = value;
     }
-
-    updateIconPreview();
   }
 
   function setStatus(message, isError = false) {
@@ -290,6 +331,12 @@ export function renderSettings(container) {
   }
 
   fillForm(readPreferences());
+
+  packField.addEventListener("change", () => {
+    rememberAppearance();
+    showAppearance(packField.value);
+    setStatus("Theme pack selected. Select Save changes to apply it.");
+  });
 
   iconTrigger.addEventListener("click", () => {
     const current = iconInputs.get(iconField.value) ?? iconInputs.values().next().value;
@@ -340,7 +387,11 @@ export function renderSettings(container) {
     }
 
     try {
-      fillForm(savePreferences(Object.fromEntries(new FormData(form))));
+      rememberAppearance();
+      fillForm(savePreferences({
+        ...Object.fromEntries(new FormData(form)),
+        appearances,
+      }));
       setStatus("Changes saved.");
     } catch (error) {
       console.error("Could not save preferences.", error);
