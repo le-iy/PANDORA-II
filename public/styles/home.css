@@ -1,0 +1,313 @@
+.home-dashboard {
+  --home-lavender: light-dark(#e9def0, #382c42);
+  --home-yellow: light-dark(#f6e6ad, #463b24);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    "title title title"
+    "stats stats planner"
+    "library study planner";
+  grid-template-rows: auto auto 1fr;
+  align-items: start;
+  gap: 14px;
+}
+
+.home-dashboard .home-title {
+  grid-area: title;
+  margin: 0;
+}
+
+.home-dashboard .home-stats {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-dashboard .home-stat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--home-lavender);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.home-dashboard .home-stat[data-tone="pink"] {
+  background: var(--color-tasks-due);
+}
+
+.home-dashboard .home-stat[data-tone="mint"] {
+  background: var(--color-tasks-finished);
+}
+
+.home-dashboard .home-stat:hover {
+  border-color: var(--color-primary);
+}
+
+.home-dashboard .home-stat span {
+  grid-column: 1 / -1;
+  font-size: 0.875rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.home-dashboard .home-stat strong {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.1;
+}
+
+.home-dashboard .home-stat img {
+  width: clamp(22px, 4vw, 42px);
+  height: clamp(22px, 4vw, 42px);
+  object-fit: contain;
+}
+
+.home-dashboard .home-library {
+  grid-area: library;
+  align-self: stretch;
+  background: var(--home-lavender);
+}
+
+.home-dashboard .home-study,
+.home-dashboard .home-planner {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.home-dashboard .home-study {
+  grid-area: study;
+}
+
+.home-dashboard .home-planner {
+  grid-area: planner;
+}
+
+.home-dashboard .home-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+}
+
+.home-dashboard .home-exp {
+  background: var(--home-yellow);
+}
+
+.home-dashboard .home-quizzes {
+  background: var(--color-tasks-finished);
+}
+
+.home-dashboard .home-calendar {
+  background: var(--home-lavender);
+}
+
+.home-dashboard .home-tasks {
+  background: var(--color-tasks-due);
+}
+
+.home-dashboard :is(h2, h3, p) {
+  margin: 0;
+}
+
+.home-dashboard h2 {
+  font-size: 1.0625rem;
+}
+
+.home-dashboard h3 {
+  font-size: 0.875rem;
+}
+
+.home-dashboard .home-panel a {
+  width: fit-content;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.home-dashboard .home-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.home-dashboard button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.home-dashboard button:hover {
+  border-color: var(--color-primary);
+}
+
+.home-dashboard .home-tabs button {
+  flex: 1;
+  min-height: 40px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.home-dashboard button[aria-selected="true"],
+.home-dashboard button[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.home-dashboard [role="tabpanel"]:not([hidden]) {
+  display: grid;
+  gap: 10px;
+}
+
+.home-dashboard .home-data-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-dashboard .home-data-row {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  overflow-wrap: anywhere;
+}
+
+.home-dashboard .home-data-row strong {
+  font-size: 0.875rem;
+}
+
+.home-dashboard .home-data-row span,
+.home-dashboard .home-empty,
+.home-dashboard .home-exp p {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.home-dashboard .home-data-row [data-state="overdue"] {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.home-dashboard .home-data-row [data-state="today"] {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.home-dashboard .home-exp-summary,
+.home-dashboard .home-calendar-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+
+.home-dashboard .home-exp-summary span {
+  font-size: 0.8125rem;
+}
+
+.home-dashboard progress {
+  width: 100%;
+  height: 10px;
+  accent-color: var(--color-primary);
+}
+
+.home-dashboard .home-calendar-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.home-dashboard .home-calendar-controls button {
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 1.125rem;
+}
+
+.home-dashboard .home-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  text-align: center;
+}
+
+.home-dashboard .home-weekdays {
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+}
+
+.home-dashboard .home-calendar-grid button {
+  min-width: 0;
+  min-height: 30px;
+  padding: 2px 0;
+  background: transparent;
+  font-size: 0.75rem;
+}
+
+.home-dashboard .home-calendar-grid button[aria-current="date"] {
+  border-color: var(--color-primary);
+  font-weight: 700;
+}
+
+.home-dashboard .home-calendar-grid button[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+@media (max-width: 1120px) {
+  .home-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "title title"
+      "stats stats"
+      "library study"
+      "planner planner";
+    grid-template-rows: auto;
+  }
+
+  .home-dashboard .home-planner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 620px) {
+  .home-dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "stats" "library" "study" "planner";
+  }
+
+  .home-dashboard .home-planner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-dashboard .home-stat {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    padding: 8px;
+  }
+
+  .home-dashboard .home-stat span {
+    font-size: 0.75rem;
+  }
+}

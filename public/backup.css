@@ -1,0 +1,137 @@
+.backup-page {
+  display: grid;
+  gap: 16px;
+  width: min(860px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-block: 24px;
+}
+
+.backup-page :is(h1, h2, p) {
+  margin: 0;
+}
+
+.backup-page h1 {
+  margin-top: 8px;
+}
+
+.backup-page a {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.backup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+
+.backup-card {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.backup-card h2,
+#restore-dialog h2 {
+  font-size: 1.125rem;
+}
+
+.backup-card p,
+.backup-page [role="status"],
+#restore-summary {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.backup-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.backup-checkbox input {
+  accent-color: var(--color-primary);
+}
+
+#restore-form {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+#restore-form label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+#backup-file {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.backup-page button {
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backup-page .backup-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.backup-page button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+#restore-dialog {
+  box-sizing: border-box;
+  width: min(460px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+#restore-dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+#restore-dialog p:not(:empty) {
+  margin-top: 10px;
+}
+
+#restore-dialog form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}

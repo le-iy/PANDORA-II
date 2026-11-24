@@ -1,0 +1,11 @@
+[
+  { "code": "IT0035", "name": "Applied OS Lec", "type": "lecture" },
+  { "code": "IT0035L", "name": "Applied OS Lab", "type": "laboratory" },
+  { "code": "IT0015", "name": "Networking 2", "type": "lecture" },
+  { "code": "IT0204", "name": "Laws and Policies", "type": "lecture" },
+  { "code": "IT0037", "name": "System Analysis", "type": "lecture" },
+  { "code": "IT0049", "name": "Web Systems", "type": "lecture" },
+  { "code": "IT0019", "name": "Quanti Methods", "type": "lecture" },
+  { "code": "GED0083", "name": "Physics 2 Lec", "type": "lecture" },
+  { "code": "GED0083L", "name": "Physics 2 Lab", "type": "laboratory" }
+]

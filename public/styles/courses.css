@@ -1,0 +1,156 @@
+.courses-screen {
+  display: grid;
+  gap: 14px;
+}
+
+.courses-screen :is(h1, h2, p) {
+  margin: 0;
+}
+
+.courses-screen :is(.courses-heading, .courses-toolbar, .course-meta) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.courses-screen .courses-toolbar[hidden] {
+  display: none;
+}
+
+.courses-screen :is(.course-filters, .courses-grid) {
+  margin: 0;
+}
+
+.courses-screen .courses-semester {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.courses-screen .course-card {
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+  min-width: 0;
+  background-color: var(--color-surface-muted);
+}
+
+.courses-screen .course-card[data-course-type="laboratory"] {
+  background-color: var(--color-success-surface);
+}
+
+.courses-screen .course-card h2 {
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+
+.courses-screen .course-type {
+  background-color: var(--color-surface);
+}
+
+.courses-screen :is(.course-results, .course-semester-label, .course-progress) {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.courses-screen .course-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.courses-screen .course-progress p {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.courses-screen :is(.course-primary-button, .course-dialog button) {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.courses-screen .course-primary-button,
+.courses-screen .course-dialog .course-primary-button {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.courses-screen .course-primary-button:hover {
+  text-decoration: underline;
+}
+
+.courses-screen .course-primary-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.courses-screen .course-dialog {
+  box-sizing: border-box;
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.courses-screen .course-dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+.courses-screen .course-dialog form,
+.courses-screen .course-dialog label {
+  display: grid;
+  gap: 8px;
+}
+
+.courses-screen .course-dialog form {
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.courses-screen :is(input, select) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.courses-screen .course-dialog :is(input, select) {
+  width: 100%;
+}
+
+.courses-screen .course-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.courses-screen .course-feedback {
+  color: var(--color-danger);
+}

@@ -1,0 +1,219 @@
+.settings-dashboard {
+  display: grid;
+  gap: 16px;
+  max-width: 960px;
+}
+
+.settings-dashboard :is(h1, h2, p) {
+  margin: 0;
+}
+
+.settings-dashboard .settings-form {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-dashboard .settings-preferences {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.settings-dashboard .settings-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.settings-dashboard .settings-card :is(h2, legend) {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.settings-dashboard .settings-card legend {
+  padding-inline: 6px;
+}
+
+.settings-dashboard .settings-card label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.settings-dashboard .settings-card :is(input, select) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.settings-dashboard .settings-actions,
+.settings-dashboard .settings-badge-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-dashboard .settings-badge-preview {
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  font-weight: 600;
+}
+
+.settings-dashboard .settings-badge-preview img,
+.scholar-profile-dialog [data-profile-badge] {
+  flex: none;
+  object-fit: contain;
+}
+
+.settings-dashboard .settings-action {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.settings-dashboard .settings-action:hover {
+  border-color: var(--color-primary);
+}
+
+.settings-dashboard .settings-action-primary,
+.scholar-profile-dialog .profile-level {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.settings-dashboard .settings-card p,
+.settings-dashboard .settings-feedback,
+.scholar-profile-dialog .profile-badge-label,
+.scholar-profile-dialog [data-next-level] {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.settings-dashboard .settings-feedback[data-error] {
+  color: var(--color-danger);
+}
+
+.settings-dashboard .settings-feedback:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.settings-dashboard .settings-reset-dialog {
+  box-sizing: border-box;
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.settings-dashboard .settings-reset-dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+.settings-dashboard .settings-reset-dialog p {
+  margin-block: 10px 16px;
+}
+
+.scholar-profile-dialog .profile-identity,
+.scholar-profile-dialog .profile-progress-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.scholar-profile-dialog .profile-identity {
+  margin-block: 16px;
+}
+
+.scholar-profile-dialog .profile-identity > div {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.scholar-profile-dialog .profile-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.scholar-profile-dialog .profile-badge-label {
+  margin: 4px 0 0;
+}
+
+.scholar-profile-dialog .profile-level {
+  padding: 4px 10px;
+  border-radius: var(--radius-control);
+  font-size: 0.875rem;
+}
+
+.scholar-profile-dialog .profile-progress {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.scholar-profile-dialog .profile-progress-label {
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.scholar-profile-dialog progress {
+  display: block;
+  width: 100%;
+  margin-block: 8px;
+  accent-color: var(--color-primary);
+}
+
+.scholar-profile-dialog .profile-settings {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.home-daily-quest {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}

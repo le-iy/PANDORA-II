@@ -1,0 +1,197 @@
+.repositories-screen {
+  display: grid;
+  gap: 16px;
+}
+
+.repositories-screen :is(h1, h2, p) {
+  margin: 0;
+}
+
+.repositories-screen :is(.repository-heading, .resource-actions, .resource-meta) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.repositories-screen .repository-heading {
+  justify-content: space-between;
+}
+
+.repositories-screen .resource-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 200px);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.repositories-screen .resource-toolbar[hidden],
+.repositories-screen .resources-list:empty {
+  display: none;
+}
+
+.repositories-screen .resource-toolbar .course-filters {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.repositories-screen label {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.repositories-screen :is(input, select) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.repositories-screen .resources-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.repositories-screen .resource-card {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.repositories-screen .resource-card h2 {
+  font-size: 1.125rem;
+}
+
+.repositories-screen :is(.resource-meta, .resource-results) {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.repositories-screen :is(.resource-primary, .resource-secondary, .resource-danger) {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.repositories-screen .resource-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.repositories-screen button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.repositories-screen .resource-danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.repositories-screen a:is(.resource-primary, .resource-secondary):hover {
+  text-decoration: underline;
+}
+
+.repositories-screen .resource-dialog {
+  box-sizing: border-box;
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.repositories-screen .resource-dialog-wide {
+  width: min(960px, calc(100% - 24px));
+}
+
+.repositories-screen .resource-dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+.repositories-screen .resource-dialog-body,
+.repositories-screen .resource-dialog form {
+  display: grid;
+  gap: 12px;
+}
+
+.repositories-screen .resource-dialog-body {
+  margin-top: 16px;
+}
+
+.repositories-screen .resource-dialog .resource-actions {
+  justify-content: flex-end;
+}
+
+.repositories-screen .resource-destination {
+  padding: 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.repositories-screen .resource-pdf-preview {
+  display: block;
+  width: 100%;
+  height: min(65dvh, 700px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+}
+
+.repositories-screen .resource-feedback {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+.repositories-screen [role="status"]:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+@media (max-width: 840px) {
+  .repositories-screen .resource-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

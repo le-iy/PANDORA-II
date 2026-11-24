@@ -1,0 +1,90 @@
+:root {
+  color-scheme: light;
+
+  /* Page and card surfaces */
+  --color-background: light-dark(#f9f4fc, #18131e);
+  --color-surface: light-dark(#ffffff, #251d2e);
+  --color-surface-muted: light-dark(#eee4f3, #382c42);
+  --color-border: light-dark(#decfe8, #574663);
+
+  /* Text */
+  --color-text: light-dark(#32233d, #f5eafa);
+  --color-text-muted: light-dark(#62546d, #c7b7d0);
+
+  /* Sidebar */
+  --color-sidebar: light-dark(#231c2c, #201728);
+  --color-sidebar-text: #f9f4fc;
+  --color-sidebar-active: #e1afd2;
+  --color-sidebar-active-text: #32233d;
+
+  /* Buttons and feedback */
+  --color-primary: light-dark(#674677, #d9b4ee);
+  --color-primary-text: light-dark(#ffffff, #2d1a38);
+  --color-success: light-dark(#355c50, #a9d8c1);
+  --color-success-surface: light-dark(#e3f2e9, #263e35);
+  --color-danger: light-dark(#8d3749, #ffacbc);
+  --color-overlay: light-dark(rgb(33 20 43 / 39%), rgb(0 0 0 / 60%));
+
+  /* Home summary cards */
+  --color-tasks-due: light-dark(#eed7e7, #432b40);
+  --color-tasks-finished: light-dark(#d4e9df, #263e35);
+
+  /* Typography and corners */
+  --font-body: Inter, system-ui, sans-serif;
+  --radius-control: 10px;
+  --radius-card: 20px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    color-scheme: dark;
+  }
+}
+
+:root[data-accent="rose"] {
+  --color-primary: light-dark(#883d65, #f1b4d2);
+  --color-primary-text: light-dark(#ffffff, #33162a);
+  --color-sidebar-active: #efbad1;
+  --color-sidebar-active-text: #39182a;
+}
+
+:root[data-accent="sage"] {
+  --color-primary: light-dark(#386354, #aee0c7);
+  --color-primary-text: light-dark(#ffffff, #112c21);
+  --color-sidebar-active: #afd6c1;
+  --color-sidebar-active-text: #17382b;
+}
+
+:root[data-motion="reduced"],
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  :root *,
+  :root *::before,
+  :root *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:root .home-summary-card:nth-child(1) {
+  background-color: var(--color-tasks-due);
+}
+
+:root .home-summary-card:nth-child(2) {
+  background-color: var(--color-tasks-finished);
+}

@@ -1,0 +1,123 @@
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 16px 16px;
+}
+
+.app-sidebar .sidebar-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 6px 16px;
+  border-bottom: 1px solid rgb(255 255 255 / 16%);
+}
+
+.app-sidebar .sidebar-brand {
+  display: grid;
+  gap: 3px;
+}
+
+.app-sidebar .sidebar-brand-title {
+  font-size: 1.25rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.app-sidebar .sidebar-brand-subtitle,
+.app-sidebar .sidebar-footer {
+  color: #dacbdf;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-sidebar .sidebar-nav {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.app-sidebar .sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 12px;
+  background-color: rgb(255 255 255 / 7%);
+  line-height: 1.25;
+}
+
+.app-sidebar .sidebar-link:hover {
+  background-color: rgb(255 255 255 / 14%);
+}
+
+.app-sidebar .sidebar-link[aria-current="page"] {
+  background-color: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
+}
+
+.app-sidebar .sidebar-link-icon,
+.app-sidebar .sidebar-menu-icon {
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.app-sidebar .sidebar-footer {
+  margin: auto 0 0;
+  padding: 14px 6px 0;
+  border-top: 1px solid rgb(255 255 255 / 16%);
+}
+
+.app-sidebar .sidebar-menu-toggle {
+  display: none;
+}
+
+.app-sidebar :is(.sidebar-link, .sidebar-menu-toggle):focus-visible {
+  outline: 2px solid var(--color-sidebar-active);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .app-sidebar {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .app-sidebar .sidebar-heading {
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .app-sidebar .sidebar-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 6px 10px;
+    border: 1px solid rgb(255 255 255 / 28%);
+    border-radius: var(--radius-control);
+    background-color: rgb(255 255 255 / 7%);
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .app-sidebar .sidebar-menu-toggle[aria-expanded="true"] {
+    border-color: var(--color-sidebar-active);
+    background-color: var(--color-sidebar-active);
+    color: var(--color-sidebar-active-text);
+  }
+
+  .app-sidebar:not(.sidebar-menu-open) .sidebar-nav,
+  .app-sidebar .sidebar-footer {
+    display: none;
+  }
+}

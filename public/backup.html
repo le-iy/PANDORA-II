@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backup &amp; Restore | PANDORA II</title>
+  <link rel="stylesheet" href="./styles/theme.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/backup.css">
+  <script type="module" src="./backup.js"></script>
+</head>
+<body>
+  <main class="backup-page">
+    <header>
+      <a href="./index.html#/settings">Back to Settings</a>
+      <h1>Backup &amp; Restore</h1>
+    </header>
+
+    <div class="backup-grid">
+      <section class="backup-card" aria-labelledby="export-heading">
+        <h2 id="export-heading">Export backup</h2>
+        <p>Save a JSON copy of your PANDORA II browser data.</p>
+
+        <label class="backup-checkbox">
+          <input id="include-pdfs" type="checkbox" checked>
+          Include uploaded PDFs
+        </label>
+
+        <button class="backup-primary" id="export-backup" type="button">
+          Export JSON
+        </button>
+      </section>
+
+      <section class="backup-card" aria-labelledby="restore-heading">
+        <h2 id="restore-heading">Restore backup</h2>
+        <p>Choose a saved backup to restore missing data and PDFs in this browser.</p>
+
+        <form id="restore-form">
+          <label for="backup-file">Backup JSON file</label>
+          <input id="backup-file" type="file" accept=".json,application/json" required>
+          <button id="review-backup" type="submit">Review backup</button>
+        </form>
+      </section>
+    </div>
+
+    <p id="backup-status" role="status"></p>
+
+    <dialog id="restore-dialog" aria-labelledby="confirm-heading"
+      aria-describedby="restore-summary">
+      <h2 id="confirm-heading">Restore backup?</h2>
+      <p id="restore-summary"></p>
+      <p id="restore-status" role="status"></p>
+
+      <form method="dialog">
+        <button id="cancel-restore" type="submit" autofocus>Cancel</button>
+        <button class="backup-primary" id="confirm-restore" type="button">
+          Restore missing items
+        </button>
+      </form>
+    </dialog>
+  </main>
+</body>
+</html>
