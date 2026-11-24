@@ -24,7 +24,7 @@ function readArchivedRewards() {
 
 function isReward(value) {
   return Number.isFinite(value?.exp) &&
-    value.exp > 0 &&
+    value.exp >= 0 &&
     Number.isFinite(Date.parse(value.earnedAt));
 }
 
@@ -84,7 +84,9 @@ export function changeTask(tasks, id, changes) {
 
     if (!task.completed && updated.completed && !isReward(task.reward)) {
       updated.reward = {
-        exp: completionReward,
+        exp: Number.isSafeInteger(updated.expReward) && updated.expReward >= 0
+          ? updated.expReward
+          : completionReward,
         earnedAt: updated.completedAt || new Date().toISOString(),
       };
     }
