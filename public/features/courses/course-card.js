@@ -1,4 +1,9 @@
-import { createCourseIcon } from "./course-icon.js";
+import {
+  createCourseIcon,
+  getCourseIconChoice,
+  openCourseIconPicker,
+  saveCourseIconChoice,
+} from "./course-icon.js";
 
 function createProgress(course) {
   const value = Number(course.progress);
@@ -48,7 +53,9 @@ export function createCourseCard(course, counts) {
   const code = document.createElement("p");
   code.className = "course-code";
   code.textContent = course.code;
-  identity.append(createCourseIcon(course.code), code);
+
+  let icon = createCourseIcon(course.code);
+  identity.append(icon, code);
 
   const type = document.createElement("p");
   type.className = "course-type";
@@ -57,7 +64,6 @@ export function createCourseCard(course, counts) {
 
   const title = document.createElement("h2");
   title.textContent = course.name;
-
   card.append(metadata, title);
 
   if (course.semester === "previous") {
@@ -77,13 +83,43 @@ export function createCourseCard(course, counts) {
   activity.className = "course-card-counts";
   activity.textContent = counts ? describeCounts(counts) : "Loading activity…";
 
+  const actions = document.createElement("div");
+  actions.className = "course-dialog-actions";
+
   const link = document.createElement("a");
   link.className = "course-primary-button";
   link.href = `#/courses/${encodeURIComponent(course.code)}`;
   link.textContent = "Open course";
   link.setAttribute("aria-label", `Open ${course.name}`);
 
-  footer.append(activity, link);
+  const change = document.createElement("button");
+  change.type = "button";
+  change.className = "course-primary-button";
+  change.textContent = "Change icon";
+  change.setAttribute("aria-label", `Change icon for ${course.name}`);
+  change.setAttribute("aria-haspopup", "dialog");
+
+  Object.assign(change.style, {
+    background: "var(--color-surface)",
+    color: "var(--color-primary)",
+  });
+
+  change.addEventListener("click", () => {
+    openCourseIconPicker(change, {
+      code: course.code,
+      name: course.name,
+      choice: getCourseIconChoice(course.code),
+      onUse(id) {
+        saveCourseIconChoice(course.code, id);
+        const nextIcon = createCourseIcon(course.code, id);
+        icon.replaceWith(nextIcon);
+        icon = nextIcon;
+      },
+    });
+  });
+
+  actions.append(change, link);
+  footer.append(activity, actions);
   card.append(footer);
 
   return {

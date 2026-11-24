@@ -392,3 +392,7 @@
     justify-self: end;
   }
 }
+
+.home-dashboard .home-exp .home-scholar {
+  background: transparent;
+}

@@ -3,6 +3,13 @@ import {
   saveCustomCourse,
 } from "../../services/course-catalog.js";
 
+import {
+  createCourseIcon,
+  getCourseIconLabel,
+  openCourseIconPicker,
+  saveCourseIconChoice,
+} from "./course-icon.js";
+
 export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
   const dialog = document.createElement("dialog");
   dialog.className = "course-dialog";
@@ -39,6 +46,17 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
         </select>
       </label>
 
+      <fieldset>
+        <legend>Course icon</legend>
+        <div class="course-dialog-actions">
+          <div data-icon-preview></div>
+          <span data-icon-label></span>
+          <button type="button" data-change-icon aria-haspopup="dialog">
+            Change icon
+          </button>
+        </div>
+      </fieldset>
+
       <p class="course-feedback" role="status"></p>
 
       <div class="course-dialog-actions">
@@ -55,12 +73,35 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
   const typeInput = form.elements.namedItem("type");
   const semesterInput = form.elements.namedItem("semester");
   const status = form.querySelector('[role="status"]');
+  const iconButton = form.querySelector("[data-change-icon]");
+  const iconPreview = form.querySelector("[data-icon-preview]");
+  const iconLabel = form.querySelector("[data-icon-label]");
+
+  let iconChoice = "";
 
   semesterInput.value = semester === "previous" ? "previous" : "current";
 
-  form.querySelector("[data-cancel]").addEventListener("click", () => {
-    dialog.close();
+  function showIcon() {
+    iconPreview.replaceChildren(createCourseIcon(codeInput.value, iconChoice));
+    iconLabel.textContent = getCourseIconLabel(iconChoice);
+  }
+
+  showIcon();
+  codeInput.addEventListener("input", showIcon);
+
+  iconButton.addEventListener("click", () => {
+    openCourseIconPicker(iconButton, {
+      code: codeInput.value,
+      name: nameInput.value.trim(),
+      choice: iconChoice,
+      onUse(id) {
+        iconChoice = id;
+        showIcon();
+      },
+    });
   });
+
+  form.querySelector("[data-cancel]").addEventListener("click", () => dialog.close());
 
   form.addEventListener("input", () => {
     status.textContent = "";
@@ -94,11 +135,28 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
       return;
     }
 
+    let iconSaved = true;
+
+    if (iconChoice) {
+      try {
+        saveCourseIconChoice(course.code, iconChoice);
+      } catch (error) {
+        console.error("Could not save course icon.", error);
+        iconSaved = false;
+      }
+    }
+
     onSaved(course);
     heading.textContent = "Course saved";
 
     const message = document.createElement("p");
     message.textContent = `${course.code} · ${course.name}`;
+
+    const feedback = document.createElement("p");
+    feedback.setAttribute("role", "status");
+    feedback.textContent = iconSaved
+      ? ""
+      : "The course was saved. You can retry saving its icon from the course card.";
 
     const actions = document.createElement("div");
     actions.className = "course-dialog-actions";
@@ -110,7 +168,7 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
     done.addEventListener("click", () => dialog.close());
 
     actions.append(done);
-    form.replaceWith(message, actions);
+    form.replaceWith(message, feedback, actions);
     done.focus();
   });
 

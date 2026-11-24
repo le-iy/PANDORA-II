@@ -196,3 +196,137 @@
 .courses-screen .course-feedback {
   color: var(--color-danger);
 }
+
+/* Shared by the Add Course dialog, course cards, and course workspace. */
+.course-dialog[aria-labelledby="course-icon-picker-heading"] {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(14px, 4vw, 24px);
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"]::backdrop {
+  background: var(--color-overlay);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] h2 {
+  margin: 0;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] [data-course-name] {
+  margin-block: 6px 16px;
+  color: var(--color-text-muted);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] form {
+  display: grid;
+  gap: 12px;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] :is(button, select) {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] button {
+  cursor: pointer;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] button:hover {
+  border-color: var(--color-primary);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] [data-icons] {
+  max-height: min(38dvh, 320px);
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] [data-icons] button {
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"]
+[data-icons] button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+  font-weight: 700;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-subject-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-subject-icon img {
+  object-fit: contain;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] [data-selection] {
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-feedback {
+  color: var(--color-danger);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-feedback:empty {
+  display: none;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] [data-default] {
+  margin-inline-end: auto;
+}
+
+.course-dialog[aria-labelledby="course-icon-picker-heading"] .course-primary-button {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .course-dialog[aria-labelledby="course-icon-picker-heading"] [data-default] {
+    margin-inline-end: 0;
+  }
+}

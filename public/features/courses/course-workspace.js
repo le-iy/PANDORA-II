@@ -3,7 +3,12 @@ import {
   normalizeCourseCode,
 } from "../../services/course-catalog.js";
 
-import { createCourseIcon } from "./course-icon.js";
+import {
+  createCourseIcon,
+  getCourseIconChoice,
+  openCourseIconPicker,
+  saveCourseIconChoice,
+} from "./course-icon.js";
 import { loadWorkspaceRows, workspaceSections } from "./course-workspace-data.js";
 import { createWorkspacePanel } from "./course-workspace-panel.js";
 
@@ -69,6 +74,7 @@ export async function renderCourseWorkspace(container, code) {
     </header>
 
     <nav class="course-detail-navigation" aria-label="Course sections" hidden></nav>
+    <p data-icon-feedback role="status" hidden></p>
     <div class="course-detail-panels" data-panels hidden></div>
   `;
 
@@ -107,7 +113,8 @@ export async function renderCourseWorkspace(container, code) {
     ? "Previous semester"
     : "Current semester";
 
-  workspace.querySelector("[data-course-icon]").append(createCourseIcon(course.code));
+  const iconSlot = workspace.querySelector("[data-course-icon]");
+  iconSlot.append(createCourseIcon(course.code));
   codeLabel.textContent = course.code;
   codeLabel.hidden = false;
   heading.textContent = course.name;
@@ -143,6 +150,29 @@ export async function renderCourseWorkspace(container, code) {
     return { section, panel, count };
   });
 
+  const changeIcon = document.createElement("button");
+  changeIcon.type = "button";
+  changeIcon.className = "course-detail-shortcut";
+  changeIcon.textContent = "Change icon";
+  changeIcon.setAttribute("aria-haspopup", "dialog");
+
+  const iconFeedback = workspace.querySelector("[data-icon-feedback]");
+
+  changeIcon.addEventListener("click", () => {
+    openCourseIconPicker(changeIcon, {
+      code: course.code,
+      name: course.name,
+      choice: getCourseIconChoice(course.code),
+      onUse(id) {
+        saveCourseIconChoice(course.code, id);
+        iconSlot.replaceChildren(createCourseIcon(course.code, id));
+        iconFeedback.hidden = false;
+        iconFeedback.textContent = id ? "Course icon updated." : "Default course icon restored.";
+      },
+    });
+  });
+
+  navigation.append(changeIcon);
   navigation.hidden = false;
   panelGrid.hidden = false;
 
