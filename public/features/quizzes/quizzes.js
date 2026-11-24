@@ -11,6 +11,8 @@ import {
   updateCustomQuiz,
 } from "../../services/quiz-catalog.js";
 
+import { getCourseColor } from "../courses/course-card.js";
+import { createCourseIcon } from "../courses/course-icon.js";
 import { renderQuizAttempt } from "./quiz-attempt.js";
 import { openQuizHistory, openQuizInstructions } from "./quiz-dialogs.js";
 import { renderQuizEditor } from "./quiz-editor.js";
@@ -42,43 +44,36 @@ function element(tag, className, text) {
   return node;
 }
 
-function createQuizCard(quiz, state, courseName, { onStart, onManage }) {
+function createQuizIcon(path) {
+  const icon = element("img", "quiz-pixel-icon");
+  icon.src = new URL("../../assets/icons/" + path + ".svg", import.meta.url).href;
+  icon.alt = "";
+  return icon;
+}
+
+function createQuizCard(quiz, state, course, { onStart, onManage }) {
   const card = element("article", "quiz-card quiz-dashboard-card");
   const metadata = element("div", "quiz-card-metadata");
-  const course = element("div", "quiz-card-course");
-  course.append(element("p", "quiz-course-code", quiz.courseCode));
-
-  if (courseName) course.append(element("p", "quiz-card-course-name", courseName));
-
-  metadata.append(course, element("span", "quiz-card-reward", `+${quiz.expReward} EXP`));
+  const courseBadge = element("div", "quiz-card-course");
+  const code = course?.code ?? quiz.courseCode;
+  const courseColor = getCourseColor(code);
+  if (courseColor) courseBadge.style.setProperty("--quiz-course-color", courseColor);
+  courseBadge.append(createCourseIcon(code), element("span", "", course?.name ? `${course.name} · ${code}` : code));
+  metadata.append(courseBadge, element("span", "quiz-card-reward", `+${quiz.expReward} EXP`));
 
   const title = element("h2", "quiz-card-title", quiz.title);
   const count = quiz.questions.length;
-  const details = element(
-    "p",
-    "quiz-card-detail",
-    `${count} ${count === 1 ? "question" : "questions"}`,
-  );
-  const stateLabel = filters.find(({ id }) => id === state.status)?.label ?? "Not started";
-  const answered = state.draft
-    ? state.draft.answers.filter((answer) => answer !== null).length
-    : state.status === "completed" ? count : 0;
+  const details = element("span", "quiz-card-detail", `${count} ${count === 1 ? "question" : "questions"}`);
+  const completed = state.status === "completed";
+  const badge = element("span", "quiz-card-status");
+  badge.dataset.state = state.status;
+  if (completed) badge.append(createQuizIcon("quizzes/correct-answer"));
+  badge.append(filters.find(({ id }) => id === state.status)?.label ?? "Not started");
+  const status = element("div", "quiz-card-status-row");
+  status.append(badge, details);
 
-  const progress = element("progress", "quiz-card-progress");
-  progress.max = Math.max(1, count);
-  progress.value = Math.min(count, answered);
-  progress.setAttribute("aria-label", `Questions answered in ${quiz.title}`);
-
-  const progressInfo = element("div", "quiz-card-progress-info");
-  progressInfo.append(
-    element("span", "", stateLabel),
-    element("span", "", `${Math.min(count, answered)} / ${count} answered`),
-  );
-
-  const startLabel = state.draft
-    ? "Resume quiz"
-    : state.status === "completed" ? "Retake quiz" : "Start quiz";
-  const start = element("button", "quiz-dashboard-primary", startLabel);
+  const startLabel = state.draft ? "Continue quiz" : completed ? "Retake quiz" : "Start quiz";
+  const start = element("button", completed ? "" : "quiz-dashboard-primary", startLabel);
   start.type = "button";
   start.disabled = count === 0;
   start.setAttribute("aria-haspopup", "dialog");
@@ -91,7 +86,7 @@ function createQuizCard(quiz, state, courseName, { onStart, onManage }) {
   actions.append(start);
 
   if (quiz.source === "custom" && quiz.id != null) {
-    const manage = element("button", "", "Manage quiz");
+    const manage = element("button", "quiz-card-manage", "Manage quiz");
     manage.type = "button";
     manage.setAttribute("aria-label", `Manage quiz: ${quiz.title}`);
     manage.setAttribute("aria-haspopup", "dialog");
@@ -99,7 +94,18 @@ function createQuizCard(quiz, state, courseName, { onStart, onManage }) {
     actions.append(manage);
   }
 
-  card.append(metadata, title, details, progressInfo, progress, actions);
+  card.append(metadata, title, status);
+  if (state.draft) {
+    const answered = Math.min(count, state.draft.answers.filter((answer) => answer !== null).length);
+    const progress = element("progress", "quiz-card-progress");
+    progress.max = Math.max(1, count);
+    progress.value = answered;
+    progress.setAttribute("aria-label", `Questions answered in ${quiz.title}`);
+    const progressInfo = element("div", "quiz-card-progress-info");
+    progressInfo.append(progress, element("span", "", `${answered} / ${count} answered`));
+    card.append(progressInfo);
+  }
+  card.append(actions);
   return card;
 }
 
@@ -118,8 +124,8 @@ export async function renderQuizzes(
     <header class="quiz-dashboard-heading">
       <h1>Quizzes</h1>
       <div class="quiz-dashboard-actions" ${linked ? "hidden" : ""}>
-        <button type="button" class="quiz-dashboard-primary" data-create>+ Create quiz</button>
         <button type="button" data-history aria-haspopup="dialog">Quiz history</button>
+        <button type="button" class="quiz-dashboard-primary" data-create>+ Create quiz</button>
       </div>
     </header>
 
@@ -165,6 +171,10 @@ export async function renderQuizzes(
     </nav>
   `;
 
+  const summaryIcons = ["navigation/quizzes-tab", "ranks/rank-quiz-solver", "quizzes/hint"];
+  screen.querySelectorAll(".quiz-dashboard-summary dt").forEach((label, index) => {
+    label.prepend(createQuizIcon(summaryIcons[index]));
+  });
   const heading = screen.querySelector("h1");
   const create = screen.querySelector("[data-create]");
   const historyButton = screen.querySelector("[data-history]");
@@ -265,7 +275,7 @@ export async function renderQuizzes(
   function makeCard(quiz, state) {
     const course = coursesByCode.get(normalizeCourseCode(quiz.courseCode));
 
-    return createQuizCard(quiz, state, course?.name, {
+    return createQuizCard(quiz, state, course, {
       onStart(selected, draft) {
         renderQuizAttempt(container, selected, () => {
           if (linked) {
@@ -437,7 +447,7 @@ export async function renderQuizzes(
     const courses = await loadCourseCatalog();
 
     for (const [rank, course] of courses.entries()) {
-      coursesByCode.set(normalizeCourseCode(course.code), { name: course.name, rank });
+      coursesByCode.set(normalizeCourseCode(course.code), { code: course.code, name: course.name, rank });
     }
 
     if (screen.parentElement !== container) return;
