@@ -38,26 +38,58 @@ export function createRankLadderButton(currentLevel) {
     dialog.setAttribute("aria-labelledby", "rank-ladder-heading");
 
     dialog.innerHTML = `
-      <div class="search-dialog-heading">
+      <header class="search-dialog-heading">
         <h2 id="rank-ladder-heading">Rank ladder</h2>
         <button type="button" data-close autofocus>Close</button>
-      </div>
+      </header>
       <p data-summary></p>
-      <ol aria-label="Ranks from Level 1 to Level 100"></ol>
+      <ol aria-label="Ranks from Level 1 to Level 100" tabindex="0"></ol>
     `;
 
-    dialog.querySelector("[data-summary]").textContent =
-      `Level ${currentLevel} of 100 · A new rank every 5 levels`;
+    Object.assign(dialog.style, {
+      maxHeight: "calc(100dvh - 24px)",
+      overflow: "hidden",
+    });
+
+    const header = dialog.querySelector("header");
+    Object.assign(header.style, {
+      position: "static",
+      flex: "none",
+      margin: "0",
+    });
+
+    const summary = dialog.querySelector("[data-summary]");
+    summary.textContent = `Level ${currentLevel} of 100 · A new rank every 5 levels`;
+    Object.assign(summary.style, {
+      flex: "none",
+      margin: "0",
+      color: "var(--color-text-muted)",
+      fontSize: "0.875rem",
+    });
 
     const list = dialog.querySelector("ol");
-    list.style.marginTop = "12px";
+    Object.assign(list.style, {
+      position: "relative",
+      display: "grid",
+      flex: "1 1 auto",
+      alignContent: "start",
+      gap: "8px",
+      minHeight: "0",
+      margin: "0",
+      padding: "4px",
+      listStyle: "none",
+      overflowY: "auto",
+      overscrollBehavior: "contain",
+      scrollbarGutter: "stable",
+    });
+
     const close = dialog.querySelector("[data-close]");
     let currentRow;
 
     for (const rank of ranks) {
       const row = document.createElement("li");
-      const current = currentLevel >= rank.firstLevel && currentLevel <= rank.lastLevel;
       const unlocked = currentLevel >= rank.firstLevel;
+      const current = unlocked && currentLevel <= rank.lastLevel;
 
       Object.assign(row.style, {
         display: "grid",
@@ -68,7 +100,6 @@ export function createRankLadderButton(currentLevel) {
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-control)",
         background: current ? "var(--color-surface-muted)" : "var(--color-surface)",
-        scrollMarginBlock: "12px",
       });
 
       if (current) {
@@ -85,12 +116,15 @@ export function createRankLadderButton(currentLevel) {
       icon.style.objectFit = "contain";
 
       const copy = document.createElement("div");
+      copy.style.overflowWrap = "anywhere";
+
       const title = document.createElement("strong");
       title.textContent = rank.name;
 
       const detail = document.createElement("div");
       detail.style.fontSize = "0.875rem";
       detail.style.color = "var(--color-text-muted)";
+
       const state = current ? "Current rank" : unlocked ? "Unlocked" : "Locked";
       detail.textContent = `Levels ${rank.firstLevel}–${rank.lastLevel} · ${state}`;
 
@@ -108,7 +142,16 @@ export function createRankLadderButton(currentLevel) {
 
     document.body.append(dialog);
     dialog.showModal();
-    currentRow?.scrollIntoView({ block: "nearest" });
+
+    Object.assign(dialog.style, {
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+    });
+
+    if (currentRow) {
+      list.scrollTop = Math.max(0, currentRow.offsetTop - 4);
+    }
   });
 
   return trigger;
