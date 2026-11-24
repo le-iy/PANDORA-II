@@ -172,6 +172,7 @@ export function renderHeader(container) {
     refreshHeaderPreferences,
     options,
   );
+  window.addEventListener("pandora:task-completed", refreshLevel, options);
 
   const timer = window.setInterval(refreshReminders, 15_000);
   controller.signal.addEventListener("abort", () => window.clearInterval(timer), {
