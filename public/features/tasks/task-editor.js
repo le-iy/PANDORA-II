@@ -82,6 +82,11 @@ export function openTaskEditor(task, onSave, trigger) {
         </select>
       </label>
 
+      <label>
+        EXP reward
+        <input name="expReward" type="number" min="0" step="1" max="9007199254740991" required>
+      </label>
+
       <p id="task-course-status" role="status">Loading courses…</p>
       <p data-feedback role="status"></p>
 
@@ -102,6 +107,8 @@ export function openTaskEditor(task, onSave, trigger) {
 
   titleInput.value = task?.title ?? "";
   deadlineInput.value = task?.deadline ?? "";
+  const rewardInput = form.elements.namedItem("expReward");
+  rewardInput.value = task?.expReward ?? 20;
 
   form.addEventListener("input", () => {
     feedback.textContent = "";
@@ -112,6 +119,13 @@ export function openTaskEditor(task, onSave, trigger) {
     if (save.disabled) return;
 
     const taskTitle = titleInput.value.trim();
+    const expReward = rewardInput.valueAsNumber;
+    if (!Number.isSafeInteger(expReward) || expReward < 0) {
+      feedback.textContent = "Enter a whole EXP amount of 0 or more.";
+      rewardInput.focus();
+      return;
+    }
+
 
     if (!taskTitle) {
       feedback.textContent = "Enter a task title.";
@@ -122,6 +136,7 @@ export function openTaskEditor(task, onSave, trigger) {
     const details = {
       title: taskTitle,
       deadline: deadlineInput.value,
+      expReward,
       courseCode: courseInput.value,
     };
 
