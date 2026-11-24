@@ -34,7 +34,7 @@ function readColors() {
   return new Map(Object.entries(saved));
 }
 
-function getColor(code) {
+export function getCourseColor(code) {
   try {
     const color = readColors().get(code);
     return typeof color === "string" && hexColor.test(color) ? color : "";
@@ -113,7 +113,7 @@ function openAppearance(card, trigger, course) {
 
   let savedIcon = getCourseIconChoice(course.code);
   let selectedIcon = savedIcon;
-  let savedColor = getColor(course.code);
+  let savedColor = getCourseColor(course.code);
 
   preview.querySelector("[data-course-name]").textContent = course.name;
   preview.querySelector("[data-course-code]").textContent = course.code;
@@ -256,7 +256,7 @@ export function createCourseCard(course, counts) {
   card.dataset.courseType = course.type;
   card.style.position = "relative";
   card.style.isolation = "isolate";
-  card.style.background = tint(getColor(course.code));
+  card.style.background = tint(getCourseColor(course.code));
 
   const metadata = element("div", "course-meta");
   const identity = element("div", "course-card-identity");
