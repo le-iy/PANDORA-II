@@ -1,4 +1,4 @@
-import { activeThemePack, celestialIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
+import { activeThemePack, celestialIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
 
 const storageKey = "pandora-ii.course-icons";
 
@@ -63,17 +63,25 @@ const celestialGroup = {
   options: Object.values(celestialIcons).map(({ label, file }) => ({ label, id: file })),
 };
 
+const nailongGroup = {
+  label: "Nailong characters",
+  options: Object.values(nailongIcons).map(({ label, file }) => ({ label, id: file })),
+};
+
 function availableGroups() {
-  return activeThemePack() === "galaxy" ? [...groups, celestialGroup] : groups;
+  const pack = activeThemePack();
+  if (pack === "nailong") return [...groups, nailongGroup];
+  return pack === "galaxy" ? [...groups, celestialGroup] : groups;
 }
 
-const options = new Map([...groups, celestialGroup].flatMap(({ options }) =>
+const options = new Map([...groups, celestialGroup, nailongGroup].flatMap(({ options }) =>
   options.map((option) => [option.id, option]),
 ));
 
 function hasIcon(id) {
   return options.has(id) &&
-    (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy");
+    (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy") &&
+    (!id.startsWith("icons/profile/nailong-") || activeThemePack() === "nailong");
 }
 
 function courseKey(code) {

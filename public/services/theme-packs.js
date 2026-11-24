@@ -18,6 +18,12 @@ export const themePacks = Object.freeze({
     defaultAccent: "nebula",
     defaultBadge: "celestial-ringed-planet",
   },
+  nailong: {
+    label: "Nailong",
+    accents: { banana: "Banana Gold", leaf: "Leaf Green", peach: "Peach Blush", cocoa: "Cocoa" },
+    defaultAccent: "banana",
+    defaultBadge: "nailong-happy",
+  },
 });
 
 const celestialNames = [
@@ -35,16 +41,29 @@ export const celestialIcons = Object.freeze(Object.fromEntries(celestialNames.ma
   },
 ])));
 
+const nailongNames = ["surprised", "sleepy", "cheeky", "grumpy", "happy", "study-buddy", "banana-snack", "flower-pigtails", "peekaboo", "naptime", "crowned", "back-view"];
+
+export const nailongIcons = Object.freeze(Object.fromEntries(nailongNames.map((name) => [
+  `nailong-${name}`,
+  {
+    label: name.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" "),
+    file: `icons/profile/nailong-${name}.svg`,
+  },
+])));
+
 export function activeThemePack() {
-  return globalThis.document?.documentElement.dataset.themePack === "galaxy"
-    ? "galaxy"
-    : "pixel";
+  const pack = globalThis.document?.documentElement.dataset.themePack;
+  return Object.hasOwn(themePacks, pack) ? pack : "pixel";
 }
 
 export function themeAsset(path, pack = activeThemePack()) {
-  return new URL(pack === "galaxy" ? `galaxy/${path}` : path, assetRoot).href;
+  const artwork = pack === "nailong" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
+    ? nailongIcons["nailong-naptime"].file
+    : path;
+  return new URL(pack !== "pixel" && Object.hasOwn(themePacks, pack) ? `${pack}/${artwork}` : artwork, assetRoot).href;
 }
 
 export function themeStorageKey(key) {
-  return activeThemePack() === "galaxy" ? `${key}.galaxy` : key;
+  const pack = activeThemePack();
+  return pack === "pixel" ? key : `${key}.${pack}`;
 }

@@ -134,3 +134,45 @@
   --course-mint: light-dark(#d9f4ec, #00204a);
   --course-rose: light-dark(#ffedf7, #3d1040);
 }
+
+:root[data-theme-pack="nailong"] {
+  --color-background: light-dark(#fff6dc, #18130f);
+  --color-surface: light-dark(#fffdf7, #34261f);
+  --color-surface-muted: light-dark(#fbebc2, #402f24);
+  --color-border: light-dark(#e3ca9b, #654b36);
+  --color-text: light-dark(#493125, #fff2d0);
+  --color-text-muted: light-dark(#705742, #d9bb93);
+  --color-sidebar: light-dark(#493125, #251b16);
+  --color-sidebar-text: #fff2d0;
+  --color-sidebar-active: light-dark(#ffd571, #71502e);
+  --color-sidebar-active-text: light-dark(#493125, #fff2d0);
+  --color-primary: light-dark(#865019, #eabb62);
+  --color-primary-text: light-dark(#fffdf7, #251b16);
+  --color-success: light-dark(#486d3a, #a8c57d);
+  --color-success-surface: light-dark(#e7edcc, #303f2b);
+  --color-danger: light-dark(#94493c, #ffb5a3);
+  --color-overlay: rgb(24 19 15 / 65%);
+  --color-tasks-due: light-dark(#fbebc2, #402f24);
+  --color-tasks-finished: var(--color-success-surface);
+}
+:root[data-theme-pack="nailong"][data-accent="leaf"] {
+  --color-primary: light-dark(#486d3a, #a8c57d);
+  --color-sidebar-active: light-dark(#e7edcc, #445835);
+}
+:root[data-theme-pack="nailong"][data-accent="peach"] {
+  --color-primary: light-dark(#94493c, #ffb5a3);
+  --color-sidebar-active: light-dark(#f8d2b9, #784a3c);
+}
+:root[data-theme-pack="nailong"][data-accent="cocoa"] {
+  --color-primary: light-dark(#493125, #d9bb93);
+  --color-sidebar-active: light-dark(#f2deb2, #654b36);
+}
+:root[data-theme-pack="nailong"] .home-dashboard {
+  --home-lavender: var(--color-surface-muted);
+  --home-yellow: light-dark(#fff0cb, #423327);
+}
+:root[data-theme-pack="nailong"] .courses-screen {
+  --course-lavender: var(--color-surface-muted);
+  --course-mint: var(--color-success-surface);
+  --course-rose: light-dark(#fae0d2, #50332a);
+}

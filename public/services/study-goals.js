@@ -1,4 +1,4 @@
-import { activeThemePack, celestialIcons, themeAsset } from "./theme-packs.js";
+import { activeThemePack, celestialIcons, nailongIcons, themeAsset, themePacks } from "./theme-packs.js";
 
 const trinkets = {
   scholar: { label: "Sleepy cat", file: "sleepy-cat-charm.svg" },
@@ -100,6 +100,7 @@ export const goalLimits = Object.freeze({
 });
 
 export function getProfileIcons(pack = activeThemePack()) {
+  if (pack === "nailong") return { ...nailongIcons, ...portraits };
   return pack === "galaxy" ? { ...celestialIcons, ...portraits } : profileIcons;
 }
 
@@ -107,7 +108,7 @@ export function getProfileIcon(id, pack = activeThemePack()) {
   const options = getProfileIcons(pack);
   const icon = Object.hasOwn(options, id)
     ? options[id]
-    : options[pack === "galaxy" ? "celestial-ringed-planet" : "scholar"];
+    : options[themePacks[pack]?.defaultBadge ?? "scholar"];
   const path = icon.file.includes("/")
     ? icon.file
     : Object.hasOwn(portraits, id)

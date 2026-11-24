@@ -93,6 +93,7 @@ export function renderSettings(container) {
                 <select name="themePack">
                   <option value="pixel">Pixel</option>
                   <option value="galaxy">Galaxy</option>
+                  <option value="nailong">Nailong</option>
                 </select>
               </label>
               <p>Each pack remembers its appearance when you save changes.</p>

@@ -141,7 +141,9 @@ function openAppearance(card, trigger, course) {
   card.style.background = previousBackground;
 
   preset.add(new Option("Default", ""));
-  const presets = activeThemePack() === "galaxy" ? galaxyPresets : pixelPresets;
+  const nailongPresets = [["Banana Gold", "#ffd571"], ["Custard", "#fff6dc"], ["Banana Leaf", "#a8c57d"], ["Peach Blush", "#f8d2b9"], ["Honey", "#eabb62"], ["Cocoa", "#493125"]];
+  const pack = activeThemePack();
+  const presets = pack === "nailong" ? nailongPresets : pack === "galaxy" ? galaxyPresets : pixelPresets;
   for (const [label, color] of presets) preset.add(new Option(label, color));
   preset.add(new Option("Custom color", "custom"));
 
