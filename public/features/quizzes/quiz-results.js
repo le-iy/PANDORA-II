@@ -1,4 +1,10 @@
+import {
+  loadQuizHistory,
+  quizRewardKey,
+} from "../../services/quiz-catalog.js";
 import { appendQuestionImage } from "./quiz-editor.js";
+
+const numberFormat = new Intl.NumberFormat("en-PH");
 
 function createMetric(value, label) {
   const metric = document.createElement("div");
@@ -10,6 +16,35 @@ function createMetric(value, label) {
   metric.append(number, description);
 
   return metric;
+}
+
+function getRewardMessage(quiz, score, total) {
+  if (!Number.isFinite(quiz.expReward) || quiz.expReward <= 0) return "";
+
+  if (score !== total) {
+    return "Get a perfect score to earn this quiz’s EXP reward.";
+  }
+
+  const rewardKey = quizRewardKey(quiz);
+
+  // The attempt screen saves the current score before rendering results.
+  const perfectAttempts = loadQuizHistory().filter((attempt) => {
+    const key = attempt.rewardKey ?? (
+      quiz.id != null && attempt.quizId === quiz.id
+        ? rewardKey
+        : quizRewardKey(attempt)
+    );
+
+    return key === rewardKey &&
+      attempt.total > 0 &&
+      attempt.score === attempt.total;
+  });
+
+  if (perfectAttempts.length === 0) return "";
+
+  return perfectAttempts.length === 1
+    ? `+${numberFormat.format(quiz.expReward)} EXP earned`
+    : "EXP already earned for this quiz.";
 }
 
 function createReviewItem(question, selectedIndex) {
@@ -57,6 +92,17 @@ export function showQuizResults(body, quiz, answers, score) {
     createMetric(String(total - score), "Incorrect"),
   );
 
+  results.append(heading, metrics);
+
+  const rewardMessage = getRewardMessage(quiz, score, total);
+
+  if (rewardMessage) {
+    const reward = document.createElement("p");
+    reward.className = "task-completion-summary";
+    reward.textContent = rewardMessage;
+    results.append(reward);
+  }
+
   const review = document.createElement("details");
   const summary = document.createElement("summary");
   summary.textContent = "Review answers";
@@ -67,7 +113,7 @@ export function showQuizResults(body, quiz, answers, score) {
   });
 
   review.append(summary, list);
-  results.append(heading, metrics, review);
+  results.append(review);
   body.replaceChildren(results);
   heading.focus();
 }
