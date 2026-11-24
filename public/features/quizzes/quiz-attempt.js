@@ -157,6 +157,7 @@ export function renderQuizAttempt(container, quiz, onBack, draft = null) {
       }
 
       submitted = true;
+      window.dispatchEvent(new Event("pandora:quiz-completed"));
       showQuizResults(body, quiz, answers, score);
     });
   });
