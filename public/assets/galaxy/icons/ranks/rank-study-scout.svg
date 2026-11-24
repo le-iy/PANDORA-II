@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="70" viewBox="0 0 80 70">
+<path fill="#B7A8FF" opacity=".40" d="M40 1h12v2H40zM27 3h7v2h-7zM20 6h5v2h-5zM58 4h6v2h-6zM66 7h5v2h-5zM74 15h2v11h-2zM8 47h2v9H8zM13 57h3v2h-3zM24 63h9v2h-9zM38 66h14v2H38z"/>
+<path fill="#111430" d="M34 15h6v2h-6zM30 17h2v2h-2zM40 17h2v2h-2zM30 19h2v2h-2zM40 19h4v2h-4zM26 21h2v2h-2zM44 21h2v2h-2zM44 23h4v2h-4zM22 25h4v2h-4zM48 25h2v2h-2zM50 27h2v2h-2zM20 29h2v2h-2zM50 29h4v2h-4zM20 31h2v2h-2zM54 31h2v2h-2zM20 33h2v2h-2zM54 33h4v2h-4zM20 35h2v2h-2zM54 35h4v2h-4zM20 37h2v2h-2zM54 37h4v2h-4zM20 39h2v2h-2zM54 39h4v2h-4zM22 43h4v2h-4zM50 43h4v2h-4zM26 45h2v2h-2zM48 45h4v2h-4zM26 47h4v2h-4zM48 47h2v2h-2zM30 49h16v2h-16zM30 51h16v2h-16z"/>
+<path fill="#7638b3" d="M32 17h2v2h-2zM22 27h2v2h-2zM46 27h2v2h-2zM52 31h2v2h-2zM22 41h2v2h-2zM26 41h2v2h-2zM50 41h4v2h-4zM46 45h2v2h-2zM46 47h2v2h-2z"/>
+<path fill="#e4c289" d="M34 17h6v2h-6zM22 29h2v2h-2zM22 31h2v2h-2zM22 33h2v2h-2zM22 35h2v2h-2zM22 37h2v2h-2zM22 39h2v2h-2z"/>
+<path fill="#abcaec" d="M34 19h6v2h-6zM30 21h2v2h-2zM40 21h2v2h-2zM30 23h2v2h-2zM40 23h2v2h-2zM26 25h4v2h-4zM30 27h10v2h-10zM24 29h2v2h-2zM24 31h2v2h-2zM24 33h2v2h-2zM38 33h2v2h-2zM24 35h2v2h-2zM34 35h2v2h-2zM24 37h2v2h-2zM34 37h2v2h-2zM24 39h2v2h-2z"/>
+<path fill="#7439b5" d="M28 21h2v2h-2zM26 23h4v2h-4zM44 25h4v2h-4zM44 27h2v2h-2zM48 27h2v2h-2zM46 29h4v2h-4zM50 31h2v2h-2zM50 33h4v2h-4zM50 35h4v2h-4zM50 37h4v2h-4zM50 39h4v2h-4zM28 41h22v2h-22zM26 43h24v2h-24zM30 45h16v2h-16zM30 47h16v2h-16z"/>
+<path fill="#47d5bc" d="M34 21h6v2h-6zM34 23h6v2h-6zM30 25h14v2h-14zM40 27h4v2h-4zM26 29h2v2h-2zM40 29h6v2h-6zM26 31h2v2h-2zM40 31h10v2h-10zM26 33h2v2h-2zM40 33h10v2h-10zM26 35h2v2h-2zM44 35h6v2h-6zM26 37h2v2h-2zM44 37h6v2h-6zM26 39h24v2h-24z"/>
+<path fill="#5ddac4" d="M28 29h2v2h-2zM28 31h2v2h-2zM28 33h2v2h-2zM28 35h2v2h-2zM28 37h2v2h-2z"/>
+<path fill="#f4e6ce" d="M30 29h10v2h-10zM30 31h6v2h-6zM38 31h2v2h-2zM30 33h8v2h-8zM30 35h4v2h-4zM36 35h8v2h-8zM30 37h2v2h-2zM38 37h4v2h-4z"/>
+<path fill="#B7A8FF" d="M68 9h2v3h3v2h-3v3h-2v-3h-3v-2h3zM9 20h2v2H9zM65 58h3v3h-3zM15 49h2v2h-2z"/></svg>
