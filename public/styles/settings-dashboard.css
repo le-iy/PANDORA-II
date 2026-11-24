@@ -1,0 +1,197 @@
+.settings-dashboard.settings-preference-screen {
+  max-width: 1280px;
+  min-width: 0;
+}
+
+.settings-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.settings-preference-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.settings-preference-nav {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-muted);
+}
+
+.settings-preference-nav h2 {
+  font-size: 1rem;
+}
+
+.settings-preference-nav [data-settings-links] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-preference-nav button {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.settings-preference-nav button:hover {
+  border-color: var(--color-primary);
+}
+
+.settings-preference-nav button[aria-current="location"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.settings-preference-content {
+  min-width: 0;
+}
+
+.settings-preference-screen .settings-preferences {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.settings-preference-screen .settings-card {
+  scroll-margin-block: 16px;
+}
+
+.settings-preference-screen .settings-profile-card {
+  grid-column: 1 / -1;
+  background: var(--color-surface-muted);
+}
+
+.settings-profile-fields {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+}
+
+.settings-profile-fields .settings-badge-preview {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.settings-profile-fields .settings-badge-preview button {
+  margin-inline-start: auto;
+}
+
+.settings-preference-screen [data-section="notifications"] {
+  background: color-mix(in srgb, #90bdab 19%, var(--color-surface));
+}
+
+.settings-preference-screen [data-section="study"] {
+  background: color-mix(in srgb, #e3bf65 22%, var(--color-surface));
+}
+
+.settings-preference-screen [data-section="backup"] {
+  background: color-mix(in srgb, #d7a2c2 20%, var(--color-surface));
+}
+
+.settings-preference-screen .settings-reminders label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.settings-preference-screen .settings-reminders input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-primary);
+}
+
+.settings-preference-screen .settings-feedback:not(:empty) {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.settings-preference-screen .settings-feedback[data-error] {
+  border-color: var(--color-danger);
+}
+
+.settings-badge-options {
+  display: grid;
+  gap: 8px;
+  margin-block: 14px;
+}
+
+.settings-badge-options label {
+  display: grid;
+  grid-template-columns: auto 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  cursor: pointer;
+}
+
+.settings-badge-options label:has(input:checked) {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.settings-badge-options input {
+  accent-color: var(--color-primary);
+}
+
+.settings-badge-options img {
+  object-fit: contain;
+}
+
+@media (min-width: 720px) {
+  .settings-preference-screen .settings-preferences {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-profile-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1120px) {
+  .settings-preference-layout {
+    grid-template-columns: minmax(165px, 210px) minmax(0, 1fr);
+  }
+
+  .settings-preference-nav {
+    position: sticky;
+    top: 16px;
+  }
+
+  .settings-preference-nav [data-settings-links] {
+    display: grid;
+  }
+}

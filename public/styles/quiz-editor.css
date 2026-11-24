@@ -1,76 +1,160 @@
-.quiz-editor {
+.quiz-workspace.quiz-editor {
   max-width: 1120px;
+  min-width: 0;
+  gap: 20px;
+}
+
+.quiz-editor > h1 {
+  margin: 0;
+}
+
+.quiz-editor > form {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+  align-items: start;
 }
 
 .quiz-editor [data-questions] {
   display: grid;
-  gap: 16px;
+  gap: 18px;
   min-width: 0;
 }
 
 .quiz-editor .quiz-editor-question {
-  padding: 16px;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(12px, 3vw, 20px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
+  background: var(--color-surface-muted);
+  scroll-margin-block: 16px 110px;
 }
 
 .quiz-editor-question legend {
+  margin-bottom: 4px;
   padding-inline: 6px;
-  color: var(--color-primary);
+  color: var(--color-text);
+  font-size: 1.0625rem;
+  font-weight: 700;
 }
 
-.quiz-question-nav {
+.quiz-editor-question input[type="file"] {
+  max-width: 100%;
+}
+
+.quiz-editor-question [data-image-preview]:empty {
+  display: none;
+}
+
+.quiz-editor-question [data-image-preview] img {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.quiz-editor .quiz-question-nav {
   min-width: 0;
   padding: 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  background-color: var(--color-surface-muted);
+  background: var(--color-surface-muted);
 }
 
 .quiz-question-nav [data-question-count] {
-  margin-bottom: 12px;
+  margin: 0 0 10px;
+  font-size: 0.9375rem;
   font-weight: 700;
 }
 
-.quiz-question-nav [data-question-links] {
+.quiz-editor .quiz-question-nav [data-question-links] {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
 }
 
-.quiz-question-nav button {
+.quiz-editor .quiz-question-nav button {
   width: 100%;
+  min-height: 38px;
+  padding: 6px 10px;
   border-color: var(--color-border);
-  background-color: var(--color-surface);
+  background: var(--color-surface);
   color: var(--color-text);
-  text-align: left;
+  font-size: 0.875rem;
+  text-align: start;
+  overflow-wrap: anywhere;
 }
 
-.quiz-question-nav button[aria-current="true"] {
+.quiz-editor .quiz-question-nav button[aria-current="true"] {
   border-color: var(--color-primary);
-  background-color: var(--color-primary);
+  background: var(--color-primary);
   color: var(--color-primary-text);
 }
 
-.quiz-editor [data-add-question],
-.quiz-editor [data-remove-question] {
-  background-color: var(--color-surface-muted);
-  color: var(--color-primary);
+.quiz-editor :is([data-add-question], [data-remove-question], [data-remove-image]) {
+  justify-self: start;
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.quiz-editor :is([data-remove-question], [data-remove-image]) {
+  color: var(--color-danger);
+}
+
+.quiz-editor > form > .quiz-editor-actions {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.quiz-editor .quiz-editor-actions button {
+  min-height: 44px;
+}
+
+.quiz-editor .quiz-editor-actions [data-cancel] {
+  margin-inline-end: auto;
+}
+
+.quiz-editor .quiz-editor-actions [data-preview] {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.quiz-editor .quiz-editor-actions button[type="submit"] {
+  min-width: 120px;
+  padding-inline: 18px;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: 700;
 }
 
 .quiz-preview {
-  width: min(680px, calc(100% - 32px));
-  max-height: calc(100vh - 32px);
+  box-sizing: border-box;
+  width: min(680px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
   padding: clamp(16px, 4vw, 28px);
   overflow-y: auto;
   overflow-wrap: anywhere;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  background-color: var(--color-surface);
+  background: var(--color-surface);
   color: var(--color-text);
 }
 
 .quiz-preview::backdrop {
-  background-color: var(--color-overlay);
+  background: var(--color-overlay);
 }
 
 .quiz-preview [data-quiz-details] {
@@ -87,14 +171,15 @@
   padding: 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
-  background-color: var(--color-background);
+  background: var(--color-surface-muted);
 }
 
 .quiz-preview [data-preview-questions] > li + li {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .quiz-preview h3 {
+  margin: 0;
   font-size: 1rem;
 }
 
@@ -114,27 +199,45 @@
 
 .quiz-preview [data-edit] {
   margin-inline-end: 8px;
-  background-color: var(--color-surface-muted);
-  color: var(--color-primary);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
 }
 
-@media (min-width: 1000px) {
-  .quiz-editor form {
-    grid-template-columns: minmax(0, 1fr) 240px;
-    column-gap: 24px;
-    align-items: start;
+@media (min-width: 1050px) {
+  .quiz-editor > form {
+    grid-template-columns: minmax(0, 1fr) minmax(210px, 260px);
+    column-gap: 20px;
   }
 
-  .quiz-editor form > :not(.quiz-question-nav) {
-    grid-column: 1;
-  }
-
-  .quiz-editor .quiz-question-nav {
-    grid-column: 2;
-    grid-row: 1 / span 6;
+  .quiz-editor > form > .quiz-question-nav {
     position: sticky;
     top: 16px;
-    max-height: calc(100vh - 32px);
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    max-block-size: calc(100dvh - 110px);
     overflow-y: auto;
+  }
+
+  .quiz-editor .quiz-question-nav [data-question-links] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quiz-editor > form > .quiz-editor-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .quiz-editor > form > .quiz-editor-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quiz-editor .quiz-editor-actions [data-cancel] {
+    margin: 0;
+  }
+
+  .quiz-editor .quiz-editor-actions button[type="submit"] {
+    grid-column: 1 / -1;
   }
 }
