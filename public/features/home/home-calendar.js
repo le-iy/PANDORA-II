@@ -1,5 +1,11 @@
 import { readPreferences } from "../../services/preferences.js";
 import {
+  datesInMonth,
+  firstOfMonth,
+  scheduleDateHref,
+} from "../../services/calendar-month.js";
+
+import {
   calendarWeekdayLabels,
   calendarWeekdayOffset,
   readScheduleEvents,
@@ -21,17 +27,18 @@ const dayFormat = new Intl.DateTimeFormat("en-PH", {
 });
 
 export function renderHomeCalendar(panel, today = new Date()) {
-  const monthHeading = panel.querySelector("[data-calendar-month]");
+  const heading = panel.querySelector("[data-calendar-month]");
   const weekdays = panel.querySelector("[data-calendar-weekdays]");
   const grid = panel.querySelector("[data-calendar-days]");
   const agendaHeading = panel.querySelector("[data-agenda-heading]");
   const agendaList = panel.querySelector("[data-agenda-list]");
+  const scheduleLink = panel.querySelector('a[href="#/schedule"]');
 
   const { weekStart } = readPreferences();
   const todayKey = scheduleDateKey(today);
 
   let selected = today;
-  let month = new Date(today.getFullYear(), today.getMonth(), 1);
+  let month = firstOfMonth(today);
 
   for (const day of calendarWeekdayLabels(weekStart)) {
     const label = document.createElement("span");
@@ -41,12 +48,15 @@ export function renderHomeCalendar(panel, today = new Date()) {
 
   function showAgenda() {
     const isToday = scheduleDateKey(selected) === todayKey;
-    agendaHeading.textContent = isToday ? "Today’s agenda" : dayFormat.format(selected);
+    const dateLabel = dayFormat.format(selected);
+
+    agendaHeading.textContent = isToday ? "Today’s agenda" : dateLabel;
+    scheduleLink.href = scheduleDateHref(selected);
+    scheduleLink.textContent = "Open selected day in Schedule";
+    scheduleLink.setAttribute("aria-label", `Open ${dateLabel} in Schedule`);
 
     try {
-      const events = readScheduleEvents(selected);
-
-      const rows = events
+      const rows = readScheduleEvents(selected)
         .sort((a, b) => (a.time || "24:00").localeCompare(b.time || "24:00"))
         .map(({ title, time }) => ({ title, detail: time || "No time set" }));
 
@@ -57,16 +67,8 @@ export function renderHomeCalendar(panel, today = new Date()) {
     }
   }
 
-  function selectDate(date, button) {
-    selected = date;
-    grid.querySelector('[aria-pressed="true"]')
-      ?.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-pressed", "true");
-    showAgenda();
-  }
-
   function showMonth() {
-    monthHeading.textContent = monthFormat.format(month);
+    heading.textContent = monthFormat.format(month);
     grid.replaceChildren();
 
     const leadingDays = calendarWeekdayOffset(month, weekStart);
@@ -77,33 +79,34 @@ export function renderHomeCalendar(panel, today = new Date()) {
       grid.append(blank);
     }
 
-    const year = month.getFullYear();
-    const monthIndex = month.getMonth();
-    const dayCount = new Date(year, monthIndex + 1, 0).getDate();
-    const selectedKey = scheduleDateKey(selected);
-
-    for (let day = 1; day <= dayCount; day += 1) {
-      const date = new Date(year, monthIndex, day);
+    for (const date of datesInMonth(month)) {
       const key = scheduleDateKey(date);
       const button = document.createElement("button");
 
       button.type = "button";
-      button.textContent = String(day);
+      button.textContent = String(date.getDate());
       button.setAttribute("aria-label", dayFormat.format(date));
-      button.setAttribute("aria-pressed", String(key === selectedKey));
+      button.setAttribute("aria-pressed", String(key === scheduleDateKey(selected)));
 
       if (key === todayKey) button.setAttribute("aria-current", "date");
 
-      button.addEventListener("click", () => selectDate(date, button));
+      button.addEventListener("click", () => {
+        selected = date;
+        grid.querySelector('[aria-pressed="true"]')
+          ?.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-pressed", "true");
+        showAgenda();
+      });
+
       grid.append(button);
     }
   }
 
   for (const button of panel.querySelectorAll("[data-month-offset]")) {
     button.addEventListener("click", () => {
-      const offset = Number(button.dataset.monthOffset);
-      month = new Date(month.getFullYear(), month.getMonth() + offset, 1);
-      selected = scheduleDateKey(month).startsWith(todayKey.slice(0, 7))
+      month = firstOfMonth(month, Number(button.dataset.monthOffset));
+
+      selected = scheduleDateKey(month) === scheduleDateKey(firstOfMonth(today))
         ? today
         : month;
 

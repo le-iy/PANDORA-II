@@ -45,6 +45,7 @@ function taskRow(task, deadline, todayKey) {
       deadlineLabel,
     ].filter(Boolean).join(" · "),
     state,
+    href: task.id == null ? "#/tasks" : `#/tasks/${encodeURIComponent(task.id)}`,
   };
 }
 
@@ -62,10 +63,7 @@ export function renderHomeTasks(dashboard, today = new Date()) {
     finishedCount.textContent = String(tasks.length - unfinished.length);
 
     const rows = unfinished
-      .map((task) => ({
-        task,
-        deadline: parseScheduleDate(task.deadline),
-      }))
+      .map((task) => ({ task, deadline: parseScheduleDate(task.deadline) }))
       .sort((a, b) => {
         const first = a.deadline?.getTime() ?? Infinity;
         const second = b.deadline?.getTime() ?? Infinity;

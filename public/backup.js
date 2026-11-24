@@ -1,4 +1,5 @@
 import { applySavedSettings } from "./features/settings/settings.js";
+import { saveExportFile, wireStudyReport } from "./components/study-report-export.js";
 import {
   createStudyBackup,
   parseStudyBackup,
@@ -7,6 +8,7 @@ import {
 } from "./services/study-backup.js";
 
 applySavedSettings();
+wireStudyReport(document.querySelector("[data-study-report]"));
 
 const exportButton = document.querySelector("#export-backup");
 const includePdfs = document.querySelector("#include-pdfs");
@@ -27,21 +29,6 @@ function amount(count, singular, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function downloadBackup(backup) {
-  const blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = `pandora-ii-backup-${backup.exportedAt.replaceAll(":", "-")}.json`;
-
-  document.body.append(link);
-  link.click();
-  link.remove();
-
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
-}
-
 exportButton.addEventListener("click", async () => {
   exportButton.disabled = true;
   includePdfs.disabled = true;
@@ -56,7 +43,14 @@ exportButton.addEventListener("click", async () => {
       return;
     }
 
-    downloadBackup(backup);
+    const timestamp = backup.exportedAt.replaceAll(":", "-");
+
+    saveExportFile(
+      [JSON.stringify(backup)],
+      `pandora-ii-backup-${timestamp}.json`,
+      "application/json",
+    );
+
     status.textContent =
       `Backup prepared with ${amount(entryCount, "entry", "entries")} ` +
       `and ${amount(backup.pdfs.length, "PDF")}.`;

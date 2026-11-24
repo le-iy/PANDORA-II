@@ -5,9 +5,7 @@ import {
   writeScheduleEvents,
 } from "../../services/schedule-events.js";
 
-const dateFormat = new Intl.DateTimeFormat("en-PH", {
-  dateStyle: "full",
-});
+const dateFormat = new Intl.DateTimeFormat("en-PH", { dateStyle: "full" });
 
 function makeButton(label, onClick) {
   const button = document.createElement("button");
@@ -22,10 +20,13 @@ export function openScheduleDialog({
   trigger,
   onChange,
   chooseDate = false,
+  fromRoute = false,
 }) {
   const dialog = document.createElement("dialog");
   dialog.className = "schedule-dialog";
   dialog.setAttribute("aria-labelledby", "schedule-dialog-heading");
+
+  if (fromRoute) dialog.dataset.scheduleRoute = "";
 
   dialog.innerHTML = `
     <div class="schedule-dialog-header">
@@ -111,13 +112,68 @@ export function openScheduleDialog({
     titleInput.focus();
   }
 
+  function confirmRemoval(item, event, index, triggerButton) {
+    clearConfirmation();
+    feedback.textContent = "";
+
+    const panel = document.createElement("div");
+    panel.className = "schedule-actions";
+    panel.setAttribute("role", "group");
+    panel.setAttribute("aria-label", `Confirm deletion of ${event.title}`);
+
+    const message = document.createElement("p");
+    message.textContent = `Delete “${event.title}”?`;
+
+    const keep = makeButton("Keep event", () => {
+      clearConfirmation();
+      triggerButton.focus();
+    });
+
+    const remove = makeButton("Delete event", () => {
+      let events;
+
+      try {
+        events = readScheduleEvents(date);
+
+        if (!sameEvent(events[index], event)) {
+          refreshChangedEvents(events);
+          return;
+        }
+
+        events.splice(index, 1);
+        writeScheduleEvents(date, events);
+      } catch (error) {
+        console.error("Could not delete event.", error);
+        feedback.textContent = "Couldn’t delete the event. Try again.";
+        return;
+      }
+
+      if (editing?.index === index) {
+        resetEditor();
+      } else if (editing && editing.index > index) {
+        editing.index -= 1;
+      }
+
+      showEvents(events);
+      onChange(date, events.length);
+      feedback.textContent = "Event deleted.";
+      titleInput.focus();
+    });
+
+    remove.className = "schedule-danger";
+    panel.append(message, keep, remove);
+    item.append(panel);
+    confirmation = panel;
+    keep.focus();
+  }
+
   function showEvents(events) {
     clearConfirmation();
 
-    if (events.length === 0) {
-      const empty = document.createElement("p");
-      empty.textContent = "No events scheduled for this day.";
-      agenda.replaceChildren(empty);
+    if (!events.length) {
+      const message = document.createElement("p");
+      message.textContent = "No events scheduled for this day.";
+      agenda.replaceChildren(message);
       return;
     }
 
@@ -132,9 +188,8 @@ export function openScheduleDialog({
 
     for (const { event, index } of sorted) {
       const item = document.createElement("li");
-
-      const name = document.createElement("strong");
-      name.textContent = event.title;
+      const title = document.createElement("strong");
+      title.textContent = event.title;
 
       const time = document.createElement("span");
       time.textContent = event.time || "No time set";
@@ -153,66 +208,16 @@ export function openScheduleDialog({
         cancelEdit.hidden = false;
         titleInput.focus();
       });
-      edit.setAttribute("aria-label", `Edit ${event.title}`);
 
       const remove = makeButton("Delete", () => {
-        clearConfirmation();
-        feedback.textContent = "";
-
-        const panel = document.createElement("div");
-        panel.className = "schedule-actions";
-        panel.setAttribute("role", "group");
-        panel.setAttribute("aria-label", `Confirm deletion of ${event.title}`);
-
-        const message = document.createElement("p");
-        message.textContent = `Delete “${event.title}”?`;
-
-        const keep = makeButton("Keep event", () => {
-          clearConfirmation();
-          remove.focus();
-        });
-
-        const confirm = makeButton("Delete event", () => {
-          let latest;
-
-          try {
-            latest = readScheduleEvents(date);
-
-            if (!sameEvent(latest[index], event)) {
-              refreshChangedEvents(latest);
-              return;
-            }
-
-            latest.splice(index, 1);
-            writeScheduleEvents(date, latest);
-          } catch (error) {
-            console.error("Could not delete event.", error);
-            feedback.textContent = "Couldn’t delete the event. Try again.";
-            return;
-          }
-
-          if (editing?.index === index) {
-            resetEditor();
-          } else if (editing && editing.index > index) {
-            editing.index -= 1;
-          }
-
-          showEvents(latest);
-          onChange(date, latest.length);
-          feedback.textContent = "Event deleted.";
-          titleInput.focus();
-        });
-        confirm.className = "schedule-danger";
-
-        panel.append(message, keep, confirm);
-        confirmation = panel;
-        item.append(panel);
-        keep.focus();
+        confirmRemoval(item, event, index, remove);
       });
+
+      edit.setAttribute("aria-label", `Edit ${event.title}`);
       remove.setAttribute("aria-label", `Delete ${event.title}`);
 
       actions.append(edit, remove);
-      item.append(name, time, actions);
+      item.append(title, time, actions);
       list.append(item);
     }
 
@@ -239,7 +244,7 @@ export function openScheduleDialog({
       return;
     }
 
-    const updated = { title, time: timeInput.value };
+    const details = { title, time: timeInput.value };
     const isEditing = editing !== null;
     let events;
 
@@ -252,9 +257,9 @@ export function openScheduleDialog({
           return;
         }
 
-        events[editing.index] = { ...events[editing.index], ...updated };
+        events[editing.index] = { ...events[editing.index], ...details };
       } else {
-        events.push(updated);
+        events.push(details);
       }
 
       writeScheduleEvents(targetDate, events);

@@ -11,6 +11,8 @@ export const defaultPreferences = Object.freeze({
   badge: "scholar",
   dailyTaskGoal: 3,
   dailyExpGoal: 100,
+  taskReminders: false,
+  eventReminders: false,
 });
 
 const choices = {
@@ -28,16 +30,17 @@ function normalizePreferences(value) {
 
   const settings = {
     displayName: displayName || defaultPreferences.displayName,
+    taskReminders: value?.taskReminders === true || value?.taskReminders === "on",
+    eventReminders: value?.eventReminders === true || value?.eventReminders === "on",
   };
 
   for (const [key, options] of Object.entries(choices)) {
-    settings[key] = options.has(value?.[key])
-      ? value[key]
-      : defaultPreferences[key];
+    settings[key] = options.has(value?.[key]) ? value[key] : defaultPreferences[key];
   }
 
   for (const [key, { min, max }] of Object.entries(goalLimits)) {
     const amount = Number(value?.[key]);
+
     settings[key] = Number.isInteger(amount) && amount >= min && amount <= max
       ? amount
       : defaultPreferences[key];
@@ -64,7 +67,11 @@ export function applyPreferences(settings = readPreferences()) {
 
 export function savePreferences(values) {
   const settings = normalizePreferences(values);
+
   localStorage.setItem(storageKey, JSON.stringify(settings));
   applyPreferences(settings);
+
+  window.dispatchEvent(new Event("pandora:preferences-changed"));
+
   return settings;
 }

@@ -1,23 +1,10 @@
 import { loadCourseCatalog } from "../../services/course-catalog.js";
 import { createCourseCard } from "./course-card.js";
+import { loadCourseCounts } from "./course-counts.js";
 import { openAddCourse } from "./course-editor.js";
 import { createCourseFilters } from "./course-filters.js";
 
-const stylesUrl = new URL("../../styles/courses.css", import.meta.url);
-
-function loadCourseStyles() {
-  if (document.querySelector("link[data-courses-styles]")) return;
-
-  const stylesheet = document.createElement("link");
-  stylesheet.rel = "stylesheet";
-  stylesheet.href = stylesUrl.href;
-  stylesheet.dataset.coursesStyles = "";
-  document.head.append(stylesheet);
-}
-
 export async function renderCourses(container) {
-  loadCourseStyles();
-
   const screen = document.createElement("section");
   screen.className = "courses-screen";
 
@@ -54,6 +41,7 @@ export async function renderCourses(container) {
 
   container.replaceChildren(screen);
 
+  const pendingCounts = loadCourseCounts();
   let courses;
 
   try {
@@ -72,17 +60,23 @@ export async function renderCourses(container) {
 
   const filters = createCourseFilters(typeBar, semesterSelect, showCourses);
 
+  let countForCourse = null;
+  let visibleCards = [];
+
   function showCourses() {
     const visible = filters.apply(courses);
-    grid.replaceChildren(...visible.map(createCourseCard));
 
-    if (visible.length === 0) {
-      status.textContent = "No courses match these filters.";
-      return;
-    }
+    visibleCards = visible.map((course) => ({
+      code: course.code,
+      card: createCourseCard(course, countForCourse?.(course.code)),
+    }));
 
-    const label = visible.length === 1 ? "course" : "courses";
-    status.textContent = `${visible.length} ${label} shown`;
+    grid.replaceChildren(...visibleCards.map(({ card }) => card.element));
+
+    const count = visible.length;
+    status.textContent = count
+      ? `${count} ${count === 1 ? "course" : "courses"} shown`
+      : "No courses match these filters.";
   }
 
   add.addEventListener("click", () => {
@@ -96,4 +90,13 @@ export async function renderCourses(container) {
   add.disabled = false;
   toolbar.hidden = false;
   showCourses();
+
+  countForCourse = await pendingCounts;
+
+  if (screen.parentElement !== container) return;
+
+  // Update the text without replacing a card the user might be focused on.
+  for (const { code, card } of visibleCards) {
+    card.updateCounts(countForCourse(code));
+  }
 }

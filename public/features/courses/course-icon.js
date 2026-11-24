@@ -14,25 +14,26 @@ const icons = new Map([
 
 export function createCourseIcon(code) {
   const normalized = String(code ?? "").trim().toUpperCase();
-
   const icon = document.createElement("span");
   icon.className = "course-subject-icon";
   icon.setAttribute("aria-hidden", "true");
 
-  const fallback = () => {
+  function showFallback() {
     icon.textContent = normalized.slice(0, 2) || "C";
-  };
+  }
 
   const filename = icons.get(normalized);
 
   if (!filename) {
-    fallback();
+    showFallback();
     return icon;
   }
 
   const image = document.createElement("img");
   image.alt = "";
-  image.addEventListener("error", fallback, { once: true });
+  image.width = 32;
+  image.height = 32;
+  image.addEventListener("error", showFallback, { once: true });
   image.src = new URL(filename, iconDirectory).href;
 
   icon.append(image);

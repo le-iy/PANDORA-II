@@ -1,189 +1,91 @@
 import { openProfile } from "./profile.js";
+import { openSearch } from "./search-dialog.js";
+import { openReminders } from "./reminders-dialog.js";
 import { getExperience } from "../services/experience.js";
-import { loadCourseCatalog } from "../services/course-catalog.js";
-import {
-  loadResourceCatalog,
-  resourceTypeLabel,
-} from "../services/resource-catalog.js";
+import { readPreferences } from "../services/preferences.js";
+import { readStudyReminders } from "../services/study-reminders.js";
 
 const headerListeners = new WeakMap();
 
 function createIcon(path, className) {
   const icon = document.createElement("img");
   icon.className = className;
-  icon.src = new URL(`../assets/icons/${path}`, import.meta.url).href;
   icon.alt = "";
   icon.addEventListener("error", () => icon.remove(), { once: true });
+  icon.src = new URL(`../assets/icons/${path}`, import.meta.url).href;
   return icon;
 }
 
-function loadTasks() {
-  const tasks = JSON.parse(localStorage.getItem("pandora-ii.tasks") ?? "[]");
-  if (!Array.isArray(tasks)) throw new Error("Invalid saved tasks.");
-  return tasks;
-}
-
-function createResultList(results, onSelect) {
-  const list = document.createElement("ul");
-  list.setAttribute("aria-label", "Search results");
-
-  for (const result of results) {
-    const item = document.createElement("li");
-    const link = document.createElement("a");
-    link.className = "search-result-link";
-    link.href = result.href;
-
-    const title = document.createElement("strong");
-    title.textContent = result.title;
-
-    const category = document.createElement("span");
-    category.className = "search-result-category";
-    category.textContent = result.category;
-
-    link.append(title, category);
-
-    link.addEventListener("click", (event) => {
-      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-      onSelect(link.hash);
-    });
-
-    item.append(link);
-    list.append(item);
-  }
-
-  return list;
-}
-
-async function openSearch(trigger) {
-  const dialog = document.createElement("dialog");
-  dialog.className = "header-search-dialog";
-  dialog.setAttribute("aria-labelledby", "workspace-search-title");
-
-  dialog.innerHTML = `
-    <div class="search-dialog-heading">
-      <h2 id="workspace-search-title">Search workspace</h2>
-      <button type="button" data-close>Close</button>
-    </div>
-
-    <label>
-      Search courses, tasks, and files
-      <input type="search" class="header-search"
-        placeholder="Enter a title or course code" autofocus>
-    </label>
-
-    <p role="status">Loading searchable items…</p>
-    <div data-search-results></div>
-  `;
-
-  const input = dialog.querySelector("input");
-  const status = dialog.querySelector('[role="status"]');
-  const resultsContainer = dialog.querySelector("[data-search-results]");
-  let restoreFocus = true;
-
-  dialog.querySelector("[data-close]").addEventListener("click", () => {
-    dialog.close();
-  });
-
-  dialog.addEventListener("close", () => {
-    dialog.remove();
-    if (restoreFocus && trigger.isConnected) trigger.focus();
-  }, { once: true });
-
-  document.body.append(dialog);
-  dialog.showModal();
-
-  const [courses, tasks, resources] = await Promise.allSettled([
-    loadCourseCatalog(),
-    Promise.resolve().then(loadTasks),
-    loadResourceCatalog(),
-  ]);
-
-  if (!dialog.open) return;
-
-  const entries = [
-    ...(courses.value ?? []).map((course) => ({
-      title: course.name,
-      category: `Course · ${course.code}`,
-      href: `#/courses/${encodeURIComponent(course.code)}`,
-    })),
-    ...(tasks.value ?? []).filter(Boolean).map((task) => {
-      const label = task.completed
-        ? "Completed task"
-        : task.status === "in-progress" ? "In-progress task" : "Open task";
-
-      return {
-        title: task.title,
-        category: [label, task.courseCode].filter(Boolean).join(" · "),
-        href: "#/tasks",
-      };
-    }),
-    ...(resources.value ?? []).map((resource) => ({
-      title: resource.title,
-      category: [resourceTypeLabel(resource), resource.courseCode]
-        .filter(Boolean).join(" · "),
-      href: "#/repositories",
-    })),
-  ].filter((entry) => typeof entry.title === "string" && entry.title.trim());
-
-  const partial = [courses, tasks, resources].some(
-    (source) => source.status === "rejected",
+function isEditable(target) {
+  return target instanceof HTMLElement && (
+    target.isContentEditable ||
+    Boolean(target.closest("input, textarea, select, [role='textbox']"))
   );
-
-  function selectResult(hash) {
-    restoreFocus = hash === window.location.hash;
-    dialog.close();
-  }
-
-  function showMatches() {
-    const query = input.value.trim().toLowerCase();
-
-    if (!query) {
-      resultsContainer.replaceChildren();
-      status.textContent = partial
-        ? "Some items couldn’t be loaded. You can still search available items."
-        : "";
-      return;
-    }
-
-    const terms = query.split(/\s+/);
-    const matches = entries.filter(({ title, category }) => {
-      const searchText = `${title} ${category}`.toLowerCase();
-      return terms.every((term) => searchText.includes(term));
-    });
-
-    if (matches.length === 0) {
-      resultsContainer.replaceChildren();
-      status.textContent = partial
-        ? "No matches among the available items. Some items couldn’t be loaded."
-        : "No matching items.";
-      return;
-    }
-
-    const visible = matches.slice(0, 12);
-    resultsContainer.replaceChildren(createResultList(visible, selectResult));
-    status.textContent =
-      `Showing ${visible.length} of ${matches.length} matches.` +
-      (partial ? " Some items couldn’t be loaded." : "");
-  }
-
-  input.addEventListener("input", showMatches);
-  showMatches();
 }
 
 export function renderHeader(container) {
   headerListeners.get(container)?.abort();
-  const listener = new AbortController();
-  headerListeners.set(container, listener);
+
+  const controller = new AbortController();
+  headerListeners.set(container, controller);
+  const options = { signal: controller.signal };
 
   const search = document.createElement("button");
   search.type = "button";
   search.className = "header-search workspace-search-trigger";
   search.setAttribute("aria-haspopup", "dialog");
+  search.setAttribute("aria-keyshortcuts", "/");
 
-  const searchLabel = document.createElement("span");
-  searchLabel.textContent = "Search courses, tasks, and files…";
-  search.append(createIcon("navigation/search.svg", "header-search-icon"), searchLabel);
+  const label = document.createElement("span");
+  label.className = "header-search-label";
+  label.textContent = "Search courses, tasks, quizzes, and resources…";
+
+  const shortcut = document.createElement("kbd");
+  shortcut.className = "header-search-shortcut";
+  shortcut.textContent = "/";
+  shortcut.setAttribute("aria-hidden", "true");
+
+  search.append(createIcon("navigation/search.svg", "header-search-icon"), label, shortcut);
   search.addEventListener("click", () => openSearch(search));
+
+  const actions = document.createElement("div");
+  actions.className = "header-actions";
+
+  const reminders = document.createElement("button");
+  reminders.type = "button";
+  reminders.className = "header-reminders-trigger";
+  reminders.setAttribute("aria-haspopup", "dialog");
+
+  const reminderLabel = document.createElement("span");
+  reminderLabel.textContent = "Reminders";
+
+  const reminderCount = document.createElement("span");
+  reminderCount.className = "header-reminder-count";
+  reminderCount.setAttribute("aria-hidden", "true");
+
+  reminders.append(reminderLabel, reminderCount);
+
+  function refreshReminders() {
+    const settings = readPreferences();
+    reminders.hidden = !settings.taskReminders && !settings.eventReminders;
+
+    if (reminders.hidden) return;
+
+    const count = readStudyReminders(settings).reduce(
+      (total, section) => total + section.rows.length, 0,
+    );
+
+    reminderCount.textContent = String(count);
+    reminders.setAttribute(
+      "aria-label",
+      `Open reminders, ${count} ${count === 1 ? "item" : "items"}`,
+    );
+  }
+
+  reminders.addEventListener("click", () => {
+    refreshReminders();
+    openReminders(reminders);
+  });
 
   const profile = document.createElement("button");
   profile.type = "button";
@@ -194,6 +96,7 @@ export function renderHeader(container) {
   const levelBadge = document.createElement("span");
   levelBadge.className = "header-level";
   levelBadge.textContent = "Profile";
+
   profile.append(
     createIcon("gamification/scholar-badge.svg", "header-scholar-icon"),
     levelBadge,
@@ -206,7 +109,7 @@ export function renderHeader(container) {
 
     try {
       const { level } = await getExperience();
-      if (request !== latestRequest || listener.signal.aborted) return;
+      if (request !== latestRequest || controller.signal.aborted) return;
 
       levelBadge.textContent = `LVL ${String(level).padStart(2, "0")}`;
       profile.setAttribute("aria-label", `Open scholar profile, level ${level}`);
@@ -220,7 +123,35 @@ export function renderHeader(container) {
     openProfile(profile);
   });
 
-  container.replaceChildren(search, profile);
-  window.addEventListener("hashchange", refreshLevel, { signal: listener.signal });
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key !== "/" || event.defaultPrevented || event.repeat ||
+      event.isComposing || event.ctrlKey || event.metaKey || event.altKey ||
+      !search.isConnected || isEditable(event.target) ||
+      document.querySelector("dialog:modal")
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    openSearch(search);
+  }, options);
+
+  actions.append(reminders, profile);
+  container.replaceChildren(search, actions);
+
+  window.addEventListener("hashchange", refreshReminders, options);
+  window.addEventListener("hashchange", refreshLevel, options);
+  window.addEventListener("focus", refreshReminders, options);
+  window.addEventListener("storage", refreshReminders, options);
+  window.addEventListener("pandora:preferences-changed", refreshReminders, options);
+
+  // Also refresh while staying on a page, for example after adding a task.
+  const timer = window.setInterval(refreshReminders, 15_000);
+  controller.signal.addEventListener("abort", () => window.clearInterval(timer), {
+    once: true,
+  });
+
+  refreshReminders();
   refreshLevel();
 }

@@ -1,6 +1,9 @@
 const detailParameters = {
   courses: "courseCode",
   quizzes: "quizId",
+  tasks: "taskId",
+  schedule: "scheduleDate",
+  repositories: "resourceId",
 };
 
 export function startRouter(pageIds, renderPage) {
@@ -8,8 +11,8 @@ export function startRouter(pageIds, renderPage) {
 
   function handleRoute() {
     const hash = window.location.hash;
-    const requested = hash.startsWith("#/") ? hash.slice(2) : "";
-    const parts = requested.split("/");
+    const path = hash.startsWith("#/") ? hash.slice(2) : "";
+    const parts = path.split("/");
     const [pageId, encodedId] = parts;
 
     if (parts.length === 1 && validPages.has(pageId)) {

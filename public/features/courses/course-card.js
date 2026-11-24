@@ -12,9 +12,9 @@ function createProgress(course) {
   panel.className = "course-progress";
 
   const label = document.createElement("p");
-  const count = document.createElement("strong");
-  count.textContent = `${percentage}%`;
-  label.append("Progress", count);
+  const number = document.createElement("strong");
+  number.textContent = `${percentage}%`;
+  label.append("Progress", number);
 
   const progress = document.createElement("progress");
   progress.max = 100;
@@ -25,7 +25,16 @@ function createProgress(course) {
   return panel;
 }
 
-export function createCourseCard(course) {
+function describeCounts({ tasks, quizzes }) {
+  return [
+    tasks === null ? "Tasks unavailable" : `${tasks} ${tasks === 1 ? "task" : "tasks"}`,
+    quizzes === null
+      ? "Quizzes unavailable"
+      : `${quizzes} ${quizzes === 1 ? "quiz" : "quizzes"}`,
+  ].join(" · ");
+}
+
+export function createCourseCard(course, counts) {
   const card = document.createElement("article");
   card.className = "course-card";
   card.dataset.courseType = course.type;
@@ -34,34 +43,22 @@ export function createCourseCard(course) {
   metadata.className = "course-meta";
 
   const identity = document.createElement("div");
-  identity.style.display = "flex";
-  identity.style.alignItems = "center";
-  identity.style.gap = "8px";
+  identity.className = "course-card-identity";
 
   const code = document.createElement("p");
   code.className = "course-code";
   code.textContent = course.code;
-
-  const icon = createCourseIcon(course.code);
-  icon.style.cssText = "display:grid;place-items:center;width:32px;height:32px;flex:none;";
-  identity.append(icon, code);
+  identity.append(createCourseIcon(course.code), code);
 
   const type = document.createElement("p");
   type.className = "course-type";
   type.textContent = course.type === "laboratory" ? "Laboratory" : "Lecture";
-
   metadata.append(identity, type);
 
-  const name = document.createElement("h2");
-  name.textContent = course.name;
+  const title = document.createElement("h2");
+  title.textContent = course.name;
 
-  const link = document.createElement("a");
-  link.className = "course-primary-button";
-  link.href = `#/courses/${encodeURIComponent(course.code)}`;
-  link.textContent = "Open course";
-  link.setAttribute("aria-label", `Open ${course.name}`);
-
-  card.append(metadata, name);
+  card.append(metadata, title);
 
   if (course.semester === "previous") {
     const semester = document.createElement("p");
@@ -73,6 +70,27 @@ export function createCourseCard(course) {
   const progress = createProgress(course);
   if (progress) card.append(progress);
 
-  card.append(link);
-  return card;
+  const footer = document.createElement("div");
+  footer.className = "course-card-footer";
+
+  const activity = document.createElement("p");
+  activity.className = "course-card-counts";
+  activity.textContent = counts ? describeCounts(counts) : "Loading activity…";
+
+  const link = document.createElement("a");
+  link.className = "course-primary-button";
+  link.href = `#/courses/${encodeURIComponent(course.code)}`;
+  link.textContent = "Open course";
+  link.setAttribute("aria-label", `Open ${course.name}`);
+
+  footer.append(activity, link);
+  card.append(footer);
+
+  return {
+    element: card,
+
+    updateCounts(nextCounts) {
+      activity.textContent = describeCounts(nextCounts);
+    },
+  };
 }

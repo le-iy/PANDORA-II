@@ -45,6 +45,29 @@
 
     <p id="backup-status" role="status"></p>
 
+    <section class="backup-card backup-report" data-study-report
+      aria-labelledby="study-report-heading">
+      <h2 id="study-report-heading">Study activity report</h2>
+
+      <div class="backup-report-actions">
+        <label>
+          Report
+          <select data-report-type>
+            <option value="tasks">Tasks</option>
+            <option value="quiz-attempts">Quiz attempts</option>
+          </select>
+        </label>
+
+        <button type="button" data-preview-report>Preview report</button>
+        <button class="backup-primary" type="button" data-export-report disabled>
+          Export CSV
+        </button>
+      </div>
+
+      <p data-report-status role="status"></p>
+      <div class="backup-report-table" data-report-table></div>
+    </section>
+
     <dialog id="restore-dialog" aria-labelledby="confirm-heading"
       aria-describedby="restore-summary">
       <h2 id="confirm-heading">Restore backup?</h2>

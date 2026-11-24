@@ -29,12 +29,20 @@ const pages = {
 
 let currentRoute = null;
 
-function renderPage(pageId, { courseCode, quizId } = {}) {
+function renderPage(pageId, {
+  courseCode,
+  quizId,
+  taskId,
+  scheduleDate,
+  resourceId,
+} = {}) {
   const page = pages[pageId];
-  const detail = courseCode ?? quizId;
+  const detail = courseCode ?? quizId ?? taskId ?? scheduleDate ?? resourceId;
   const route = detail ? `${pageId}/${detail}` : pageId;
-  const isPageChange = currentRoute !== null && currentRoute !== route;
+  const changed = currentRoute !== null && currentRoute !== route;
   currentRoute = route;
+
+  document.querySelector("dialog[data-schedule-route]:modal")?.close();
 
   document.title = `${courseCode || page.title} | PANDORA II`;
   renderSidebar(sidebar, pageId);
@@ -43,15 +51,24 @@ function renderPage(pageId, { courseCode, quizId } = {}) {
     renderCourseWorkspace(content, courseCode);
   } else if (quizId) {
     renderQuizzes(content, "course", quizId);
+  } else if (taskId) {
+    renderTasks(content, taskId);
+  } else if (scheduleDate) {
+    renderSchedule(content, scheduleDate);
+  } else if (resourceId) {
+    renderRepositories(content, resourceId);
   } else {
     page.render(content);
   }
 
-  if (isPageChange) {
-    const focusTarget = content.querySelector("h1") ?? content;
-    focusTarget.tabIndex = -1;
-    focusTarget.focus({ preventScroll: true });
+  if (changed) {
     window.scrollTo(0, 0);
+
+    if (!document.querySelector("dialog:modal")) {
+      const target = content.querySelector("h1") ?? content;
+      target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    }
   }
 }
 

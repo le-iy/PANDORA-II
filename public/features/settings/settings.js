@@ -93,6 +93,19 @@ export function renderSettings(container) {
               min="${expGoal.min}" max="${expGoal.max}" step="1" required>
           </label>
         </fieldset>
+
+        <fieldset class="settings-card settings-reminders">
+          <legend>In-app reminders</legend>
+          <label>
+            <input name="taskReminders" type="checkbox">
+            Overdue tasks and tasks due today
+          </label>
+          <label>
+            <input name="eventReminders" type="checkbox">
+            Today’s calendar events
+          </label>
+          <p>Reminders appear in the app header.</p>
+        </fieldset>
       </div>
 
       <div class="settings-actions">
@@ -108,7 +121,7 @@ export function renderSettings(container) {
 
     <section class="settings-card" aria-labelledby="settings-backup-heading">
       <h2 id="settings-backup-heading">Backup &amp; Restore</h2>
-      <p>Export or restore your saved study data and uploaded PDFs.</p>
+      <p>Export or restore study data and uploaded PDFs, or export a CSV report.</p>
       <a class="settings-action" data-backup>Open Backup &amp; Restore</a>
     </section>
 
@@ -155,7 +168,10 @@ export function renderSettings(container) {
 
   function fillForm(settings) {
     for (const [name, value] of Object.entries(settings)) {
-      form.elements.namedItem(name).value = value;
+      const field = form.elements.namedItem(name);
+
+      if (field.type === "checkbox") field.checked = value;
+      else field.value = value;
     }
 
     updateBadgePreview();
@@ -197,8 +213,7 @@ export function renderSettings(container) {
     }
 
     try {
-      const settings = savePreferences(Object.fromEntries(new FormData(form)));
-      fillForm(settings);
+      fillForm(savePreferences(Object.fromEntries(new FormData(form))));
       setStatus("Changes saved.");
     } catch (error) {
       console.error("Could not save preferences.", error);

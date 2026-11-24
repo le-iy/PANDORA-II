@@ -6,6 +6,8 @@ import {
   resourceTypeLabel,
 } from "../../services/resource-catalog.js";
 
+import { taskStatusLabel } from "../tasks/task-details.js";
+
 function readTasks() {
   const tasks = JSON.parse(localStorage.getItem("pandora-ii.tasks") ?? "[]");
 
@@ -15,11 +17,11 @@ function readTasks() {
 }
 
 function describeTask(task) {
-  const detail = task.completed
-    ? "Completed"
-    : task.status === "in-progress" ? "In progress" : "Open";
-
-  return { title: task.title, detail };
+  return {
+    title: task.title,
+    detail: taskStatusLabel(task),
+    href: task.id == null ? "#/tasks" : `#/tasks/${encodeURIComponent(task.id)}`,
+  };
 }
 
 function describeQuiz(quiz) {

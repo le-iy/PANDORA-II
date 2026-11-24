@@ -60,27 +60,35 @@
   accent-color: var(--color-primary);
 }
 
-#restore-form {
+#restore-form,
+.backup-report-actions label {
   display: grid;
   gap: 8px;
+}
+
+#restore-form {
   width: 100%;
   min-width: 0;
 }
 
-#restore-form label {
+#restore-form label,
+.backup-report-actions label {
   font-size: 0.875rem;
   font-weight: 600;
 }
 
-#backup-file {
+#backup-file,
+.backup-report-actions select {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
+  min-height: 44px;
   padding: 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-background);
   color: var(--color-text);
+  font: inherit;
 }
 
 .backup-page button {
@@ -105,6 +113,40 @@
 .backup-page button:disabled {
   opacity: 0.55;
   cursor: default;
+}
+
+.backup-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.backup-report-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.backup-report-table:empty {
+  display: none;
+}
+
+.backup-report-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.backup-report-table :is(th, td) {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.backup-report-table th {
+  background: var(--color-surface-muted);
 }
 
 #restore-dialog {

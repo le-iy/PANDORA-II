@@ -5,16 +5,28 @@
   min-width: 0;
   min-height: 48px;
   padding: 8px 14px;
-  background-color: var(--color-surface-muted);
+  background: var(--color-surface-muted);
   color: var(--color-text-muted);
   font: inherit;
   text-align: start;
   cursor: pointer;
 }
 
-.app-header .workspace-search-trigger span {
+.app-header .header-search-label {
+  flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header .header-search-shortcut {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
 }
 
 .app-header .header-search-icon {
@@ -24,16 +36,48 @@
   object-fit: contain;
 }
 
+.app-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-header .header-reminders-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px 6px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-header .header-reminders-trigger[hidden] {
+  display: none;
+}
+
+.app-header .header-reminder-count {
+  padding: 2px 6px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
 .app-header .workspace-profile-trigger {
   display: grid;
   justify-items: center;
   align-content: center;
   gap: 2px;
-  min-width: 60px;
+  min-width: 54px;
   min-height: 48px;
   padding: 3px 6px;
   border-color: transparent;
-  background-color: transparent;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -46,18 +90,18 @@
 .app-header .header-level {
   padding: 2px 6px;
   border-radius: var(--radius-control);
-  background-color: var(--color-surface-muted);
+  background: var(--color-surface-muted);
   color: var(--color-primary);
   font-size: 0.6875rem;
   font-weight: 750;
   line-height: 1.2;
 }
 
-.app-header :is(.workspace-search-trigger, .workspace-profile-trigger):hover {
+.app-header button:hover {
   border-color: var(--color-primary);
 }
 
-.app-header :is(.workspace-search-trigger, .workspace-profile-trigger):focus-visible {
+.app-header button:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 3px;
 }
@@ -71,12 +115,12 @@
   overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  background-color: var(--color-surface);
+  background: var(--color-surface);
   color: var(--color-text);
 }
 
 .header-search-dialog::backdrop {
-  background-color: var(--color-overlay);
+  background: var(--color-overlay);
 }
 
 .header-search-dialog .search-dialog-heading {
@@ -98,8 +142,9 @@
   padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
-  background-color: var(--color-surface-muted);
+  background: var(--color-surface-muted);
   color: var(--color-text);
+  font: inherit;
   cursor: pointer;
 }
 
@@ -134,15 +179,19 @@
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
-  background-color: var(--color-surface-muted);
+  background: var(--color-surface-muted);
   color: var(--color-text);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
-.header-search-dialog .search-result-link:hover,
-.header-search-dialog .search-result-link:focus-visible {
+.header-search-dialog .search-result-link:hover {
   border-color: var(--color-primary);
+}
+
+.header-search-dialog .search-result-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .header-search-dialog .search-result-category {
@@ -150,10 +199,56 @@
   font-size: 0.8125rem;
 }
 
+.reminders-dialog [data-reminder-sections],
+.reminders-dialog section {
+  display: grid;
+  gap: 10px;
+}
+
+.reminders-dialog h3,
+.reminders-dialog p {
+  margin: 0;
+}
+
+.reminders-dialog h3 {
+  font-size: 1rem;
+}
+
+.reminders-settings-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Checkbox sizing overrides the general Settings input sizing. */
+.settings-dashboard .settings-reminders label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body .settings-dashboard .settings-reminders input[type="checkbox"] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
 @media (max-width: 480px) {
   .app-header .workspace-search-trigger {
     gap: 6px;
     padding-inline: 8px;
     font-size: 0.875rem;
+  }
+
+  .app-header .header-search-shortcut {
+    display: none;
+  }
+
+  .app-header .header-reminders-trigger {
+    flex-direction: column;
   }
 }

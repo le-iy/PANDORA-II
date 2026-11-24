@@ -1,13 +1,23 @@
+import {
+  parseScheduleDate,
+  scheduleDateKey,
+} from "../../services/schedule-events.js";
+
 import { openTaskEditor } from "./task-editor.js";
+import {
+  openTaskDetails,
+  taskStatus,
+  taskStatusLabel,
+} from "./task-details.js";
 
 const storageKey = "pandora-ii.tasks";
 const dateFormat = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium" });
 
 const filters = [
-  { id: "all", label: "All" },
-  { id: "open", label: "Open" },
-  { id: "in-progress", label: "In progress" },
-  { id: "completed", label: "Completed" },
+  ["all", "All"],
+  ["open", "Open"],
+  ["in-progress", "In progress"],
+  ["completed", "Completed"],
 ];
 
 function readTasks() {
@@ -16,54 +26,29 @@ function readTasks() {
   return tasks;
 }
 
-function taskStatus(task) {
-  if (task.completed) return "completed";
-  return task.status === "in-progress" ? "in-progress" : "open";
-}
-
-function localDateKey(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDeadline(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return null;
+function changeTask(tasks, id, changes) {
+  if (!tasks.some((task) => task?.id === id)) {
+    throw new Error("Task no longer exists.");
   }
 
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime()) || localDateKey(date) !== value) {
-    return null;
-  }
-
-  return { date, key: value };
+  return tasks.map((task) => task?.id === id ? { ...task, ...changes } : task);
 }
 
-function describeDeadline(task, deadline, todayKey) {
-  if (!deadline) return { text: "No deadline" };
+function describeDeadline(task, date, todayKey) {
+  if (!date) return { text: "No deadline" };
 
-  const label = dateFormat.format(deadline.date);
+  const label = dateFormat.format(date);
+  const key = scheduleDateKey(date);
 
-  if (!task.completed && deadline.key < todayKey) {
+  if (!task.completed && key < todayKey) {
     return { text: `Overdue · ${label}`, state: "overdue" };
   }
 
-  if (!task.completed && deadline.key === todayKey) {
+  if (!task.completed && key === todayKey) {
     return { text: "Due today", state: "today" };
   }
 
   return { text: `Due ${label}` };
-}
-
-function updateTask(tasks, id, changes) {
-  if (!tasks.some((task) => task.id === id)) {
-    throw new Error("Task no longer exists.");
-  }
-
-  return tasks.map((task) => task.id === id ? { ...task, ...changes } : task);
 }
 
 function createAction(label, task, onClick) {
@@ -75,7 +60,7 @@ function createAction(label, task, onClick) {
   return button;
 }
 
-function confirmRemoval(task, onRemove, restoreFocus) {
+function confirmRemoval(task, onRemove, onClose) {
   const dialog = document.createElement("dialog");
   dialog.className = "task-editor";
   dialog.setAttribute("aria-labelledby", "task-remove-heading");
@@ -99,23 +84,22 @@ function confirmRemoval(task, onRemove, restoreFocus) {
   dialog.querySelector("[data-remove]").addEventListener("click", () => {
     if (onRemove()) {
       dialog.close();
-      return;
+    } else {
+      dialog.querySelector('[role="status"]').textContent =
+        "Couldn’t remove the task. Try again.";
     }
-
-    dialog.querySelector('[role="status"]').textContent =
-      "Couldn’t remove the task. Try again.";
   });
 
   dialog.addEventListener("close", () => {
     dialog.remove();
-    restoreFocus();
+    onClose();
   }, { once: true });
 
   document.body.append(dialog);
   dialog.showModal();
 }
 
-export function renderTasks(container) {
+export function renderTasks(container, taskId = null) {
   const screen = document.createElement("section");
   screen.className = "tasks-screen tasks-dashboard";
 
@@ -148,15 +132,15 @@ export function renderTasks(container) {
     <p class="task-feedback" role="status"></p>
   `;
 
-  const addButton = screen.querySelector("[data-add-task]");
+  const add = screen.querySelector("[data-add-task]");
   const filterBar = screen.querySelector(".task-filters");
-  const sortSelect = screen.querySelector(".task-sort select");
+  const sort = screen.querySelector("select");
   const counts = screen.querySelector(".task-counts");
   const list = screen.querySelector(".tasks-list");
   const empty = screen.querySelector("[data-empty]");
   const feedback = screen.querySelector('[role="status"]');
 
-  const filterButtons = new Map();
+  const buttons = new Map();
   let activeFilter = "all";
   let tasks = [];
 
@@ -181,16 +165,39 @@ export function renderTasks(container) {
     return true;
   }
 
+  function focusAfterChange(trigger) {
+    (trigger?.isConnected ? trigger : add).focus();
+  }
+
+  function editTask(task, trigger) {
+    openTaskEditor(task, (changes) => {
+      const saved = saveChanges(
+        (items) => changeTask(items, task.id, changes),
+        "Task updated.",
+      );
+
+      if (saved) queueMicrotask(() => focusAfterChange(trigger));
+      return saved;
+    }, trigger);
+  }
+
+  function showDetails(task, trigger) {
+    openTaskDetails(task, {
+      onEdit: () => editTask(task, trigger),
+      onClose: () => focusAfterChange(trigger),
+    });
+  }
+
   function changeStatus(task, status) {
     const completed = status === "completed";
     const messages = {
-      "open": "Task reopened.",
+      open: "Task reopened.",
       "in-progress": "Task started.",
-      "completed": "Task completed.",
+      completed: "Task completed.",
     };
 
     const saved = saveChanges(
-      (items) => updateTask(items, task.id, {
+      (items) => changeTask(items, task.id, {
         status,
         completed,
         completedAt: completed ? new Date().toISOString() : null,
@@ -198,24 +205,26 @@ export function renderTasks(container) {
       messages[status],
     );
 
-    if (saved) filterButtons.get(activeFilter)?.focus();
+    if (saved) buttons.get(activeFilter)?.focus();
   }
 
-  function createRow(task, deadline, todayKey) {
+  function createRow({ task, state, deadline }, todayKey) {
     const row = document.createElement("li");
     row.className = "task-row";
 
     const details = document.createElement("div");
     details.className = "task-details";
 
-    const title = document.createElement("strong");
+    const title = document.createElement("button");
+    title.type = "button";
     title.textContent = task.title;
+    title.setAttribute("aria-haspopup", "dialog");
+    title.addEventListener("click", () => showDetails(task, title));
 
-    const state = taskStatus(task);
     const badge = document.createElement("span");
     badge.className = "task-status";
     badge.dataset.status = state;
-    badge.textContent = filters.find(({ id }) => id === state).label;
+    badge.textContent = taskStatusLabel(task);
 
     const due = describeDeadline(task, deadline, todayKey);
     const metadata = document.createElement("span");
@@ -234,34 +243,21 @@ export function renderTasks(container) {
       }));
     }
 
-    const nextStatus = state === "completed" ? "open" : "completed";
-    const nextLabel = state === "completed" ? "Reopen" : "Mark complete";
+    const next = state === "completed" ? "open" : "completed";
+    const label = state === "completed" ? "Reopen" : "Mark complete";
+    actions.append(createAction(label, task, () => changeStatus(task, next)));
 
-    actions.append(createAction(nextLabel, task, () => {
-      changeStatus(task, nextStatus);
-    }));
-
-    const edit = createAction("Edit", task, () => {
-      openTaskEditor(task, (changes) => {
-        const saved = saveChanges(
-          (items) => updateTask(items, task.id, changes),
-          "Task updated.",
-        );
-
-        if (saved) queueMicrotask(() => addButton.focus());
-        return saved;
-      }, edit);
-    });
+    const edit = createAction("Edit", task, () => editTask(task, edit));
     edit.setAttribute("aria-haspopup", "dialog");
 
     const remove = createAction("Remove", task, () => {
       confirmRemoval(
         task,
         () => saveChanges(
-          (items) => items.filter((item) => item.id !== task.id),
+          (items) => items.filter((item) => item?.id !== task.id),
           "Task removed.",
         ),
-        () => (remove.isConnected ? remove : addButton).focus(),
+        () => focusAfterChange(remove),
       );
     });
     remove.setAttribute("aria-haspopup", "dialog");
@@ -277,49 +273,44 @@ export function renderTasks(container) {
       .map((task) => ({
         task,
         state: taskStatus(task),
-        deadline: parseDeadline(task.deadline),
+        deadline: parseScheduleDate(task.deadline),
       }));
 
-    const totalByStatus = { all: entries.length, open: 0, "in-progress": 0, completed: 0 };
+    const totals = { all: entries.length, open: 0, "in-progress": 0, completed: 0 };
+    for (const { state } of entries) totals[state] += 1;
 
-    for (const { state } of entries) totalByStatus[state] += 1;
-
-    for (const filter of filters) {
-      const button = filterButtons.get(filter.id);
-      button.textContent = `${filter.label} (${totalByStatus[filter.id]})`;
-      button.setAttribute("aria-pressed", String(activeFilter === filter.id));
+    for (const [id, label] of filters) {
+      const button = buttons.get(id);
+      button.textContent = `${label} (${totals[id]})`;
+      button.setAttribute("aria-pressed", String(id === activeFilter));
     }
 
     const visible = entries.filter(
       ({ state }) => activeFilter === "all" || state === activeFilter,
     );
 
-    if (sortSelect.value === "title") {
+    if (sort.value === "title") {
       visible.sort((a, b) =>
         a.task.title.localeCompare(b.task.title, undefined, { sensitivity: "base" }),
       );
-    } else if (sortSelect.value === "completed") {
-      const completedTime = ({ task, state }) =>
-        state === "completed" ? Date.parse(task.completedAt) || 0 : 0;
-
+    } else if (sort.value === "completed") {
       visible.sort((a, b) =>
         Number(b.state === "completed") - Number(a.state === "completed") ||
-        completedTime(b) - completedTime(a),
+        (Date.parse(b.task.completedAt) || 0) - (Date.parse(a.task.completedAt) || 0),
       );
     } else {
-      visible.sort((a, b) =>
-        (a.deadline?.key ?? "\uffff").localeCompare(b.deadline?.key ?? "\uffff"),
-      );
+      visible.sort((a, b) => {
+        const first = a.deadline?.getTime() ?? Infinity;
+        const second = b.deadline?.getTime() ?? Infinity;
+        return first === second ? 0 : first - second;
+      });
     }
 
-    const todayKey = localDateKey(new Date());
-    list.replaceChildren(...visible.map(({ task, deadline }) =>
-      createRow(task, deadline, todayKey),
-    ));
+    const todayKey = scheduleDateKey(new Date());
+    list.replaceChildren(...visible.map((entry) => createRow(entry, todayKey)));
 
-    const unfinished = totalByStatus.all - totalByStatus.completed;
     counts.textContent =
-      `${unfinished} unfinished · ${totalByStatus.completed} completed`;
+      `${totals.all - totals.completed} unfinished · ${totals.completed} completed`;
 
     empty.hidden = visible.length > 0;
     empty.textContent = activeFilter === "all"
@@ -327,16 +318,15 @@ export function renderTasks(container) {
       : "No tasks with this status.";
   }
 
-  for (const filter of filters) {
+  for (const [id, label] of filters) {
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = filter.label;
-    button.addEventListener("click", () => {
-      activeFilter = filter.id;
+    button.textContent = label;
 
-      // Reload on filter changes so another tab’s saved changes can appear.
+    button.addEventListener("click", () => {
       try {
         tasks = readTasks();
+        activeFilter = id;
         showTasks();
       } catch (error) {
         console.error("Could not reload tasks.", error);
@@ -344,13 +334,13 @@ export function renderTasks(container) {
       }
     });
 
-    filterButtons.set(filter.id, button);
+    buttons.set(id, button);
     filterBar.append(button);
   }
 
-  sortSelect.addEventListener("change", showTasks);
+  sort.addEventListener("change", showTasks);
 
-  addButton.addEventListener("click", () => {
+  add.addEventListener("click", () => {
     openTaskEditor(null, (details) => {
       const task = {
         id: crypto.randomUUID(),
@@ -360,7 +350,7 @@ export function renderTasks(container) {
       };
 
       return saveChanges((items) => [...items, task], "Task added.");
-    }, addButton);
+    }, add);
   });
 
   container.replaceChildren(screen);
@@ -368,6 +358,18 @@ export function renderTasks(container) {
   try {
     tasks = readTasks();
     showTasks();
+
+    if (taskId !== null) {
+      const task = tasks.find((item) =>
+        typeof item?.title === "string" && String(item.id) === taskId,
+      );
+
+      if (task) {
+        showDetails(task, add);
+      } else {
+        setFeedback("Task not found. You can still use the task list.", true);
+      }
+    }
   } catch (error) {
     console.error("Could not load saved tasks.", error);
     setFeedback("Couldn’t load saved tasks.", true);

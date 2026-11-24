@@ -1,5 +1,6 @@
 import { openScheduleDialog } from "./schedule-dialog.js";
 import { readPreferences } from "../../services/preferences.js";
+import { datesInMonth, firstOfMonth } from "../../services/calendar-month.js";
 import {
   calendarWeekdayLabels,
   calendarWeekdayOffset,
@@ -15,14 +16,9 @@ const monthFormat = new Intl.DateTimeFormat("en-PH", {
 });
 
 const fullDateFormat = new Intl.DateTimeFormat("en-PH", { dateStyle: "full" });
+const shortDateFormat = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium" });
 
-const shortDateFormat = new Intl.DateTimeFormat("en-PH", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-export function renderSchedule(container) {
+export function renderSchedule(container, requestedDate = null) {
   const screen = document.createElement("section");
   screen.className = "schedule-screen";
 
@@ -36,7 +32,6 @@ export function renderSchedule(container) {
     <section class="schedule-calendar" aria-labelledby="schedule-period">
       <div class="schedule-toolbar">
         <h2 id="schedule-period" aria-live="polite"></h2>
-
         <div class="schedule-actions">
           <button type="button" data-step="-1">‹</button>
           <button type="button" data-today>Today</button>
@@ -45,16 +40,11 @@ export function renderSchedule(container) {
       </div>
 
       <div class="schedule-toolbar">
-        <label>
-          Go to month
-          <input type="month" data-month>
-        </label>
-
+        <label>Go to month <input type="month" data-month></label>
         <div class="schedule-actions" role="group" aria-label="Calendar view">
           <button type="button" data-view="month">Month</button>
           <button type="button" data-view="week">Week</button>
         </div>
-
         <button type="button" data-today-agenda aria-haspopup="dialog">
           Today’s agenda
         </button>
@@ -69,33 +59,31 @@ export function renderSchedule(container) {
 
   const heading = screen.querySelector("h2");
   const grid = screen.querySelector("[data-days]");
-  const weekdayRow = screen.querySelector("[data-weekdays]");
+  const weekdays = screen.querySelector("[data-weekdays]");
   const monthInput = screen.querySelector("[data-month]");
-  const addButton = screen.querySelector("[data-add-event]");
-  const todayAgendaButton = screen.querySelector("[data-today-agenda]");
+  const add = screen.querySelector("[data-add-event]");
+  const todayAgenda = screen.querySelector("[data-today-agenda]");
   const feedback = screen.querySelector('[role="status"]');
   const viewButtons = screen.querySelectorAll("[data-view]");
   const stepButtons = screen.querySelectorAll("[data-step]");
 
   const { weekStart } = readPreferences();
   const dateButtons = new Map();
-  let activeDate = new Date();
+  const linkedDate = parseScheduleDate(requestedDate);
+
+  let activeDate = linkedDate ?? new Date();
   let view = "month";
 
   for (const day of calendarWeekdayLabels(weekStart)) {
     const label = document.createElement("span");
     label.className = "schedule-weekday";
     label.textContent = day;
-    weekdayRow.append(label);
+    weekdays.append(label);
   }
 
   function updateDayLabel(button, date, count) {
     const label = count === 1 ? "event" : "events";
-
-    button.setAttribute(
-      "aria-label",
-      `${fullDateFormat.format(date)}, ${count} ${label}`,
-    );
+    button.setAttribute("aria-label", `${fullDateFormat.format(date)}, ${count} ${label}`);
     button.classList.toggle("has-events", count > 0);
 
     const badge = button.querySelector(".schedule-event-count");
@@ -113,6 +101,17 @@ export function renderSchedule(container) {
 
     const button = dateButtons.get(scheduleDateKey(date));
     if (button) updateDayLabel(button, date, count);
+  }
+
+  function openDay(date, trigger, fromRoute = false) {
+    activeDate = date;
+
+    openScheduleDialog({
+      date,
+      trigger,
+      onChange: handleEventChange,
+      fromRoute,
+    });
   }
 
   function addDay(date, todayKey) {
@@ -139,27 +138,16 @@ export function renderSchedule(container) {
     }
 
     updateDayLabel(button, date, count);
-
-    button.addEventListener("click", () => {
-      activeDate = date;
-      openScheduleDialog({
-        date,
-        trigger: button,
-        onChange: handleEventChange,
-      });
-    });
-
+    button.addEventListener("click", () => openDay(date, button));
     dateButtons.set(key, button);
     grid.append(button);
   }
 
   function showCalendar() {
     const todayKey = scheduleDateKey(new Date());
-    const year = activeDate.getFullYear();
-    const month = activeDate.getMonth();
-    const monthStart = new Date(year, month, 1);
+    const month = firstOfMonth(activeDate);
 
-    monthInput.value = scheduleDateKey(monthStart).slice(0, 7);
+    monthInput.value = scheduleDateKey(month).slice(0, 7);
     grid.replaceChildren();
     dateButtons.clear();
 
@@ -177,8 +165,7 @@ export function renderSchedule(container) {
       const first = shiftCalendarDays(activeDate, -offset);
       const last = shiftCalendarDays(first, 6);
 
-      heading.textContent =
-        `${shortDateFormat.format(first)} – ${shortDateFormat.format(last)}`;
+      heading.textContent = `${shortDateFormat.format(first)} – ${shortDateFormat.format(last)}`;
 
       for (let day = 0; day < 7; day += 1) {
         addDay(shiftCalendarDays(first, day), todayKey);
@@ -187,9 +174,8 @@ export function renderSchedule(container) {
       return;
     }
 
-    heading.textContent = monthFormat.format(monthStart);
-
-    const leadingDays = calendarWeekdayOffset(monthStart, weekStart);
+    heading.textContent = monthFormat.format(month);
+    const leadingDays = calendarWeekdayOffset(month, weekStart);
 
     for (let offset = 0; offset < leadingDays; offset += 1) {
       const blank = document.createElement("span");
@@ -197,10 +183,8 @@ export function renderSchedule(container) {
       grid.append(blank);
     }
 
-    const dayCount = new Date(year, month + 1, 0).getDate();
-
-    for (let day = 1; day <= dayCount; day += 1) {
-      addDay(new Date(year, month, day), todayKey);
+    for (const date of datesInMonth(month)) {
+      addDay(date, todayKey);
     }
   }
 
@@ -210,7 +194,7 @@ export function renderSchedule(container) {
 
       activeDate = view === "week"
         ? shiftCalendarDays(activeDate, step * 7)
-        : new Date(activeDate.getFullYear(), activeDate.getMonth() + step, 1);
+        : firstOfMonth(activeDate, step);
 
       showCalendar();
     });
@@ -225,9 +209,7 @@ export function renderSchedule(container) {
 
   monthInput.addEventListener("change", () => {
     const selected = parseScheduleDate(`${monthInput.value}-01`);
-
     if (selected) activeDate = selected;
-
     showCalendar();
   });
 
@@ -237,18 +219,18 @@ export function renderSchedule(container) {
     dateButtons.get(scheduleDateKey(activeDate))?.focus();
   });
 
-  todayAgendaButton.addEventListener("click", () => {
+  todayAgenda.addEventListener("click", () => {
     openScheduleDialog({
       date: new Date(),
-      trigger: todayAgendaButton,
+      trigger: todayAgenda,
       onChange: handleEventChange,
     });
   });
 
-  addButton.addEventListener("click", () => {
+  add.addEventListener("click", () => {
     openScheduleDialog({
       date: activeDate,
-      trigger: addButton,
+      trigger: add,
       onChange: handleEventChange,
       chooseDate: true,
     });
@@ -256,4 +238,10 @@ export function renderSchedule(container) {
 
   container.replaceChildren(screen);
   showCalendar();
+
+  if (linkedDate) {
+    openDay(linkedDate, dateButtons.get(scheduleDateKey(linkedDate)), true);
+  } else if (requestedDate !== null) {
+    feedback.textContent = "Invalid date link. Showing the current month.";
+  }
 }
