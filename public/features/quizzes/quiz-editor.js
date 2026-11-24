@@ -2,8 +2,8 @@ import {
   appendQuestionImage,
   createQuestionFieldset,
 } from "./quiz-question-editor.js";
+import { openQuizImport } from "./quiz-import.js";
 
-// Existing quiz attempt and result modules import this from the editor.
 export { appendQuestionImage };
 
 function showQuizPreview(editor, quiz, trigger) {
@@ -15,11 +15,13 @@ function showQuizPreview(editor, quiz, trigger) {
   heading.textContent = "Preview quiz";
 
   const details = document.createElement("p");
+  details.dataset.quizDetails = "";
   const count = quiz.questions.length;
   details.textContent =
     `${quiz.title} · ${quiz.courseCode} · ${count} ${count === 1 ? "question" : "questions"}`;
 
   const list = document.createElement("ol");
+  list.dataset.previewQuestions = "";
 
   for (const question of quiz.questions) {
     const item = document.createElement("li");
@@ -64,7 +66,12 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   editor.className = "quiz-workspace quiz-editor";
 
   editor.innerHTML = `
-    <h1>${quiz ? "Edit quiz" : "Create quiz"}</h1>
+    <header style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px">
+      <h1 style="margin:0">${quiz ? "Edit quiz" : "Create quiz"}</h1>
+      <button type="button" data-import-questions aria-haspopup="dialog">
+        Import questions
+      </button>
+    </header>
 
     <form>
       <label>
@@ -103,6 +110,7 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const nav = form.querySelector("[data-question-links]");
   const status = form.querySelector('[role="status"]');
   const preview = form.querySelector("[data-preview]");
+  const importButton = editor.querySelector("[data-import-questions]");
 
   title.value = quiz?.title ?? "";
   course.value = quiz?.courseCode ?? "";
@@ -199,11 +207,37 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   }
 
   const initialQuestions = quiz?.questions.length ? quiz.questions : [null];
+  const firstQuestion = createQuestionFieldset(initialQuestions[0]);
+  list.append(firstQuestion);
 
-  for (const question of initialQuestions) {
+  for (const question of initialQuestions.slice(1)) {
     list.append(createQuestionFieldset(question));
   }
-  updateNavigator(list.firstElementChild);
+
+  updateNavigator(firstQuestion);
+
+  importButton.addEventListener("click", () => {
+    openQuizImport(editor, importButton, (questions) => {
+      const imported = questions.map((question) => createQuestionFieldset(question));
+
+      const hasEmptyStarter = !quiz &&
+        list.children.length === 1 &&
+        list.firstElementChild === firstQuestion &&
+        [...firstQuestion.querySelectorAll("input, select, textarea")].every(
+          (field) => field.type === "file" ? field.files.length === 0 : !field.value,
+        ) &&
+        !firstQuestion.querySelector("[data-image-preview]").dataset.imageData;
+
+      if (hasEmptyStarter) firstQuestion.remove();
+
+      for (const fieldset of imported) list.append(fieldset);
+
+      updateNavigator(imported[0]);
+      const total = imported.length;
+      status.textContent = `${total} ${total === 1 ? "question" : "questions"} imported.`;
+      imported[0].querySelector("textarea").focus();
+    });
+  });
 
   form.querySelector("[data-add-question]").addEventListener("click", () => {
     const fieldset = createQuestionFieldset();
@@ -223,17 +257,13 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
 
     const fieldset = remove.closest("fieldset");
     const adjacent = fieldset.nextElementSibling ?? fieldset.previousElementSibling;
-
     fieldset.remove();
     updateNavigator(adjacent);
     adjacent.querySelector("textarea").focus();
   });
 
   form.querySelector("[data-cancel]").addEventListener("click", onCancel);
-
-  form.addEventListener("input", () => {
-    status.textContent = "";
-  });
+  form.addEventListener("input", () => { status.textContent = ""; });
 
   preview.addEventListener("click", () => {
     if (!form.reportValidity()) return;
