@@ -190,3 +190,77 @@
   margin: 0;
   height: 0;
 }
+
+.schedule-layout {
+  display: grid;
+  align-items: start;
+  gap: 16px;
+}
+
+.schedule-agenda {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  min-width: 0;
+  padding: clamp(12px, 2vw, 20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.schedule-agenda h2 {
+  font-size: 1.125rem;
+}
+
+.schedule-agenda p,
+.schedule-agenda-list span {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.schedule-agenda-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-agenda-list li {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  overflow-wrap: anywhere;
+}
+
+.schedule-agenda :is([data-agenda-status], [data-agenda-list]):empty {
+  display: none;
+}
+
+.schedule-grid[data-view="week"] .schedule-day {
+  min-height: 110px;
+}
+
+.schedule-day-preview {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.schedule-day-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 1150px) {
+  .schedule-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  }
+}
