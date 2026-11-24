@@ -1,0 +1,124 @@
+.repositories-screen .resource-popup {
+  width: min(560px, calc(100% - 24px));
+  padding: clamp(14px, 3vw, 24px);
+}
+
+.repositories-screen .resource-popup.resource-dialog-wide {
+  width: min(960px, calc(100% - 24px));
+}
+
+.resource-popup-header {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding-block-end: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.resource-popup-header h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  line-height: 1.25;
+}
+
+.resource-popup .resource-popup-kind {
+  margin: 0;
+  padding: 3px 8px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.resource-popup-info {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.resource-popup-info > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.resource-popup-info dt {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.resource-popup-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.resource-popup-file {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+}
+
+.resource-popup-file input {
+  width: 100%;
+  max-width: 100%;
+}
+
+.resource-popup-file p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.resource-popup-file [data-file-selection]:not([hidden]) {
+  padding: 8px 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.repositories-screen .resource-popup .resource-actions {
+  gap: 8px;
+  padding-block-start: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.repositories-screen .resource-popup .resource-popup-preview-actions {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  padding-block: 4px 8px;
+  border-top: 0;
+  background: var(--color-surface);
+}
+
+.resource-popup-preview-actions button {
+  margin-inline-end: auto;
+}
+
+.repositories-screen .resource-popup .resource-pdf-preview {
+  box-sizing: border-box;
+  width: 100%;
+  height: min(65dvh, 700px);
+}
+
+@media (max-width: 460px) {
+  .repositories-screen .resource-popup .resource-actions {
+    justify-content: flex-start;
+  }
+
+  .resource-popup-preview-actions button {
+    margin-inline-end: 0;
+  }
+}

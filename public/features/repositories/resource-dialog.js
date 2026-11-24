@@ -8,6 +8,18 @@ import {
 
 import { createPdfDownload, createPdfPreview } from "./pdf-preview.js";
 
+const stylesUrl = new URL("../../styles/repository-popups.css", import.meta.url);
+
+function loadPopupStyles() {
+  if (document.head.querySelector("[data-repository-popup-styles]")) return;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = stylesUrl.href;
+  link.dataset.repositoryPopupStyles = "";
+  document.head.append(link);
+}
+
 export function createResourceOpenLink(resource) {
   const url = resolveResourceUrl(resource.url);
   if (!url) return null;
@@ -42,6 +54,35 @@ function createActions(...items) {
   return actions;
 }
 
+function createInfo(rows) {
+  const info = document.createElement("dl");
+  info.className = "resource-popup-info";
+
+  for (const [label, value] of rows) {
+    if (!value) continue;
+
+    const row = document.createElement("div");
+    const term = document.createElement("dt");
+    const detail = document.createElement("dd");
+
+    term.textContent = label;
+    detail.textContent = value;
+    row.append(term, detail);
+    info.append(row);
+  }
+
+  return info;
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+
+  const inKilobytes = bytes / 1024;
+  return inKilobytes < 1024
+    ? `${Math.round(inKilobytes)} KB`
+    : `${(inKilobytes / 1024).toFixed(1)} MB`;
+}
+
 export function openResourceDialog(screen, trigger, {
   resource = null,
   mode = "link",
@@ -50,90 +91,136 @@ export function openResourceDialog(screen, trigger, {
   onRemoved,
   fallbackFocus,
 }) {
+  loadPopupStyles();
+
   const dialog = document.createElement("dialog");
-  dialog.className = "resource-dialog";
+  dialog.className = "resource-dialog resource-popup";
   dialog.setAttribute("aria-labelledby", "resource-dialog-heading");
 
-  const heading = document.createElement("h2");
-  heading.id = "resource-dialog-heading";
+  dialog.innerHTML = `
+    <header class="resource-popup-header">
+      <p class="resource-popup-kind"></p>
+      <h2 id="resource-dialog-heading"></h2>
+    </header>
+    <div class="resource-dialog-body"></div>
+  `;
 
-  const body = document.createElement("div");
-  body.className = "resource-dialog-body";
-  dialog.append(heading, body);
+  const kind = dialog.querySelector(".resource-popup-kind");
+  const heading = dialog.querySelector("h2");
+  const body = dialog.querySelector(".resource-dialog-body");
 
   let busy = false;
+
+  function setView(label, title, wide = false) {
+    dialog.classList.toggle("resource-dialog-wide", wide);
+    kind.textContent = label;
+    heading.textContent = title;
+  }
+
+  function closeDialog() {
+    if (!busy) dialog.close();
+  }
 
   dialog.addEventListener("cancel", (event) => {
     if (busy) event.preventDefault();
   });
 
-  function showDetails() {
-    dialog.classList.remove("resource-dialog-wide");
-    heading.textContent = resource.title;
-
-    const metadata = document.createElement("p");
-    metadata.textContent = [
-      resourceTypeLabel(resource),
-      resource.courseCode,
-      resource.source === "uploaded" ? "Uploaded PDF" : "",
-    ].filter(Boolean).join(" · ");
-
-    const destination = document.createElement("p");
-    destination.className = "resource-destination";
-    destination.textContent = resource.filename || resource.url || "Resource URL unavailable.";
-
-    const close = createButton("Close", () => dialog.close());
-    const actions = createActions(
-      close,
-      createResourceOpenLink(resource),
-      createPdfDownload(resource),
-    );
+  function showPreview() {
     const preview = createPdfPreview(resource);
+    if (!preview) return;
 
-    if (preview) {
-      const previewButton = createButton("Preview PDF", () => {
-        heading.textContent = `Preview: ${resource.title}`;
-        dialog.classList.add("resource-dialog-wide");
+    setView("PDF preview", resource.title, true);
 
-        const back = createButton("Back to details", () => {
-          showDetails().focus();
-        });
+    const back = createButton("Back to details", () => {
+      const { close, previewButton } = showDetails();
+      (previewButton ?? close).focus();
+    });
 
-        body.replaceChildren(
-          createActions(back, createResourceOpenLink(resource), createPdfDownload(resource)),
-          preview,
-        );
-        back.focus();
-      });
+    const actions = createActions(
+      back,
+      createPdfDownload(resource),
+      createResourceOpenLink(resource),
+    );
+    actions.classList.add("resource-popup-preview-actions");
 
-      actions.append(previewButton);
-    }
+    body.replaceChildren(actions, preview);
+    back.focus();
+  }
 
-    if (resource.source === "saved" && resource.type === "link") {
-      actions.append(createButton("Edit link", () => showEditor().focus()));
-    }
+  function showDetails() {
+    setView(resourceTypeLabel(resource), resource.title);
 
-    if (resource.source === "saved" || resource.source === "uploaded") {
-      actions.append(createButton("Remove", showRemoveConfirmation, "danger"));
-    }
+    const destination = resource.type === "pdf"
+      ? resource.filename || (
+        resource.source === "uploaded" ? "" : resource.url
+      )
+      : resource.url;
 
-    body.replaceChildren(metadata, destination, actions);
-    return close;
+    const info = createInfo([
+      ["Course", resource.courseCode || "No course assigned"],
+      [resource.type === "pdf" ? "File" : "URL", destination],
+      ["Source", resource.source === "uploaded" ? "Uploaded from this browser" : ""],
+    ]);
+
+    const close = createButton("Close", closeDialog);
+    const actions = createActions(close);
+
+    const url = resolveResourceUrl(resource.url);
+    const canPreview = resource.type === "pdf" && url &&
+      (resource.source === "uploaded" || url.origin === window.location.origin);
+    const previewButton = canPreview
+      ? createButton("Preview PDF", showPreview)
+      : null;
+
+    const editButton = resource.source === "saved" && resource.type === "link"
+      ? createButton("Edit link", () => showEditor().focus())
+      : null;
+
+    const removeButton = ["saved", "uploaded"].includes(resource.source)
+      ? createButton("Remove", showRemoveConfirmation, "danger")
+      : null;
+
+    actions.append(
+      ...[
+        editButton,
+        removeButton,
+        createPdfDownload(resource),
+        previewButton,
+        createResourceOpenLink(resource),
+      ].filter(Boolean),
+    );
+
+    body.replaceChildren(info, actions);
+    return { close, previewButton, editButton, removeButton };
   }
 
   function showEditor() {
     const isPdf = mode === "pdf" && !resource;
-    heading.textContent = isPdf ? "Upload PDF" : resource ? "Edit link" : "Save a link";
+    setView(
+      "Repositories",
+      isPdf ? "Upload PDF" : resource ? "Edit link" : "Save a link",
+    );
 
     const form = document.createElement("form");
+
     const sourceField = isPdf
-      ? `<label>PDF file
-           <input name="file" type="file" accept=".pdf,application/pdf" required>
-         </label>
-         <p class="resource-results">PDF files up to 40 MB.</p>`
-      : `<label>URL
-           <input name="url" type="url" maxlength="2048" placeholder="https://" required>
-         </label>`;
+      ? `
+        <div class="resource-popup-file">
+          <label>
+            PDF file
+            <input name="file" type="file" accept=".pdf,application/pdf"
+              aria-describedby="resource-file-hint" required>
+          </label>
+          <p id="resource-file-hint">PDF files up to 40 MB.</p>
+          <p data-file-selection aria-live="polite" hidden></p>
+        </div>
+      `
+      : `
+        <label>
+          URL
+          <input name="url" type="url" maxlength="2048" placeholder="https://" required>
+        </label>
+      `;
 
     form.innerHTML = `
       ${sourceField}
@@ -153,7 +240,7 @@ export function openResourceDialog(screen, trigger, {
       <div class="resource-actions">
         <button class="resource-secondary" type="button" data-cancel>Cancel</button>
         <button class="resource-primary" type="submit">
-          ${isPdf ? "Save PDF" : "Save link"}
+          ${isPdf ? "Save PDF" : resource ? "Save changes" : "Save link"}
         </button>
       </div>
     `;
@@ -164,14 +251,29 @@ export function openResourceDialog(screen, trigger, {
     const status = form.querySelector('[role="status"]');
     const cancel = form.querySelector("[data-cancel]");
     const save = form.querySelector('[type="submit"]');
+    const saveLabel = save.textContent.trim();
 
     title.value = resource?.title ?? "";
     courseCode.value = resource?.courseCode ?? "";
     if (!isPdf && resource) source.value = resource.url;
 
+    if (isPdf) {
+      const selection = form.querySelector("[data-file-selection]");
+
+      source.addEventListener("change", () => {
+        const file = source.files[0];
+        selection.hidden = !file;
+        selection.textContent = file ? `${file.name} · ${formatFileSize(file.size)}` : "";
+      });
+    }
+
     cancel.addEventListener("click", () => {
-      if (resource) showDetails().focus();
-      else dialog.close();
+      if (resource) {
+        const { close, editButton } = showDetails();
+        (editButton ?? close).focus();
+      } else {
+        closeDialog();
+      }
     });
 
     form.addEventListener("input", () => {
@@ -195,27 +297,36 @@ export function openResourceDialog(screen, trigger, {
       }
 
       const details = { title: title.value, courseCode: courseCode.value };
+      const file = isPdf ? source.files[0] : null;
+      const url = isPdf ? null : source.value;
+
       busy = true;
-      save.disabled = true;
-      cancel.disabled = true;
+      form.inert = true;
+      save.textContent = isPdf ? "Saving PDF…" : "Saving…";
+      status.textContent = "";
 
       let saved;
+      let failure = "";
 
       try {
         saved = isPdf
-          ? await saveResourcePdf({ ...details, file: source.files[0] })
-          : saveResourceLink({ ...details, url: source.value }, catalog, resource?.id ?? null);
+          ? await saveResourcePdf({ ...details, file })
+          : saveResourceLink({ ...details, url }, catalog, resource?.id ?? null);
       } catch (error) {
         console.error("Could not save resource.", error);
-
-        status.textContent = isPdf && error.name === "Error"
+        failure = isPdf && error.name === "Error"
           ? error.message
           : "Couldn’t save the resource. Try again.";
-        return;
       } finally {
         busy = false;
-        save.disabled = false;
-        cancel.disabled = false;
+        form.inert = false;
+        save.textContent = saveLabel;
+      }
+
+      if (failure) {
+        status.textContent = failure;
+        save.focus();
+        return;
       }
 
       if (!saved) {
@@ -225,15 +336,15 @@ export function openResourceDialog(screen, trigger, {
       }
 
       onSaved(saved, Boolean(resource));
-      dialog.close();
+      closeDialog();
     });
 
     body.replaceChildren(form);
-    return isPdf ? source : title;
+    return source;
   }
 
   function showRemoveConfirmation() {
-    heading.textContent = "Remove resource?";
+    setView("Repositories", "Remove resource?");
 
     const message = document.createElement("p");
     message.textContent = `“${resource.title}” will be removed from your resources.`;
@@ -242,38 +353,52 @@ export function openResourceDialog(screen, trigger, {
     status.className = "resource-feedback";
     status.setAttribute("role", "status");
 
-    const keep = createButton("Keep resource", () => showDetails().focus());
+    const keep = createButton("Keep resource", () => {
+      const { close, removeButton } = showDetails();
+      (removeButton ?? close).focus();
+    });
 
     const remove = createButton("Remove resource", async () => {
+      if (busy) return;
+
       busy = true;
       keep.disabled = true;
       remove.disabled = true;
+      remove.textContent = "Removing…";
+      status.textContent = "";
+
+      let removed = false;
 
       try {
         await removeSavedResource(resource);
+        removed = true;
       } catch (error) {
         console.error("Could not remove resource.", error);
         status.textContent = "Couldn’t remove the resource. Try again.";
-        return;
       } finally {
         busy = false;
         keep.disabled = false;
         remove.disabled = false;
+        remove.textContent = "Remove resource";
       }
 
-      onRemoved(resource);
-      dialog.close();
+      if (removed) {
+        onRemoved(resource);
+        closeDialog();
+      } else {
+        remove.focus();
+      }
     }, "danger");
 
     body.replaceChildren(message, status, createActions(keep, remove));
     keep.focus();
   }
 
-  const focusTarget = resource ? showDetails() : showEditor();
+  const focusTarget = resource ? showDetails().close : showEditor();
 
   dialog.addEventListener("close", () => {
     dialog.remove();
-    const target = trigger.isConnected ? trigger : fallbackFocus;
+    const target = trigger?.isConnected ? trigger : fallbackFocus;
     if (target?.isConnected) target.focus();
   }, { once: true });
 
