@@ -1,3 +1,35 @@
+function createWorkspaceRow(row) {
+  const item = document.createElement("li");
+  const name = document.createElement(row.href ? "a" : "strong");
+  name.textContent = row.title;
+
+  if (row.href) {
+    name.href = row.href;
+
+    if (row.newTab) {
+      name.target = "_blank";
+      name.rel = "noopener noreferrer";
+      name.setAttribute("aria-label", `${row.title} (opens in a new tab)`);
+    }
+  }
+
+  const detail = document.createElement("span");
+  detail.textContent = row.detail;
+
+  if (row.icon) {
+    const identity = document.createElement("div");
+    identity.style.display = "flex";
+    identity.style.alignItems = "center";
+    identity.style.gap = "8px";
+    identity.append(row.icon, name);
+    item.append(identity, detail);
+  } else {
+    item.append(name, detail);
+  }
+
+  return item;
+}
+
 export function createWorkspacePanel(section) {
   const panel = document.createElement("section");
   panel.className = "course-workspace-panel";
@@ -13,7 +45,6 @@ export function createWorkspacePanel(section) {
   const count = document.createElement("span");
   count.className = "course-panel-count";
   count.hidden = true;
-
   header.append(title, count);
 
   const status = document.createElement("p");
@@ -28,7 +59,9 @@ export function createWorkspacePanel(section) {
   const link = document.createElement("a");
   link.className = "course-panel-link";
   link.href = section.route;
-  link.textContent = `Open ${section.label === "Resources" ? "Repositories" : section.label}`;
+  link.textContent = section.id === "resources"
+    ? "Open Repositories"
+    : `Open ${section.label}`;
 
   panel.append(header, status, list, link);
 
@@ -38,35 +71,9 @@ export function createWorkspacePanel(section) {
     showRows(rows) {
       count.hidden = false;
       count.textContent = String(rows.length);
-
-      if (rows.length === 0) {
-        status.textContent = section.empty;
-        return;
-      }
-
-      status.textContent = "";
-      list.hidden = false;
-
-      for (const row of rows) {
-        const item = document.createElement("li");
-        const name = document.createElement(row.href ? "a" : "strong");
-        name.textContent = row.title;
-
-        if (row.href) {
-          name.href = row.href;
-
-          if (row.newTab) {
-            name.target = "_blank";
-            name.rel = "noopener noreferrer";
-            name.setAttribute("aria-label", `${row.title} (opens in a new tab)`);
-          }
-        }
-
-        const detail = document.createElement("span");
-        detail.textContent = row.detail;
-        item.append(name, detail);
-        list.append(item);
-      }
+      list.hidden = rows.length === 0;
+      list.replaceChildren(...rows.map(createWorkspaceRow));
+      status.textContent = rows.length ? "" : section.empty;
     },
 
     showError() {

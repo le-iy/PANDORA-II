@@ -1,4 +1,5 @@
 import { createCourseIcon } from "../courses/course-icon.js";
+import { createResourceIcon } from "../repositories/resource-icon.js";
 import { loadCourseCatalog } from "../../services/course-catalog.js";
 import {
   getQuizState,
@@ -12,22 +13,11 @@ import {
 } from "../../services/resource-catalog.js";
 import { showHomeRows } from "./home-rows.js";
 
-const resourceIcons = new URL("../../assets/icons/resources/", import.meta.url);
-
 const quizStatusLabels = {
   "not-started": "Not started",
   "in-progress": "In progress",
   completed: "Completed",
 };
-
-function createResourceIcon(resource) {
-  const icon = document.createElement("img");
-  icon.className = "home-row-icon";
-  icon.alt = "";
-  icon.addEventListener("error", () => icon.remove(), { once: true });
-  icon.src = new URL(resource.type === "pdf" ? "pdf.svg" : "link.svg", resourceIcons).href;
-  return icon;
-}
 
 function wireTabs(panel) {
   const tabs = Array.from(panel.querySelectorAll('[role="tab"]'));
@@ -37,9 +27,7 @@ function wireTabs(panel) {
       const selected = tab === active;
       tab.setAttribute("aria-selected", String(selected));
       tab.tabIndex = selected ? 0 : -1;
-
-      const content = panel.querySelector(`#${tab.getAttribute("aria-controls")}`);
-      content.hidden = !selected;
+      panel.querySelector(`#${tab.getAttribute("aria-controls")}`).hidden = !selected;
     }
   }
 
@@ -69,12 +57,14 @@ async function showCourses(list, count) {
     const courses = await loadCourseCatalog();
     count.textContent = String(courses.length);
 
-    showHomeRows(list, courses.map((course) => ({
+    const rows = courses.map((course) => ({
       title: course.name,
       detail: course.code,
       href: `#/courses/${encodeURIComponent(course.code)}`,
       icon: createCourseIcon(course.code),
-    })), "No courses yet.");
+    }));
+
+    showHomeRows(list, rows, "No courses yet.");
   } catch (error) {
     console.error("Could not load courses.", error);
     count.textContent = "—";
@@ -92,16 +82,18 @@ async function showResources(list) {
       },
     });
 
-    showHomeRows(list, resources.map((resource) => ({
+    const rows = resources.map((resource) => ({
       title: resource.title,
       detail: [resource.courseCode, resourceTypeLabel(resource)]
         .filter(Boolean).join(" · "),
       href: resolveResourceUrl(resource.url)?.href,
       newTab: true,
       icon: createResourceIcon(resource),
-    })), partial ? "Couldn’t load uploaded PDFs." : "No resources yet.");
+    }));
 
-    if (partial && resources.length > 0) {
+    showHomeRows(list, rows, partial ? "Couldn’t load uploaded PDFs." : "No resources yet.");
+
+    if (partial && rows.length > 0) {
       const notice = document.createElement("li");
       notice.className = "home-empty";
       notice.textContent = "Uploaded PDFs couldn’t be loaded.";

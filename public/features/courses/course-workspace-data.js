@@ -5,8 +5,8 @@ import {
   resolveResourceUrl,
   resourceTypeLabel,
 } from "../../services/resource-catalog.js";
-
 import { taskStatusLabel } from "../tasks/task-details.js";
+import { createResourceIcon } from "../repositories/resource-icon.js";
 
 function readTasks() {
   const tasks = JSON.parse(localStorage.getItem("pandora-ii.tasks") ?? "[]");
@@ -40,6 +40,7 @@ function describeResource(resource) {
     detail: resourceTypeLabel(resource),
     href: resolveResourceUrl(resource.url)?.href,
     newTab: true,
+    icon: createResourceIcon(resource),
   };
 }
 

@@ -1,4 +1,7 @@
 .repositories-screen {
+  --resource-pdf-surface: light-dark(#eee4f3, #382c42);
+  --resource-link-surface: light-dark(#e7f0ea, #263b33);
+
   display: grid;
   gap: 16px;
 }
@@ -69,7 +72,7 @@
 .repositories-screen .resource-card {
   display: grid;
   grid-template-rows: 1fr auto auto;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
   padding: 16px;
   border: 1px solid var(--color-border);
@@ -79,13 +82,64 @@
   overflow-wrap: anywhere;
 }
 
+.repositories-screen .resource-card[data-resource-type="pdf"] {
+  background: var(--resource-pdf-surface);
+}
+
+.repositories-screen .resource-card[data-resource-type="link"] {
+  background: var(--resource-link-surface);
+}
+
+.repositories-screen .resource-card-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
 .repositories-screen .resource-card h2 {
+  min-width: 0;
   font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.resource-file-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.resource-file-icon img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .repositories-screen :is(.resource-meta, .resource-results) {
   color: var(--color-text-muted);
   font-size: 0.875rem;
+}
+
+.repositories-screen .resource-card-type {
+  padding: 2px 8px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.repositories-screen .resource-card-actions {
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
 }
 
 .repositories-screen :is(.resource-primary, .resource-secondary, .resource-danger) {
@@ -96,7 +150,7 @@
   padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
   font-weight: 600;
@@ -146,8 +200,7 @@
   background: var(--color-overlay);
 }
 
-.repositories-screen .resource-dialog-body,
-.repositories-screen .resource-dialog form {
+.repositories-screen :is(.resource-dialog-body, .resource-dialog form) {
   display: grid;
   gap: 12px;
 }

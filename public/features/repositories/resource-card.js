@@ -1,5 +1,6 @@
 import { resourceTypeLabel } from "../../services/resource-catalog.js";
 import { createResourceOpenLink } from "./resource-dialog.js";
+import { createResourceIcon } from "./resource-icon.js";
 
 export function resourceRouteId(resource) {
   if (resource.id == null || String(resource.id).trim() === "") return null;
@@ -14,20 +15,43 @@ export function resourceDetailsHref(resource) {
 export function createResourceCard(resource, onDetails) {
   const card = document.createElement("article");
   card.className = "resource-card";
+  card.dataset.resourceType = resource.type;
+
+  const identity = document.createElement("div");
+  identity.className = "resource-card-identity";
 
   const title = document.createElement("h2");
   title.textContent = resource.title;
 
+  identity.append(createResourceIcon(resource), title);
+
   const metadata = document.createElement("p");
   metadata.className = "resource-meta";
-  metadata.textContent = [
-    resourceTypeLabel(resource),
-    resource.courseCode,
-    resource.source === "uploaded" ? "Uploaded" : "",
-  ].filter(Boolean).join(" · ");
+
+  const type = document.createElement("span");
+  type.className = "resource-card-type";
+  type.textContent = resourceTypeLabel(resource);
+  metadata.append(type);
+
+  if (resource.courseCode) {
+    const courseCode = document.createElement("span");
+    courseCode.textContent = resource.courseCode;
+    metadata.append(courseCode);
+  }
+
+  const sourceLabel = {
+    uploaded: "Uploaded",
+    saved: "Saved link",
+  }[resource.source];
+
+  if (sourceLabel) {
+    const source = document.createElement("span");
+    source.textContent = sourceLabel;
+    metadata.append(source);
+  }
 
   const actions = document.createElement("div");
-  actions.className = "resource-actions";
+  actions.className = "resource-actions resource-card-actions";
 
   const details = document.createElement("button");
   details.type = "button";
@@ -42,7 +66,7 @@ export function createResourceCard(resource, onDetails) {
   const open = createResourceOpenLink(resource);
   if (open) actions.append(open);
 
-  card.append(title, metadata, actions);
+  card.append(identity, metadata, actions);
 
   return { element: card, details };
 }
