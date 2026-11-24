@@ -132,6 +132,11 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
         <span id="quiz-course-status" data-course-status aria-live="polite"></span>
       </label>
 
+      <label>
+        EXP reward
+        <input name="expReward" type="number" min="0" step="1" max="9007199254740991" required>
+      </label>
+
       <nav class="quiz-question-nav" aria-label="Question navigator">
         <p data-question-count></p>
         <div data-question-links></div>
@@ -161,6 +166,8 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const preview = form.querySelector("[data-preview]");
   const importButton = editor.querySelector("[data-import-questions]");
 
+  const rewardInput = form.elements.namedItem("expReward");
+  rewardInput.value = quiz?.expReward ?? 100;
   title.value = quiz?.title ?? "";
 
   function markCurrent(fieldset) {
@@ -204,6 +211,13 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
 
     const quizTitle = title.value.trim();
     const courseCode = course.value;
+    const expReward = rewardInput.valueAsNumber;
+    if (!Number.isSafeInteger(expReward) || expReward < 0) {
+      status.textContent = "Enter a whole EXP amount of 0 or more.";
+      rewardInput.focus();
+      return null;
+    }
+
 
     if (!quizTitle) {
       status.textContent = "Enter a quiz title.";
@@ -258,7 +272,7 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
     return {
       title: quizTitle,
       courseCode,
-      expReward: quiz?.expReward ?? 100,
+      expReward,
       questions,
     };
   }
