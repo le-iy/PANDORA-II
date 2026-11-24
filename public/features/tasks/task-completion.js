@@ -125,6 +125,7 @@ export function openTaskCompletion(screen, task, { onComplete, onClose }) {
     actions.replaceChildren(done);
     done.focus();
 
+    window.dispatchEvent(new Event("pandora:task-completed"));
     void refreshQuestRewards(screen);
   });
 
