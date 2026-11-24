@@ -1,8 +1,55 @@
+import { getExperience } from "../../services/experience.js";
 import { readPreferences } from "../../services/preferences.js";
 import {
   countTasksCompletedToday,
   formatGoalProgress,
 } from "../../services/study-goals.js";
+import { readTaskRewards } from "../../services/task-store.js";
+
+const numberFormat = new Intl.NumberFormat("en-PH");
+const refreshRequests = new WeakMap();
+
+function readReward(taskId) {
+  try {
+    return readTaskRewards().find(({ id }) => id === taskId) ?? null;
+  } catch (error) {
+    console.error("Could not read task EXP.", error);
+    return undefined;
+  }
+}
+
+async function refreshQuestRewards(screen) {
+  const panel = screen.querySelector(".task-rewards-panel");
+  if (!panel) return;
+
+  const request = {};
+  refreshRequests.set(panel, request);
+
+  try {
+    const experience = await getExperience();
+    if (!panel.isConnected || refreshRequests.get(panel) !== request) return;
+
+    const level = panel.querySelector("[data-level]");
+    const progress = panel.querySelector("[data-level-progress]");
+    const next = panel.querySelector("[data-next-level]");
+    const format = (value) => numberFormat.format(value);
+
+    level.textContent = experience.atCap
+      ? "Level 100 · Maximum level"
+      : `Level ${format(experience.level)} · ` +
+        `${format(experience.levelExp)} / ${format(experience.expPerLevel)} EXP`;
+
+    next.textContent = experience.atCap
+      ? "All 20 ranks unlocked"
+      : `${format(experience.expToNextLevel)} EXP to Level ${format(experience.level + 1)}`;
+
+    progress.max = experience.expPerLevel;
+    progress.value = experience.levelExp;
+    progress.hidden = false;
+  } catch (error) {
+    console.error("Could not refresh quest rewards.", error);
+  }
+}
 
 export function openTaskCompletion(screen, task, { onComplete, onClose }) {
   const dialog = document.createElement("dialog");
@@ -32,21 +79,35 @@ export function openTaskCompletion(screen, task, { onComplete, onClose }) {
   });
 
   complete.addEventListener("click", () => {
+    const previousReward = readReward(task.id);
+
     if (!onComplete()) {
       feedback.textContent = "Couldn’t complete this task. Try again.";
       return;
     }
 
+    const reward = readReward(task.id);
     heading.textContent = "Task completed";
 
+    if (reward && previousReward !== undefined) {
+      const rewardMessage = document.createElement("p");
+      rewardMessage.className = "task-completion-summary";
+      rewardMessage.textContent = previousReward
+        ? "EXP already earned for this task."
+        : `+${numberFormat.format(reward.exp)} EXP earned`;
+      actions.before(rewardMessage);
+    }
+
     const quest = document.createElement("p");
-    quest.className = "task-completion-summary";
 
     try {
       const { dailyTaskGoal } = readPreferences();
       const completed = countTasksCompletedToday();
-
-      quest.textContent = formatGoalProgress(completed, dailyTaskGoal, "tasks completed");
+      quest.textContent = formatGoalProgress(
+        completed,
+        dailyTaskGoal,
+        "tasks completed",
+      );
     } catch (error) {
       console.error("Could not load daily quest progress.", error);
       quest.textContent = "Your task was saved as completed.";
@@ -63,7 +124,9 @@ export function openTaskCompletion(screen, task, { onComplete, onClose }) {
 
     actions.replaceChildren(done);
     done.focus();
-  }, { once: false });
+
+    void refreshQuestRewards(screen);
+  });
 
   dialog.addEventListener("close", () => {
     dialog.remove();
