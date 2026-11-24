@@ -3,6 +3,7 @@ import { createCourseCard } from "./course-card.js";
 import { loadCourseCounts } from "./course-counts.js";
 import { openAddCourse } from "./course-editor.js";
 import { createCourseFilters } from "./course-filters.js";
+import { countRemovedCourses, openRemovedCourses } from "./course-restore.js";
 
 export async function renderCourses(container) {
   const screen = document.createElement("section");
@@ -11,8 +12,12 @@ export async function renderCourses(container) {
   screen.innerHTML = `
     <div class="courses-heading">
       <h1>Courses</h1>
-      <button class="course-primary-button" type="button"
-        data-add-course aria-haspopup="dialog" disabled>+ Add course</button>
+      <div class="course-dialog-actions">
+        <button class="course-primary-button" type="button"
+          data-removed-courses aria-haspopup="dialog">Removed courses</button>
+        <button class="course-primary-button" type="button"
+          data-add-course aria-haspopup="dialog" disabled>+ Add course</button>
+      </div>
     </div>
 
     <div class="courses-toolbar" hidden>
@@ -33,35 +38,31 @@ export async function renderCourses(container) {
   `;
 
   const add = screen.querySelector("[data-add-course]");
+  const removed = screen.querySelector("[data-removed-courses]");
   const toolbar = screen.querySelector(".courses-toolbar");
   const typeBar = toolbar.querySelector(".course-filters");
   const semesterSelect = toolbar.querySelector("select");
   const status = screen.querySelector('[role="status"]');
   const grid = screen.querySelector(".courses-grid");
 
-  container.replaceChildren(screen);
+  removed.style.background = "var(--color-surface)";
+  removed.style.color = "var(--color-text)";
+  removed.style.borderColor = "var(--color-border)";
 
-  const pendingCounts = loadCourseCounts();
   let courses;
-
-  try {
-    courses = await loadCourseCatalog();
-  } catch (error) {
-    console.error("Could not load courses.", error);
-
-    if (screen.parentElement === container) {
-      status.textContent = "Couldn’t load courses. Try refreshing the page.";
-    }
-
-    return;
-  }
-
-  if (screen.parentElement !== container) return;
-
-  const filters = createCourseFilters(typeBar, semesterSelect, showCourses);
-
+  let filters;
   let countForCourse = null;
   let visibleCards = [];
+
+  function updateRemovedCount() {
+    try {
+      const count = countRemovedCourses();
+      removed.textContent = count ? `Removed courses (${count})` : "Removed courses";
+    } catch (error) {
+      console.error("Could not count removed courses.", error);
+      removed.textContent = "Removed courses";
+    }
+  }
 
   function showCourses() {
     const visible = filters.apply(courses);
@@ -79,6 +80,26 @@ export async function renderCourses(container) {
       : "No courses match these filters.";
   }
 
+  function initializeCourses(catalog) {
+    courses = catalog;
+    filters ??= createCourseFilters(typeBar, semesterSelect, showCourses);
+    add.disabled = false;
+    toolbar.hidden = false;
+  }
+
+  removed.addEventListener("click", () => {
+    openRemovedCourses(screen, removed, (catalog, restored) => {
+      if (screen.parentElement !== container) return;
+
+      initializeCourses(catalog);
+      if (restored) filters.revealCourse(restored);
+      showCourses();
+      updateRemovedCount();
+
+      if (restored) status.textContent = `${restored.name} restored.`;
+    });
+  });
+
   add.addEventListener("click", () => {
     openAddCourse(screen, add, courses, (course) => {
       courses.push(course);
@@ -87,15 +108,31 @@ export async function renderCourses(container) {
     }, filters.semester);
   });
 
-  add.disabled = false;
-  toolbar.hidden = false;
-  showCourses();
+  container.replaceChildren(screen);
+  updateRemovedCount();
+
+  const pendingCounts = loadCourseCounts().catch((error) => {
+    console.error("Could not load course activity counts.", error);
+    return () => ({ tasks: null, quizzes: null });
+  });
+
+  try {
+    const catalog = await loadCourseCatalog();
+    if (screen.parentElement !== container) return;
+
+    initializeCourses(catalog);
+    showCourses();
+  } catch (error) {
+    console.error("Could not load courses.", error);
+
+    if (screen.parentElement === container) {
+      status.textContent = "Couldn’t load courses. Try refreshing the page.";
+    }
+  }
 
   countForCourse = await pendingCounts;
-
   if (screen.parentElement !== container) return;
 
-  // Update the text without replacing a card the user might be focused on.
   for (const { code, card } of visibleCards) {
     card.updateCounts(countForCourse(code));
   }

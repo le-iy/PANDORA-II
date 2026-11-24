@@ -1,8 +1,9 @@
 import {
   loadCourseCatalog,
   normalizeCourseCode,
+  saveCourseName,
 } from "../../services/course-catalog.js";
-
+import { openDeleteCourse } from "./course-delete.js";
 import {
   createCourseIcon,
   getCourseIconChoice,
@@ -38,10 +39,73 @@ function showCourseProgress(workspace, course) {
   }
 
   const percentage = Math.min(100, Math.max(0, value));
-
   label.textContent = `${percentage}%`;
   bar.value = percentage;
   bar.hidden = false;
+}
+
+function openRenameCourse(workspace, trigger, course, onSaved) {
+  const dialog = document.createElement("dialog");
+  dialog.className = "header-search-dialog";
+  dialog.setAttribute("aria-labelledby", "course-rename-heading");
+
+  dialog.innerHTML = `
+    <header class="search-dialog-heading">
+      <h2 id="course-rename-heading">Rename course</h2>
+    </header>
+    <form>
+      <label>
+        Course name
+        <input class="header-search" name="courseName" maxlength="120" required>
+      </label>
+      <p role="status"></p>
+      <div class="course-detail-navigation">
+        <button class="course-detail-shortcut" type="button" data-cancel>Cancel</button>
+        <button class="course-detail-shortcut" type="submit">Save name</button>
+      </div>
+    </form>
+  `;
+
+  const form = dialog.querySelector("form");
+  const input = form.elements.namedItem("courseName");
+  const status = form.querySelector('[role="status"]');
+  input.value = course.name;
+
+  form.querySelector("[data-cancel]").addEventListener("click", () => dialog.close());
+  input.addEventListener("input", () => { status.textContent = ""; });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = input.value.trim();
+
+    if (!name) {
+      status.textContent = "Enter a course name.";
+      input.focus();
+      return;
+    }
+
+    let savedName;
+
+    try {
+      savedName = name === course.name ? name : saveCourseName(course.code, name);
+    } catch (error) {
+      console.error("Could not rename course.", error);
+      status.textContent = "Couldn’t save the name. Try again.";
+      return;
+    }
+
+    onSaved(savedName);
+    dialog.close();
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.remove();
+    if (trigger.isConnected) trigger.focus();
+  }, { once: true });
+
+  workspace.append(dialog);
+  dialog.showModal();
+  input.select();
 }
 
 export async function renderCourseWorkspace(container, code) {
@@ -74,7 +138,7 @@ export async function renderCourseWorkspace(container, code) {
     </header>
 
     <nav class="course-detail-navigation" aria-label="Course sections" hidden></nav>
-    <p data-icon-feedback role="status" hidden></p>
+    <p data-course-feedback role="status" hidden></p>
     <div class="course-detail-panels" data-panels hidden></div>
   `;
 
@@ -85,13 +149,13 @@ export async function renderCourseWorkspace(container, code) {
   const codeLabel = workspace.querySelector("[data-course-code]");
   const navigation = workspace.querySelector("nav");
   const panelGrid = workspace.querySelector("[data-panels]");
+  const feedback = workspace.querySelector("[data-course-feedback]");
   const courseCode = normalizeCourseCode(code);
-
   let course;
 
   try {
     const catalog = await loadCourseCatalog();
-    course = catalog.find((item) => normalizeCourseCode(item.code) === courseCode);
+    course = catalog.find((item) => item.code === courseCode);
   } catch (error) {
     console.error("Could not load course workspace.", error);
     if (workspace.parentElement === container) {
@@ -108,71 +172,84 @@ export async function renderCourseWorkspace(container, code) {
     return;
   }
 
-  const type = course.type === "laboratory" ? "Laboratory" : "Lecture";
-  const semester = course.semester === "previous"
-    ? "Previous semester"
-    : "Current semester";
+  function showCourseName() {
+    heading.textContent = course.name;
+    document.title = `${course.name} | PANDORA II`;
+  }
 
+  function showFeedback(message) {
+    feedback.hidden = false;
+    feedback.textContent = message;
+  }
+
+  function addShortcut(label, action, opensDialog = false) {
+    const control = document.createElement("button");
+    control.type = "button";
+    control.className = "course-detail-shortcut";
+    control.textContent = label;
+    if (opensDialog) control.setAttribute("aria-haspopup", "dialog");
+    control.addEventListener("click", () => action(control));
+    navigation.append(control);
+    return control;
+  }
+
+  const type = course.type === "laboratory" ? "Laboratory" : "Lecture";
+  const semester = course.semester === "previous" ? "Previous semester" : "Current semester";
   const iconSlot = workspace.querySelector("[data-course-icon]");
+
   iconSlot.append(createCourseIcon(course.code));
   codeLabel.textContent = course.code;
   codeLabel.hidden = false;
-  heading.textContent = course.name;
-  document.title = `${course.name} | PANDORA II`;
+  showCourseName();
   status.textContent = `${type} · ${semester}`;
   showCourseProgress(workspace, course);
 
   const panels = workspaceSections.map((section) => {
     const panel = createWorkspacePanel(section);
     const panelHeading = panel.element.querySelector("h2");
-    const control = document.createElement("button");
-    const label = document.createElement("span");
-    const count = document.createElement("span");
-
     panel.element.dataset.courseSection = section.id;
     panelHeading.tabIndex = -1;
 
-    control.type = "button";
-    control.className = "course-detail-shortcut";
-    label.textContent = section.label;
-    count.className = "course-detail-shortcut-count";
-    count.hidden = true;
-    control.append(label, count);
-
-    control.addEventListener("click", () => {
+    const control = addShortcut(section.label, () => {
       panelHeading.focus({ preventScroll: true });
       panel.element.scrollIntoView({ block: "nearest" });
     });
 
-    navigation.append(control);
+    const count = document.createElement("span");
+    count.className = "course-detail-shortcut-count";
+    count.hidden = true;
+    control.append(count);
     panelGrid.append(panel.element);
 
     return { section, panel, count };
   });
 
-  const changeIcon = document.createElement("button");
-  changeIcon.type = "button";
-  changeIcon.className = "course-detail-shortcut";
-  changeIcon.textContent = "Change icon";
-  changeIcon.setAttribute("aria-haspopup", "dialog");
-
-  const iconFeedback = workspace.querySelector("[data-icon-feedback]");
-
-  changeIcon.addEventListener("click", () => {
-    openCourseIconPicker(changeIcon, {
+  addShortcut("Change icon", (trigger) => {
+    openCourseIconPicker(trigger, {
       code: course.code,
       name: course.name,
       choice: getCourseIconChoice(course.code),
       onUse(id) {
         saveCourseIconChoice(course.code, id);
         iconSlot.replaceChildren(createCourseIcon(course.code, id));
-        iconFeedback.hidden = false;
-        iconFeedback.textContent = id ? "Course icon updated." : "Default course icon restored.";
+        showFeedback(id ? "Course icon updated." : "Default course icon restored.");
       },
     });
-  });
+  }, true);
 
-  navigation.append(changeIcon);
+  addShortcut("Rename course", (trigger) => {
+    openRenameCourse(workspace, trigger, course, (name) => {
+      course.name = name;
+      showCourseName();
+      showFeedback("Course name saved.");
+    });
+  }, true);
+
+  const deleteButton = addShortcut("Delete course", (trigger) => {
+    openDeleteCourse(workspace, trigger, course);
+  }, true);
+  deleteButton.style.color = "var(--color-danger)";
+
   navigation.hidden = false;
   panelGrid.hidden = false;
 

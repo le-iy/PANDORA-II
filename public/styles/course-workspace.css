@@ -223,3 +223,195 @@
     align-items: center;
   }
 }
+
+/* Course workspace hierarchy */
+.course-detail-screen > .course-detail-back {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  text-underline-offset: 3px;
+}
+
+.course-detail-header h1 {
+  font-size: clamp(1.625rem, 3vw, 2.25rem);
+  font-weight: 750;
+}
+
+.course-detail-header .course-detail-progress {
+  background: var(--color-background);
+}
+
+.course-detail-progress:not(:has(progress:not([hidden]))) [data-progress-label] {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.course-detail-screen > .course-detail-navigation {
+  align-items: center;
+}
+
+.course-detail-screen > .course-detail-navigation
+  .course-detail-shortcut:not([aria-haspopup]) {
+  background: var(--color-surface-muted);
+}
+
+.course-detail-screen > .course-detail-navigation
+  .course-detail-shortcut[aria-haspopup="dialog"] {
+  border-color: transparent;
+  background: transparent;
+  font-size: 0.875rem;
+}
+
+.course-detail-screen > .course-detail-navigation
+  .course-detail-shortcut[aria-haspopup="dialog"]:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+.course-detail-screen .course-panel-link {
+  font-size: 0.875rem;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 1050px) {
+  .course-detail-screen > .course-detail-navigation
+    .course-detail-shortcut:not([aria-haspopup]) + [aria-haspopup="dialog"] {
+    margin-inline-start: auto;
+  }
+}
+
+/* Linked-items warning and final confirmation */
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"] {
+  width: min(480px, calc(100% - 24px));
+  padding: clamp(16px, 4vw, 24px);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  .search-dialog-heading {
+  margin-bottom: 12px;
+}
+
+.course-detail-screen #course-delete-heading {
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.course-detail-screen #course-delete-item {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  font-weight: 700;
+}
+
+.course-detail-screen #course-delete-message:not(:empty) {
+  margin-block: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-counts]:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 115px), 1fr));
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-counts] li {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-error]:empty {
+  margin: 0;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-error]:not(:empty) {
+  color: var(--color-danger);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  .course-detail-navigation {
+  justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-action] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+/* The existing delete dialog marks its final step with an inline color. */
+.course-detail-screen dialog[aria-labelledby="course-delete-heading"]
+  [data-action][style*="--color-danger"] {
+  border-color: #96354c;
+  background: #96354c;
+  color: #fff !important;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"] {
+  width: min(440px, calc(100% - 24px));
+  padding: clamp(16px, 4vw, 24px);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"] form {
+  display: grid;
+  gap: 12px;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"] label {
+  gap: 8px;
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"] input {
+  min-height: 44px;
+  background: var(--color-background);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"]
+  [role="status"] {
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"]
+  .course-detail-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.course-detail-screen dialog[aria-labelledby="course-rename-heading"]
+  button[type="submit"] {
+  justify-content: center;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .course-detail-screen dialog[aria-labelledby="course-rename-heading"]
+    .course-detail-navigation button {
+    flex: 1 1 110px;
+    justify-content: center;
+  }
+}
