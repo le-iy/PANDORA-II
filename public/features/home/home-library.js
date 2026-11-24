@@ -1,23 +1,33 @@
+import { createCourseIcon } from "../courses/course-icon.js";
 import { loadCourseCatalog } from "../../services/course-catalog.js";
 import {
   getQuizState,
   loadQuizHistory,
   loadQuizzes,
 } from "../../services/quiz-catalog.js";
-
 import {
   loadResourceCatalog,
   resolveResourceUrl,
   resourceTypeLabel,
 } from "../../services/resource-catalog.js";
-
 import { showHomeRows } from "./home-rows.js";
+
+const resourceIcons = new URL("../../assets/icons/resources/", import.meta.url);
 
 const quizStatusLabels = {
   "not-started": "Not started",
   "in-progress": "In progress",
   completed: "Completed",
 };
+
+function createResourceIcon(resource) {
+  const icon = document.createElement("img");
+  icon.className = "home-row-icon";
+  icon.alt = "";
+  icon.addEventListener("error", () => icon.remove(), { once: true });
+  icon.src = new URL(resource.type === "pdf" ? "pdf.svg" : "link.svg", resourceIcons).href;
+  return icon;
+}
 
 function wireTabs(panel) {
   const tabs = Array.from(panel.querySelectorAll('[role="tab"]'));
@@ -59,13 +69,12 @@ async function showCourses(list, count) {
     const courses = await loadCourseCatalog();
     count.textContent = String(courses.length);
 
-    const rows = courses.map((course) => ({
+    showHomeRows(list, courses.map((course) => ({
       title: course.name,
       detail: course.code,
       href: `#/courses/${encodeURIComponent(course.code)}`,
-    }));
-
-    showHomeRows(list, rows, "No courses yet.");
+      icon: createCourseIcon(course.code),
+    })), "No courses yet.");
   } catch (error) {
     console.error("Could not load courses.", error);
     count.textContent = "—";
@@ -74,18 +83,30 @@ async function showCourses(list, count) {
 }
 
 async function showResources(list) {
-  try {
-    const resources = await loadResourceCatalog();
+  let partial = false;
 
-    const rows = resources.map((resource) => ({
+  try {
+    const resources = await loadResourceCatalog({
+      onPdfError() {
+        partial = true;
+      },
+    });
+
+    showHomeRows(list, resources.map((resource) => ({
       title: resource.title,
       detail: [resource.courseCode, resourceTypeLabel(resource)]
         .filter(Boolean).join(" · "),
       href: resolveResourceUrl(resource.url)?.href,
       newTab: true,
-    }));
+      icon: createResourceIcon(resource),
+    })), partial ? "Couldn’t load uploaded PDFs." : "No resources yet.");
 
-    showHomeRows(list, rows, "No resources yet.");
+    if (partial && resources.length > 0) {
+      const notice = document.createElement("li");
+      notice.className = "home-empty";
+      notice.textContent = "Uploaded PDFs couldn’t be loaded.";
+      list.append(notice);
+    }
   } catch (error) {
     console.error("Could not load resources.", error);
     showHomeRows(list, [], "Couldn’t load resources.");
@@ -101,16 +122,15 @@ async function showQuizzes(list) {
       .filter((quiz) => quiz.questions.length > 0)
       .map((quiz) => ({ quiz, state: getQuizState(quiz, history) }));
 
-    // Put resumable sessions first so they are visible in the short Home list.
     entries.sort((a, b) =>
       Number(b.state.status === "in-progress") -
       Number(a.state.status === "in-progress"),
     );
 
     const rows = entries.slice(0, 5).map(({ quiz, state }) => {
-      const count = quiz.questions.length;
+      const answered = state.draft?.answers.filter((answer) => answer !== null).length;
       const progress = state.draft
-        ? `${state.draft.answers.filter((answer) => answer !== null).length}/${count} answered`
+        ? `${answered}/${quiz.questions.length} answered`
         : "";
 
       return {

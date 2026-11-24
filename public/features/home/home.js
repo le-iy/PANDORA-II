@@ -3,7 +3,11 @@ import { renderHomeTasks } from "./home-tasks.js";
 import { renderHomeLibrary } from "./home-library.js";
 import { renderHomeLevel } from "./home-level.js";
 
-const iconDirectory = new URL("../../assets/icons/gamification/", import.meta.url);
+const assets = new URL("../../assets/", import.meta.url);
+
+function asset(path) {
+  return new URL(path, assets).href;
+}
 
 export function renderHome(container) {
   const dashboard = document.createElement("section");
@@ -17,26 +21,32 @@ export function renderHome(container) {
       <a class="home-stat" data-tone="pink" href="#/tasks">
         <span>Tasks Due</span>
         <strong data-open-count>…</strong>
-        <img src="${new URL("tasks-due.svg", iconDirectory)}" alt="">
+        <img src="${asset("icons/gamification/tasks-due.svg")}" alt="">
       </a>
       <a class="home-stat" data-tone="mint" href="#/tasks">
         <span>Tasks Finished</span>
         <strong data-finished-count>…</strong>
-        <img src="${new URL("tasks-finished.svg", iconDirectory)}" alt="">
+        <img src="${asset("icons/gamification/tasks-finished.svg")}" alt="">
       </a>
       <a class="home-stat" data-tone="lavender" href="#/courses">
         <span>Total Courses</span>
         <strong data-course-count>…</strong>
-        <img src="${new URL("course-books.svg", iconDirectory)}" alt="">
+        <img src="${asset("icons/gamification/course-books.svg")}" alt="">
       </a>
     </section>
 
     <section class="home-panel home-library" aria-label="Courses and resources">
       <div class="home-tabs" role="tablist" aria-label="Library views">
         <button type="button" id="home-subjects-tab" role="tab"
-          aria-selected="true" aria-controls="home-subjects-panel">Subjects</button>
+          aria-selected="true" aria-controls="home-subjects-panel">
+          <img src="${asset("icons/navigation/courses.svg")}" alt="">
+          Subjects
+        </button>
         <button type="button" id="home-repo-tab" role="tab" tabindex="-1"
-          aria-selected="false" aria-controls="home-repo-panel">Repo</button>
+          aria-selected="false" aria-controls="home-repo-panel">
+          <img src="${asset("icons/resources/repository-folder.svg")}" alt="">
+          Repo
+        </button>
       </div>
 
       <div id="home-subjects-panel" role="tabpanel" aria-labelledby="home-subjects-tab">
@@ -52,12 +62,19 @@ export function renderHome(container) {
 
     <div class="home-study">
       <section class="home-panel home-exp" data-exp-panel aria-labelledby="home-exp-heading">
-        <h2 id="home-exp-heading">Level Progress</h2>
-        <div class="home-exp-summary">
-          <strong data-level></strong>
-          <span data-exp-total></span>
+        <div class="home-panel-heading">
+          <h2 id="home-exp-heading">Level Progress</h2>
+          <strong class="home-level-tag" data-level></strong>
         </div>
-        <progress aria-label="EXP progress toward the next level" hidden></progress>
+        <div class="home-scholar">
+          <img width="44" height="44" alt="" data-home-badge>
+          <div class="home-scholar-copy">
+            <strong data-home-badge-name></strong>
+            <span data-exp-total></span>
+          </div>
+        </div>
+        <progress data-level-progress aria-label="EXP progress toward the next level"
+          hidden></progress>
         <p role="status">Loading EXP…</p>
       </section>
 
@@ -70,7 +87,7 @@ export function renderHome(container) {
 
     <div class="home-planner">
       <section class="home-panel home-calendar" aria-label="Calendar and agenda">
-        <div class="home-calendar-header">
+        <div class="home-panel-heading">
           <h2 data-calendar-month aria-live="polite"></h2>
           <div class="home-calendar-controls">
             <button type="button" data-month-offset="-1" aria-label="Previous month">‹</button>
@@ -81,10 +98,12 @@ export function renderHome(container) {
         <div class="home-calendar-grid home-weekdays" data-calendar-weekdays
           aria-hidden="true"></div>
         <div class="home-calendar-grid" data-calendar-days></div>
+        <img class="home-calendar-art"
+          src="${asset("illustrations/calendar-cozy-scene.svg")}" alt="">
 
         <h3 data-agenda-heading></h3>
         <ul class="home-data-list" data-agenda-list></ul>
-        <a href="#/schedule">Open Schedule</a>
+        <a href="#/schedule" data-open-schedule>Open selected day in Schedule</a>
       </section>
 
       <section class="home-panel home-tasks" aria-labelledby="home-task-heading">
@@ -94,6 +113,14 @@ export function renderHome(container) {
       </section>
     </div>
   `;
+
+  for (const image of dashboard.querySelectorAll("img[src]")) {
+    if (image.complete && image.naturalWidth === 0) {
+      image.remove();
+    } else {
+      image.addEventListener("error", () => image.remove(), { once: true });
+    }
+  }
 
   container.replaceChildren(dashboard);
 

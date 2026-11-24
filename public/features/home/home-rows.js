@@ -7,9 +7,12 @@ export function showHomeRows(list, entries, emptyMessage) {
     return;
   }
 
-  const rows = entries.map(({ title, detail, state, href, newTab }) => {
+  const rows = entries.map(({ title, detail, state, href, newTab, icon }) => {
     const row = document.createElement("li");
     row.className = "home-data-row";
+
+    const copy = document.createElement("div");
+    copy.className = "home-row-copy";
 
     const name = document.createElement(href ? "a" : "strong");
     name.textContent = title;
@@ -24,17 +27,17 @@ export function showHomeRows(list, entries, emptyMessage) {
       }
     }
 
-    row.append(name);
+    copy.append(name);
 
     if (detail) {
       const description = document.createElement("span");
       description.textContent = detail;
-
       if (state) description.dataset.state = state;
-
-      row.append(description);
+      copy.append(description);
     }
 
+    if (icon) row.append(icon);
+    row.append(copy);
     return row;
   });
 
