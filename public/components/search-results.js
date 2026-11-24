@@ -1,5 +1,14 @@
+const iconFolder = new URL("../assets/icons/navigation/", import.meta.url);
+
+const icons = {
+  courses: "courses.svg",
+  tasks: "tasks.svg",
+  quizzes: "quizzes-tab.svg",
+  repositories: "repositories.svg",
+};
+
 export function showSearchResults(container, entries, onNavigate) {
-  if (entries.length === 0) {
+  if (!entries.length) {
     container.replaceChildren();
     return;
   }
@@ -9,10 +18,20 @@ export function showSearchResults(container, entries, onNavigate) {
 
   for (const entry of entries) {
     const row = document.createElement("li");
-
     const link = document.createElement("a");
     link.className = "search-result-link";
     link.href = entry.href;
+
+    const icon = document.createElement("img");
+    const route = entry.href.split("/")[1];
+    icon.className = "workspace-search-result-icon";
+    icon.src = new URL(icons[route] ?? "search.svg", iconFolder).href;
+    icon.width = 20;
+    icon.height = 20;
+    icon.alt = "";
+
+    const copy = document.createElement("span");
+    copy.className = "workspace-search-result-copy";
 
     const title = document.createElement("strong");
     title.textContent = entry.title;
@@ -20,9 +39,16 @@ export function showSearchResults(container, entries, onNavigate) {
     const category = document.createElement("span");
     category.className = "search-result-category";
     category.textContent = [entry.category, entry.courseCode]
-      .filter(Boolean).join(" · ");
+      .filter(Boolean)
+      .join(" · ");
 
-    link.append(title, category);
+    const arrow = document.createElement("span");
+    arrow.className = "workspace-search-result-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "›";
+
+    copy.append(title, category);
+    link.append(icon, copy, arrow);
 
     link.addEventListener("click", (event) => {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;

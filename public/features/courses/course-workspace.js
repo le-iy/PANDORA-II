@@ -19,23 +19,56 @@ function loadStylesheet() {
   document.head.append(link);
 }
 
+function showCourseProgress(workspace, course) {
+  const section = workspace.querySelector("[data-course-progress]");
+  const label = section.querySelector("[data-progress-label]");
+  const bar = section.querySelector("progress");
+  const value = Number(course.progress);
+
+  section.hidden = false;
+
+  if (course.progress == null || course.progress === "" || !Number.isFinite(value)) {
+    label.textContent = "No progress recorded";
+    return;
+  }
+
+  const percentage = Math.min(100, Math.max(0, value));
+
+  label.textContent = `${percentage}%`;
+  bar.value = percentage;
+  bar.hidden = false;
+}
+
 export async function renderCourseWorkspace(container, code) {
   loadStylesheet();
 
   const workspace = document.createElement("section");
   workspace.className = "course-detail-screen";
+  workspace.setAttribute("aria-labelledby", "course-workspace-heading");
 
   workspace.innerHTML = `
     <a class="course-detail-back" href="#/courses">← Back to Courses</a>
 
     <header class="course-detail-header">
-      <div data-course-icon></div>
-      <div>
-        <h1>Course workspace</h1>
-        <p data-course-status role="status">Loading course…</p>
+      <div class="course-detail-identity">
+        <div data-course-icon></div>
+        <div>
+          <p class="course-detail-code" data-course-code hidden></p>
+          <h1 id="course-workspace-heading">Course workspace</h1>
+          <p class="course-detail-meta" data-course-status role="status">Loading course…</p>
+        </div>
+      </div>
+
+      <div class="course-detail-progress" data-course-progress hidden>
+        <p>
+          <span>Course progress</span>
+          <strong data-progress-label></strong>
+        </p>
+        <progress max="100" aria-label="Course progress" hidden></progress>
       </div>
     </header>
 
+    <nav class="course-detail-navigation" aria-label="Course sections" hidden></nav>
     <div class="course-detail-panels" data-panels hidden></div>
   `;
 
@@ -43,6 +76,8 @@ export async function renderCourseWorkspace(container, code) {
 
   const heading = workspace.querySelector("h1");
   const status = workspace.querySelector("[data-course-status]");
+  const codeLabel = workspace.querySelector("[data-course-code]");
+  const navigation = workspace.querySelector("nav");
   const panelGrid = workspace.querySelector("[data-panels]");
   const courseCode = normalizeCourseCode(code);
 
@@ -53,7 +88,9 @@ export async function renderCourseWorkspace(container, code) {
     course = catalog.find((item) => normalizeCourseCode(item.code) === courseCode);
   } catch (error) {
     console.error("Could not load course workspace.", error);
-    status.textContent = "Couldn’t load the course. Try refreshing the page.";
+    if (workspace.parentElement === container) {
+      status.textContent = "Couldn’t load the course. Try refreshing the page.";
+    }
     return;
   }
 
@@ -71,22 +108,52 @@ export async function renderCourseWorkspace(container, code) {
     : "Current semester";
 
   workspace.querySelector("[data-course-icon]").append(createCourseIcon(course.code));
+  codeLabel.textContent = course.code;
+  codeLabel.hidden = false;
   heading.textContent = course.name;
   document.title = `${course.name} | PANDORA II`;
-  status.textContent = `${course.code} · ${type} · ${semester}`;
+  status.textContent = `${type} · ${semester}`;
+  showCourseProgress(workspace, course);
 
   const panels = workspaceSections.map((section) => {
     const panel = createWorkspacePanel(section);
+    const panelHeading = panel.element.querySelector("h2");
+    const control = document.createElement("button");
+    const label = document.createElement("span");
+    const count = document.createElement("span");
+
+    panel.element.dataset.courseSection = section.id;
+    panelHeading.tabIndex = -1;
+
+    control.type = "button";
+    control.className = "course-detail-shortcut";
+    label.textContent = section.label;
+    count.className = "course-detail-shortcut-count";
+    count.hidden = true;
+    control.append(label, count);
+
+    control.addEventListener("click", () => {
+      panelHeading.focus({ preventScroll: true });
+      panel.element.scrollIntoView({ block: "nearest" });
+    });
+
+    navigation.append(control);
     panelGrid.append(panel.element);
-    return { section, panel };
+
+    return { section, panel, count };
   });
 
+  navigation.hidden = false;
   panelGrid.hidden = false;
 
-  await Promise.all(panels.map(async ({ section, panel }) => {
+  await Promise.all(panels.map(async ({ section, panel, count }) => {
     try {
       const rows = await loadWorkspaceRows(section, courseCode);
-      if (workspace.parentElement === container) panel.showRows(rows);
+      if (workspace.parentElement !== container) return;
+
+      panel.showRows(rows);
+      count.textContent = String(rows.length);
+      count.hidden = false;
     } catch (error) {
       console.error(`Could not load course ${section.id}.`, error);
       if (workspace.parentElement === container) panel.showError();
