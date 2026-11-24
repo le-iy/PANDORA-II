@@ -173,6 +173,7 @@ export function renderHeader(container) {
     options,
   );
   window.addEventListener("pandora:task-completed", refreshLevel, options);
+  window.addEventListener("pandora:quiz-completed", refreshLevel, options);
 
   const timer = window.setInterval(refreshReminders, 15_000);
   controller.signal.addEventListener("abort", () => window.clearInterval(timer), {
