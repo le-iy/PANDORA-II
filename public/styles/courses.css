@@ -330,3 +330,80 @@
     margin-inline-end: 0;
   }
 }
+
+/* Courses page and card hierarchy */
+.courses-screen .courses-heading [data-add-course] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+.courses-screen .course-card {
+  gap: 12px;
+  padding: clamp(14px, 1.6vw, 20px);
+}
+
+.courses-screen .course-card h2 {
+  color: var(--color-text);
+  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.courses-screen .course-card .course-code {
+  font-size: 0.8125rem;
+}
+
+.courses-screen .course-card .course-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.courses-screen .course-card-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.courses-screen .course-card-counts {
+  font-size: 0.8125rem;
+}
+
+.courses-screen .course-card-footer .course-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.courses-screen .course-card-footer button.course-primary-button {
+  min-height: 44px;
+  padding-inline: 4px;
+  border-color: transparent;
+  background: transparent !important;
+  color: var(--color-text) !important;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.courses-screen .course-card-footer button.course-primary-button:hover {
+  color: var(--color-primary) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.courses-screen .course-card-footer a.course-primary-button {
+  justify-content: center;
+  min-height: 44px;
+  margin-inline-start: auto;
+  padding-inline: 12px;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
