@@ -48,15 +48,20 @@ export function createRepositoryFilters(filterBar, search, sort, onChange) {
         button.setAttribute("aria-pressed", String(active.id === filter.id));
       }
 
-      const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      const terms = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
       const visible = resources.filter((resource) => {
         if (!matchesFilter(resource, active.id)) return false;
 
-        const searchable = [resource.title, resource.courseCode, resource.filename]
-          .filter(Boolean).join(" ").toLowerCase();
+        const text = [
+          resource.title,
+          resource.courseCode,
+          resource.filename,
+          resource.type,
+          resource.source === "uploaded" ? "uploaded" : "",
+        ].filter(Boolean).join(" ").toLowerCase();
 
-        return terms.every((term) => searchable.includes(term));
+        return terms.every((term) => text.includes(term));
       });
 
       if (sort.value === "name") {
@@ -71,9 +76,9 @@ export function createRepositoryFilters(filterBar, search, sort, onChange) {
 
       const count = visible.length;
       const summary = count
-        ? `${count} ${count === 1 ? "resource" : "resources"} shown`
+        ? `${count} ${count === 1 ? "item" : "items"} shown`
         : terms.length
-          ? "No resources match your search in this filter."
+          ? "No resources match this search."
           : active.empty;
 
       return { visible, summary };

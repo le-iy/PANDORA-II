@@ -41,6 +41,7 @@ function exposePdf(record) {
     url,
     filename: record.filename,
     addedAt: record.addedAt,
+    sizeBytes: record.file.size,
   };
 }
 
@@ -144,10 +145,11 @@ export function saveResourceLink(details, catalog, existingId = null) {
     addedAt: existing?.addedAt ?? new Date().toISOString(),
   };
 
-  writeSavedLinks(existing
+  const next = existing
     ? saved.map((item) => item?.id === existingId ? resource : item)
-    : [...saved, resource]);
+    : [...saved, resource];
 
+  writeSavedLinks(next);
   return { ...resource, source: "saved" };
 }
 
@@ -156,9 +158,9 @@ export async function saveResourcePdf({ title, courseCode, file }) {
     throw new Error("Choose a PDF file up to 40 MB.");
   }
 
-  const signature = await file.slice(0, 5).text();
-
-  if (signature !== "%PDF-") throw new Error("Choose a valid PDF file.");
+  if (await file.slice(0, 5).text() !== "%PDF-") {
+    throw new Error("Choose a valid PDF file.");
+  }
 
   const record = {
     id: crypto.randomUUID(),

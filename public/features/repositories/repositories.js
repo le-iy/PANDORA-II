@@ -2,13 +2,19 @@ import { loadResourceCatalog } from "../../services/resource-catalog.js";
 import { createResourceCard, resourceRouteId } from "./resource-card.js";
 import { openResourceDialog } from "./resource-dialog.js";
 import { createRepositoryFilters } from "./repository-filters.js";
+import { showRepositoryOverview } from "./repository-overview.js";
+
+const folderIcon = new URL(
+  "../../assets/icons/resources/repository-folder.svg",
+  import.meta.url,
+);
 
 export async function renderRepositories(container, requestedId = null) {
   const screen = document.createElement("section");
   screen.className = "repositories-screen";
 
   screen.innerHTML = `
-    <div class="repository-heading">
+    <header class="repository-heading">
       <h1>Repositories</h1>
       <div class="resource-actions">
         <button class="resource-secondary" type="button" data-add-link
@@ -16,7 +22,10 @@ export async function renderRepositories(container, requestedId = null) {
         <button class="resource-primary" type="button" data-add-pdf
           aria-haspopup="dialog" disabled>+ Upload PDF</button>
       </div>
-    </div>
+    </header>
+
+    <dl class="repository-stats" data-repository-stats
+      aria-label="Repository overview" hidden></dl>
 
     <div class="resource-toolbar" hidden>
       <label>
@@ -36,20 +45,62 @@ export async function renderRepositories(container, requestedId = null) {
         aria-label="Filter resources by type"></div>
     </div>
 
-    <p class="resource-results" data-results role="status">Loading resources…</p>
     <p class="resource-results" data-feedback role="status"></p>
-    <section class="resources-list" aria-label="Study resources"></section>
+
+    <div class="repository-workspace">
+      <section class="repository-library" aria-labelledby="resource-table-heading">
+        <div class="repository-heading">
+          <h2 id="resource-table-heading">Files &amp; links</h2>
+          <p class="resource-results" data-results role="status">Loading resources…</p>
+        </div>
+
+        <table class="repository-table" aria-labelledby="resource-table-heading" hidden>
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">File or link</th>
+              <th scope="col">Course</th>
+              <th scope="col">Added</th>
+              <th scope="col">Size or source</th>
+              <th scope="col">Open</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <aside class="repository-aside" aria-label="Collection tools" hidden>
+        <section class="repository-upload">
+          <img src="${folderIcon.href}" width="40" height="40" alt="">
+          <h2>Add study materials</h2>
+          <button class="resource-primary" type="button" data-browse
+            aria-haspopup="dialog">Browse files</button>
+        </section>
+
+        <section class="repository-collection">
+          <h2>Your collection</h2>
+          <dl>
+            <dt>PDF documents</dt><dd data-collection-pdfs></dd>
+            <dt>Links</dt><dd data-collection-links></dd>
+            <dt>Uploaded PDFs</dt><dd data-collection-uploads></dd>
+            <dt>Uploaded size</dt><dd data-collection-size></dd>
+          </dl>
+        </section>
+      </aside>
+    </div>
   `;
 
   const addLink = screen.querySelector("[data-add-link]");
   const addPdf = screen.querySelector("[data-add-pdf]");
+  const browse = screen.querySelector("[data-browse]");
   const toolbar = screen.querySelector(".resource-toolbar");
   const search = toolbar.querySelector("input");
   const sort = toolbar.querySelector("select");
   const filterBar = toolbar.querySelector(".course-filters");
   const status = screen.querySelector("[data-results]");
   const feedback = screen.querySelector("[data-feedback]");
-  const list = screen.querySelector(".resources-list");
+  const table = screen.querySelector("table");
+  const rows = table.tBodies[0];
 
   container.replaceChildren(screen);
 
@@ -75,28 +126,30 @@ export async function renderRepositories(container, requestedId = null) {
   if (screen.parentElement !== container) return;
 
   const detailsButtons = new Map();
-  const filters = createRepositoryFilters(filterBar, search, sort, () => {
-    feedback.textContent = "";
-    showResources();
-  });
+  const filters = createRepositoryFilters(filterBar, search, sort, showResources);
 
   function showResources() {
     const { visible, summary } = filters.apply(resources);
     detailsButtons.clear();
 
-    const cards = visible.map((resource) => {
-      const card = createResourceCard(resource, showDialog);
+    rows.replaceChildren(...visible.map((resource) => {
+      const row = createResourceCard(resource, showDialog);
       const id = resourceRouteId(resource);
 
-      if (id !== null) detailsButtons.set(id, card.details);
+      if (id !== null) detailsButtons.set(id, row.details);
 
-      return card.element;
-    });
+      return row.element;
+    }));
 
-    list.replaceChildren(...cards);
+    table.hidden = visible.length === 0;
     status.textContent = pdfUnavailable
       ? `${summary} Uploaded PDFs couldn’t be loaded.`
       : summary;
+  }
+
+  function refreshCollection() {
+    showRepositoryOverview(screen, resources, pdfUnavailable);
+    showResources();
   }
 
   function showDialog(trigger, resource = null, mode = "link") {
@@ -113,18 +166,18 @@ export async function renderRepositories(container, requestedId = null) {
             resourceRouteId(item) === id ? saved : item,
           );
         } else {
-          resources = [...resources, saved];
+          resources.push(saved);
           filters.revealSaved(saved);
         }
 
-        showResources();
+        refreshCollection();
         feedback.textContent = `${isEdit ? "Updated" : "Saved"}: ${saved.title}`;
       },
 
       onRemoved(removed) {
         const id = resourceRouteId(removed);
         resources = resources.filter((item) => resourceRouteId(item) !== id);
-        showResources();
+        refreshCollection();
         feedback.textContent = `Removed: ${removed.title}`;
       },
     });
@@ -132,11 +185,15 @@ export async function renderRepositories(container, requestedId = null) {
 
   addLink.addEventListener("click", () => showDialog(addLink));
   addPdf.addEventListener("click", () => showDialog(addPdf, null, "pdf"));
+  browse.addEventListener("click", () => showDialog(browse, null, "pdf"));
 
   toolbar.hidden = false;
+  screen.querySelector("[data-repository-stats]").hidden = false;
+  screen.querySelector(".repository-aside").hidden = false;
   addLink.disabled = false;
   addPdf.disabled = pdfUnavailable;
-  showResources();
+  browse.disabled = pdfUnavailable;
+  refreshCollection();
 
   if (requestedId !== null) {
     const resource = resources.find((item) => resourceRouteId(item) === requestedId);
