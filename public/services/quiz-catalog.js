@@ -112,6 +112,19 @@ function changeCustomQuiz(original, change) {
   clearDraft(current);
 }
 
+function earnedQuizExp(quiz) {
+  if (Number.isFinite(quiz.earnedExpReward)) return quiz.earnedExpReward;
+  const key = quizRewardKey(quiz);
+  const alreadyEarned = readList(historyKey).some((attempt) => {
+    if (!attempt || attempt.total <= 0 || attempt.score !== attempt.total) return false;
+    const attemptKey = attempt.rewardKey ?? (
+      quiz.id != null && attempt.quizId === quiz.id ? key : quizRewardKey(attempt)
+    );
+    return attemptKey === key;
+  });
+  return alreadyEarned ? quiz.expReward : undefined;
+}
+
 export function updateCustomQuiz(original, details) {
   try {
     changeCustomQuiz(original, (current) => ({
@@ -119,6 +132,8 @@ export function updateCustomQuiz(original, details) {
       title: details.title,
       courseCode: details.courseCode,
       questions: details.questions,
+      expReward: details.expReward ?? current.expReward,
+      earnedExpReward: earnedQuizExp(current),
       originalRewardKey: quizRewardKey(current),
       revision: crypto.randomUUID(),
     }));
@@ -136,6 +151,7 @@ export function removeCustomQuiz(quiz) {
     title: current.title,
     courseCode: current.courseCode,
     expReward: current.expReward,
+    earnedExpReward: current.earnedExpReward,
     originalRewardKey: quizRewardKey(current),
     questions: [],
     removedAt: new Date().toISOString(),
