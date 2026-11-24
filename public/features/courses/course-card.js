@@ -1,3 +1,5 @@
+import { createCourseIcon } from "./course-icon.js";
+
 function createProgress(course) {
   const value = Number(course.progress);
 
@@ -31,15 +33,24 @@ export function createCourseCard(course) {
   const metadata = document.createElement("div");
   metadata.className = "course-meta";
 
+  const identity = document.createElement("div");
+  identity.style.display = "flex";
+  identity.style.alignItems = "center";
+  identity.style.gap = "8px";
+
   const code = document.createElement("p");
   code.className = "course-code";
   code.textContent = course.code;
+
+  const icon = createCourseIcon(course.code);
+  icon.style.cssText = "display:grid;place-items:center;width:32px;height:32px;flex:none;";
+  identity.append(icon, code);
 
   const type = document.createElement("p");
   type.className = "course-type";
   type.textContent = course.type === "laboratory" ? "Laboratory" : "Lecture";
 
-  metadata.append(code, type);
+  metadata.append(identity, type);
 
   const name = document.createElement("h2");
   name.textContent = course.name;
