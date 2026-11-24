@@ -79,8 +79,9 @@ export async function getExperience(today = new Date()) {
       keysById.set(quiz.id, key);
     }
 
-    if (!rewards.has(key) && Number.isFinite(quiz.expReward)) {
-      rewards.set(key, quiz.expReward);
+    const reward = quiz.earnedExpReward ?? quiz.expReward;
+    if (!rewards.has(key) && Number.isFinite(reward)) {
+      rewards.set(key, reward);
     }
   }
 
