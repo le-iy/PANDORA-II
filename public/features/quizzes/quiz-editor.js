@@ -1,4 +1,8 @@
 import {
+  loadCourseCatalog,
+  normalizeCourseCode,
+} from "../../services/course-catalog.js";
+import {
   appendQuestionImage,
   createQuestionFieldset,
 } from "./quiz-question-editor.js";
@@ -61,6 +65,47 @@ function showQuizPreview(editor, quiz, trigger) {
   dialog.showModal();
 }
 
+async function populateCourseSelect(select, status, savedCode) {
+  let courses = [];
+  let failed = false;
+
+  try {
+    courses = await loadCourseCatalog();
+  } catch (error) {
+    console.error("Could not load courses for the quiz editor.", error);
+    failed = true;
+  }
+
+  if (!select.isConnected) return;
+
+  const options = [new Option("Choose a course", "")];
+
+  for (const course of courses) {
+    options.push(new Option(`${course.code} · ${course.name}`, course.code));
+  }
+
+  if (savedCode && !courses.some(({ code }) => code === savedCode)) {
+    const label = failed ? "Current course" : "Current course · unavailable";
+    options.push(new Option(`${savedCode} · ${label}`, savedCode));
+  }
+
+  select.replaceChildren(...options);
+  select.value = savedCode;
+  select.disabled = options.length === 1;
+
+  if (failed) {
+    status.textContent = savedCode
+      ? "Couldn’t load the course list. You can keep the current course."
+      : "Couldn’t load the course list. Reopen the editor to try again.";
+  } else if (!courses.length) {
+    status.textContent = savedCode
+      ? "No active courses available. You can keep the current course."
+      : "Add a course in Courses before saving a quiz.";
+  } else {
+    status.textContent = "";
+  }
+}
+
 export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const editor = document.createElement("section");
   editor.className = "quiz-workspace quiz-editor";
@@ -80,8 +125,11 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
       </label>
 
       <label>
-        Course code
-        <input name="courseCode" placeholder="IT0035" required maxlength="12">
+        Course
+        <select name="courseCode" required disabled aria-describedby="quiz-course-status">
+          <option value="">Loading courses…</option>
+        </select>
+        <span id="quiz-course-status" data-course-status aria-live="polite"></span>
       </label>
 
       <nav class="quiz-question-nav" aria-label="Question navigator">
@@ -105,6 +153,7 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const form = editor.querySelector("form");
   const title = form.elements.namedItem("title");
   const course = form.elements.namedItem("courseCode");
+  const courseStatus = form.querySelector("[data-course-status]");
   const list = form.querySelector("[data-questions]");
   const count = form.querySelector("[data-question-count]");
   const nav = form.querySelector("[data-question-links]");
@@ -113,7 +162,6 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const importButton = editor.querySelector("[data-import-questions]");
 
   title.value = quiz?.title ?? "";
-  course.value = quiz?.courseCode ?? "";
 
   function markCurrent(fieldset) {
     const index = Array.from(list.children).indexOf(fieldset);
@@ -155,11 +203,19 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
     status.textContent = "";
 
     const quizTitle = title.value.trim();
-    const courseCode = course.value.trim().toUpperCase();
+    const courseCode = course.value;
 
-    if (!quizTitle || !courseCode) {
-      status.textContent = "Enter a quiz title and course code.";
-      (quizTitle ? course : title).focus();
+    if (!quizTitle) {
+      status.textContent = "Enter a quiz title.";
+      title.focus();
+      return null;
+    }
+
+    if (!courseCode) {
+      status.textContent = course.disabled
+        ? courseStatus.textContent || "Wait for the course list to load."
+        : "Choose a course.";
+      if (!course.disabled) course.focus();
       return null;
     }
 
@@ -177,7 +233,8 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
       const imageAlt = alt.value.trim();
 
       if (!prompt.value.trim() || emptyChoice !== -1 || answer.value === "") {
-        status.textContent = `Complete the prompt, choices, and answer for Question ${index + 1}.`;
+        status.textContent =
+          `Complete the prompt, choices, and answer for Question ${index + 1}.`;
         const invalid = prompt.value.trim() ? options[emptyChoice] ?? answer : prompt;
         invalid.focus();
         return null;
@@ -263,7 +320,10 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   });
 
   form.querySelector("[data-cancel]").addEventListener("click", onCancel);
-  form.addEventListener("input", () => { status.textContent = ""; });
+
+  form.addEventListener("input", () => {
+    status.textContent = "";
+  });
 
   preview.addEventListener("click", () => {
     if (!form.reportValidity()) return;
@@ -285,4 +345,5 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
 
   container.replaceChildren(editor);
   title.focus();
+  void populateCourseSelect(course, courseStatus, normalizeCourseCode(quiz?.courseCode));
 }
