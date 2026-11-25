@@ -1,3 +1,4 @@
+import { courseSemesterLabel } from "../../services/course-catalog.js";
 const typeFilters = [
   { id: "all", label: "All courses" },
   { id: "lecture", label: "Lecture" },
@@ -23,6 +24,12 @@ export function createCourseFilters(typeBar, semesterSelect, onChange) {
 
   semesterSelect.addEventListener("change", onChange);
 
+  function addSemesterOption(value) {
+    if (Array.from(semesterSelect.options).some(option => option.value === value)) return;
+    const all = Array.from(semesterSelect.options).find(option => option.value === "all");
+    semesterSelect.add(new Option(courseSemesterLabel(value), value), all ?? null);
+  }
+
   return {
     get semester() {
       return semesterSelect.value;
@@ -32,11 +39,13 @@ export function createCourseFilters(typeBar, semesterSelect, onChange) {
       activeType = "all";
 
       if (semesterSelect.value !== "all") {
+        addSemesterOption(course.semester);
         semesterSelect.value = course.semester;
       }
     },
 
     apply(courses) {
+      for (const course of courses) addSemesterOption(course.semester);
       const semester = semesterSelect.value;
       const matchingSemester = semester === "all"
         ? courses

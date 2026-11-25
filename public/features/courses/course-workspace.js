@@ -1,3 +1,4 @@
+import { courseSemesterLabel } from "../../services/course-catalog.js";
 import { mountCourseFolders } from "./course-folders.js";
 import {
   loadCourseCatalog,
@@ -195,7 +196,7 @@ export async function renderCourseWorkspace(container, code) {
   }
 
   const type = course.type === "laboratory" ? "Laboratory" : "Lecture";
-  const semester = course.semester === "previous" ? "Previous semester" : "Current semester";
+  const semester = courseSemesterLabel(course.semester);
   const iconSlot = workspace.querySelector("[data-course-icon]");
 
   iconSlot.append(createCourseIcon(course.code));

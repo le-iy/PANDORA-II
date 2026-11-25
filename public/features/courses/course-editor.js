@@ -1,4 +1,5 @@
 import {
+  courseSemesterLabel,
   normalizeCourseCode,
   saveCustomCourse,
 } from "../../services/course-catalog.js";
@@ -40,10 +41,11 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
 
       <label>
         Semester
-        <select name="semester">
-          <option value="current">Current semester</option>
-          <option value="previous">Previous semester</option>
-        </select>
+        <select data-semester-choice></select>
+      </label>
+      <label data-custom-semester hidden>
+        New semester name
+        <input name="semester" maxlength="100" placeholder="e.g. AY 2026-2027, 2nd Sem" disabled>
       </label>
 
       <fieldset>
@@ -79,7 +81,23 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
 
   let iconChoice = "";
 
-  semesterInput.value = semester === "previous" ? "previous" : "current";
+  const semesters = [...new Set(["current", "previous", ...catalog.map(course => course.semester)])];
+  const semesterChoice = form.querySelector("[data-semester-choice]");
+  const customField = form.querySelector("[data-custom-semester]");
+  for (const [index, value] of semesters.entries()) {
+    semesterChoice.add(new Option(courseSemesterLabel(value), String(index)));
+  }
+  semesterChoice.add(new Option("+ Add a semester…", "new"));
+  semesterChoice.value = String(Math.max(0, semesters.indexOf(semester)));
+  semesterChoice.addEventListener("change", () => {
+    const adding = semesterChoice.value === "new";
+    customField.hidden = !adding;
+    customField.style.display = adding ? "" : "none";
+    semesterInput.disabled = !adding;
+    semesterInput.required = adding;
+    if (adding) semesterInput.focus();
+  });
+  customField.style.display = "none";
 
   function showIcon() {
     iconPreview.replaceChildren(createCourseIcon(codeInput.value, iconChoice));
@@ -114,7 +132,9 @@ export function openAddCourse(screen, trigger, catalog, onSaved, semester) {
       code: normalizeCourseCode(codeInput.value),
       name: nameInput.value.trim(),
       type: typeInput.value,
-      semester: semesterInput.value,
+      semester: semesterChoice.value === "new"
+        ? semesters.find(value => courseSemesterLabel(value).toLowerCase() === semesterInput.value.trim().replace(/\s+/g, " ").toLowerCase()) ?? semesterInput.value.trim()
+        : semesters[Number(semesterChoice.value)],
     };
 
     if (!course.code || !course.name) {

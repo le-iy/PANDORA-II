@@ -1,3 +1,4 @@
+import { courseSemesterLabel } from "../../services/course-catalog.js";
 import { activeThemePack, themeStorageKey } from "../../services/theme-packs.js";
 import {
   createCourseIcon,
@@ -320,8 +321,8 @@ export function createCourseCard(course, counts) {
   title.append(link);
   card.append(metadata, title);
 
-  if (course.semester === "previous") {
-    card.append(element("p", "course-semester-label", "Previous semester"));
+  if (course.semester && course.semester !== "current") {
+    card.append(element("p", "course-semester-label", courseSemesterLabel(course.semester)));
   }
 
   const progress = createProgress(course);

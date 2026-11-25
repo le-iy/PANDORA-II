@@ -8,7 +8,18 @@ export function normalizeCourseCode(code) {
 }
 
 function normalizeSemester(semester) {
-  return semester === "previous" ? "previous" : "current";
+  const label = typeof semester === "string" ? semester.trim().replace(/\s+/g, " ") : "";
+  const lower = label.toLowerCase();
+  if (!label || lower === "current" || lower === "current semester") return "current";
+  if (lower === "previous" || lower === "previous semester") return "previous";
+  return lower === "all" ? "All" : label;
+}
+
+export function courseSemesterLabel(semester) {
+  const value = normalizeSemester(semester);
+  if (value === "current") return "Current semester";
+  if (value === "previous") return "Previous semester";
+  return value;
 }
 
 function readList(key) {
