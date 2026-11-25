@@ -7,7 +7,7 @@ export function showHomeRows(list, entries, emptyMessage) {
     return;
   }
 
-  const rows = entries.map(({ title, detail, state, href, newTab, icon }) => {
+  const rows = entries.map(({ title, detail, state, href, newTab, icon, badge }) => {
     const row = document.createElement("li");
     row.className = "home-data-row";
 
@@ -38,6 +38,13 @@ export function showHomeRows(list, entries, emptyMessage) {
 
     if (icon) row.append(icon);
     row.append(copy);
+    if (badge) {
+      const status = document.createElement("span");
+      status.className = "home-quiz-status";
+      status.dataset.status = state;
+      status.textContent = badge;
+      row.append(status);
+    }
     return row;
   });
 

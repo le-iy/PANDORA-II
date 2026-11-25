@@ -266,3 +266,16 @@
 .quiz-history-totals strong { padding: 10px; border-radius: 9px; font-size: .85rem; }
 .quiz-history-incorrect { background: var(--color-tasks-due); color: var(--color-danger); }
 @media (max-width: 480px) { .quiz-history-header { padding-inline: 14px; } .quiz-history-body { padding-inline: 14px; } .quiz-history-row { grid-template-columns: auto minmax(0, 1fr); } .quiz-history-actions { grid-column: 2; justify-content: flex-start; } }
+
+/* Single quiz layout */
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) { gap: 16px; }
+.quiz-dashboard > p:not([hidden]):has(> a[href="#/quizzes"]) { grid-row: 1; justify-self: start; }
+.quiz-dashboard > p:not([hidden]) > a[href="#/quizzes"] { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; color: var(--color-primary); font-size: .875rem; font-weight: 650; text-underline-offset: 3px; }
+.quiz-dashboard > p:not([hidden]) > a[href="#/quizzes"]::before { content: "\2190" / ""; }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) > .quiz-dashboard-heading { margin: 0; }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) > .quizzes-grid { grid-template-columns: minmax(0, 42rem); }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-dashboard-card { grid-template-rows: none; gap: 14px; padding: clamp(16px, 3vw, 24px); }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-title { display: none; }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions { grid-row: auto; margin: 0; padding-top: 14px; border-top: 1px solid var(--color-border); }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions > button:first-child { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-text); }
+.quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions > .quiz-card-manage { background: var(--color-surface); border-color: var(--color-border); }

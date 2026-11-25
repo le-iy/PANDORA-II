@@ -1,3 +1,4 @@
+import { themeAsset as homeQuizThemeAsset } from "../../services/theme-packs.js";
 import { createCourseIcon } from "../courses/course-icon.js";
 import { createResourceIcon } from "../repositories/resource-icon.js";
 import { loadCourseCatalog } from "../../services/course-catalog.js";
@@ -105,6 +106,14 @@ async function showResources(list) {
   }
 }
 
+function createHomeQuizIcon() {
+  const icon = document.createElement("img");
+  icon.className = "home-row-icon";
+  icon.alt = "";
+  icon.src = homeQuizThemeAsset("icons/navigation/quizzes-tab.svg");
+  return icon;
+}
+
 async function showQuizzes(list) {
   try {
     const quizzes = await loadQuizzes();
@@ -127,8 +136,10 @@ async function showQuizzes(list) {
 
       return {
         title: quiz.title,
-        detail: [quiz.courseCode, quizStatusLabels[state.status], progress]
-          .filter(Boolean).join(" · "),
+        detail: [quiz.courseCode, progress].filter(Boolean).join(" · "),
+        badge: quizStatusLabels[state.status],
+        state: state.status,
+        icon: createHomeQuizIcon(),
         href: quiz.id == null ? "#/quizzes" : `#/quizzes/${encodeURIComponent(quiz.id)}`,
       };
     });
