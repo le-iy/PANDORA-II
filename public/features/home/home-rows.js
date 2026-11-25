@@ -7,7 +7,7 @@ export function showHomeRows(list, entries, emptyMessage) {
     return;
   }
 
-  const rows = entries.map(({ title, detail, state, href, newTab, icon, badge }) => {
+  const rows = entries.map(({ title, detail, state, href, newTab, icon, badge, quizProgress }) => {
     const row = document.createElement("li");
     row.className = "home-data-row";
 
@@ -34,6 +34,15 @@ export function showHomeRows(list, entries, emptyMessage) {
       description.textContent = detail;
       if (state) description.dataset.state = state;
       copy.append(description);
+    }
+
+    if (quizProgress) {
+      const meter = document.createElement("progress");
+      meter.max = quizProgress.max;
+      meter.value = quizProgress.value;
+      meter.setAttribute("aria-label", "Questions answered for " + title);
+      Object.assign(meter.style, { display: "block", height: "6px", marginTop: "2px" });
+      copy.append(meter);
     }
 
     if (icon) row.append(icon);

@@ -128,7 +128,7 @@ async function showQuizzes(list) {
       Number(a.state.status === "in-progress"),
     );
 
-    const rows = entries.slice(0, 5).map(({ quiz, state }) => {
+    const rows = entries.filter(({ state }) => state.status !== "completed").map(({ quiz, state }) => {
       const answered = state.draft?.answers.filter((answer) => answer !== null).length;
       const progress = state.draft
         ? `${answered}/${quiz.questions.length} answered`
@@ -140,11 +140,12 @@ async function showQuizzes(list) {
         badge: quizStatusLabels[state.status],
         state: state.status,
         icon: createHomeQuizIcon(),
+        quizProgress: state.status === "in-progress" && state.draft ? { value: answered, max: quiz.questions.length } : null,
         href: quiz.id == null ? "#/quizzes" : `#/quizzes/${encodeURIComponent(quiz.id)}`,
       };
     });
 
-    showHomeRows(list, rows, "No quizzes yet.");
+    showHomeRows(list, rows, "No unfinished quizzes.");
   } catch (error) {
     console.error("Could not load quizzes.", error);
     showHomeRows(list, [], "Couldn’t load quizzes.");
