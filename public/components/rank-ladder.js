@@ -1,21 +1,25 @@
 import { getRankProgress } from "../services/experience.js";
 
-const ranks = [];
-let threshold = 0;
+function buildRanks() {
+  const ranks = [];
+  let threshold = 0;
 
-for (let level = 1; level <= 100; level += 1) {
-  const progress = getRankProgress(threshold);
+  for (let level = 1; level <= 100; level += 1) {
+    const progress = getRankProgress(threshold);
 
-  if ((level - 1) % 5 === 0) {
-    ranks.push({
-      name: progress.rankName,
-      icon: progress.rankIcon,
-      firstLevel: level,
-      lastLevel: level + 4,
-    });
+    if ((level - 1) % 5 === 0) {
+      ranks.push({
+        name: progress.rankName,
+        icon: progress.rankIcon,
+        firstLevel: level,
+        lastLevel: level + 4,
+      });
+    }
+
+    threshold += progress.expPerLevel;
   }
 
-  threshold += progress.expPerLevel;
+  return ranks;
 }
 
 export function createRankLadderButton(currentLevel) {
@@ -86,7 +90,7 @@ export function createRankLadderButton(currentLevel) {
     const close = dialog.querySelector("[data-close]");
     let currentRow;
 
-    for (const rank of ranks) {
+    for (const rank of buildRanks()) {
       const row = document.createElement("li");
       const unlocked = currentLevel >= rank.firstLevel;
       const current = unlocked && currentLevel <= rank.lastLevel;
