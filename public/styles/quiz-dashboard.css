@@ -279,3 +279,30 @@
 .quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions { grid-row: auto; margin: 0; padding-top: 14px; border-top: 1px solid var(--color-border); }
 .quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions > button:first-child { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-text); }
 .quiz-dashboard:has(> p:not([hidden]) > a[href="#/quizzes"]) .quiz-card-actions > .quiz-card-manage { background: var(--color-surface); border-color: var(--color-border); }
+
+/* Compact quiz dashboard */
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) { gap: 12px; }
+.quiz-dashboard > .quiz-dashboard-summary:not([hidden]) { margin-bottom: 0; }
+.quiz-dashboard .quiz-dashboard-summary:not([hidden]) > div { gap: 4px; padding: 10px 14px; }
+.quiz-dashboard .quiz-dashboard-summary:not([hidden]) dt { font-size: .8125rem; }
+.quiz-dashboard .quiz-dashboard-summary:not([hidden]) dd:not([data-exp]) { font-size: 1.35rem; }
+.quiz-dashboard > .quiz-dashboard-toolbar:not([hidden]) { align-items: center; gap: 8px 12px; }
+.quiz-dashboard > .quiz-dashboard-toolbar :is(button, select) { min-height: 36px; padding-block: 5px; font-size: .875rem; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-dashboard-card { grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 8px; padding: 12px 14px; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-title { font-size: 1.125rem; line-height: 1.25; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-metadata { flex-wrap: wrap; gap: 4px 8px; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-course { max-width: 100%; box-sizing: border-box; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-reward { margin-inline-start: auto; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-detail { font-size: .8125rem; }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-actions { margin-top: 0; padding-top: 8px; border-top: 1px solid var(--color-border); }
+.quiz-dashboard:has(> .quiz-dashboard-summary:not([hidden])) .quiz-card-actions button { min-height: 36px; padding: 5px 10px; font-size: .875rem; }
+
+/* Quiz status badge colors */
+.quiz-dashboard .quiz-card-status[data-state="completed"] { background: light-dark(#DDF3E5, #233F32); color: light-dark(#24543A, #B9E9C9); }
+.quiz-dashboard .quiz-card-status[data-state="in-progress"] { background: light-dark(#EDE0F8, #443058); color: light-dark(#573477, #E5CDF9); }
+.quiz-dashboard .quiz-card-status[data-state="not-started"] { background: light-dark(#ECEAF0, #35323D); color: light-dark(#514B5C, #DFD9E8); }
+
+/* Quiz card colors by status */
+.quiz-dashboard .quiz-dashboard-card:has(.quiz-card-status[data-state="completed"]) { background: light-dark(#E2F3E9, #22372F); border-color: light-dark(#B4D7C2, #3F6552); }
+.quiz-dashboard .quiz-dashboard-card:has(.quiz-card-status[data-state="in-progress"]) { background: light-dark(#EEE4FA, #362846); border-color: light-dark(#D1B9E9, #654A80); }
+.quiz-dashboard .quiz-dashboard-card:has(.quiz-card-status[data-state="not-started"]) { background: light-dark(#FFF0E0, #3C2D23); border-color: light-dark(#E9CBAA, #715238); }
