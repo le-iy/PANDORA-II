@@ -1,3 +1,4 @@
+import { openBulkResourceDialog } from "./bulk-resource-dialog.js";
 
 import { loadResourceCatalog } from "../../services/resource-catalog.js";
 import { createResourceCard, resourceRouteId } from "./resource-card.js";
@@ -173,7 +174,7 @@ export async function renderRepositories(container, requestedId = null) {
   }
 
   addLink.addEventListener("click", () => showDialog(addLink));
-  addPdf.addEventListener("click", () => showDialog(addPdf, null, "pdf"));
+  addPdf.addEventListener("click", () => showDialog(addPdf, null, "pdf")); const bulkButton=document.createElement("button"); bulkButton.type="button"; bulkButton.className="resource-secondary"; bulkButton.textContent="+ Bulk Add"; bulkButton.setAttribute("aria-haspopup","dialog"); addPdf.after(bulkButton); bulkButton.onclick=()=>openBulkResourceDialog(bulkButton,{allowPdf:!pdfUnavailable,onSaved(saved){resources.push(...saved);filters.revealSaved(saved[saved.length-1]);refreshCollection();feedback.textContent=saved.length+" resources saved.";}});
   
 
   toolbar.hidden = false;
