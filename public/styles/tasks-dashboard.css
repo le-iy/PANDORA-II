@@ -195,3 +195,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+/* Compact task table icons */
+.task-quest-table tbody tr > :is(th, td) { vertical-align: middle; padding-block: 8px; }
+.task-quest-table tbody th .course-subject-icon { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 6px; background: var(--color-surface-muted); }
+.task-quest-table tbody th .course-subject-icon img { display: block; width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated; }
+.task-quest-table tbody .task-title-button { min-width: 0; text-align: start; }
