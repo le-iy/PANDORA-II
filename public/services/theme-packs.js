@@ -30,6 +30,12 @@ export const themePacks = Object.freeze({
     defaultAccent: "lagoon",
     defaultBadge: "hangyodon-classic",
   },
+  kuromi: {
+    label: "Kuromi",
+    accents: { lilac: "Night Lilac", bubblegum: "Bubblegum Pink", plum: "Black Plum", moonlight: "Moonlight" },
+    defaultAccent: "lilac",
+    defaultBadge: "kuromi-classic",
+  },
 });
 
 const celestialNames = [
@@ -63,6 +69,12 @@ export const hangyodonIcons = Object.freeze(Object.fromEntries(hangyodonNames.ma
   { label: name.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" "), file: `icons/profile/hangyodon-${name}.svg` },
 ])));
 
+const kuromiNames = ["bat-cape","big-pink-bow","boba-break","bookworm","cheer-squad","choco-cookie","classic","confetti","cozy-blanket","cupid","flower-crown","guitar-practice","headphones","heart-glasses","heart-hug","little-ghost","lollipop","love-letter","moon-nap","nightcap","piano","pink-hoodie","studious","umbrella"];
+export const kuromiIcons = Object.freeze(Object.fromEntries(kuromiNames.map((name) => [
+  `kuromi-${name}`,
+  { label: name.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" "), file: `icons/profile/kuromi-${name}.svg` },
+])));
+
 export function activeThemePack() {
   const pack = globalThis.document?.documentElement.dataset.themePack;
   return Object.hasOwn(themePacks, pack) ? pack : "pixel";
@@ -73,7 +85,9 @@ export function themeAsset(path, pack = activeThemePack()) {
     ? nailongIcons["nailong-naptime"].file
     : pack === "hangyodon" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
       ? hangyodonIcons["hangyodon-sleepy"].file
-      : path;
+      : pack === "kuromi" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
+        ? kuromiIcons["kuromi-moon-nap"].file
+        : path;
   return new URL(pack !== "pixel" && Object.hasOwn(themePacks, pack) ? `${pack}/${artwork}` : artwork, assetRoot).href;
 }
 

@@ -144,7 +144,8 @@ function openAppearance(card, trigger, course) {
   const nailongPresets = [["Banana Gold", "#ffd571"], ["Custard", "#fff6dc"], ["Banana Leaf", "#a8c57d"], ["Peach Blush", "#f8d2b9"], ["Honey", "#eabb62"], ["Cocoa", "#493125"]];
   const pack = activeThemePack();
   const hangyodonPresets = [["Lagoon", "#52add2"], ["Sea Glass", "#c2e9e6"], ["Seafoam", "#7dcfcf"], ["Bubblegum", "#f2b7d0"], ["Coral", "#ee8590"], ["Deep Tide", "#16343f"]];
-  const presets = { hangyodon: hangyodonPresets, nailong: nailongPresets, galaxy: galaxyPresets }[pack] ?? pixelPresets;
+  const kuromiPresets = [["Lilac Mist", "#eee1f6"], ["Bubblegum", "#ecb2db"], ["Night Lilac", "#bea1dd"], ["Black Plum", "#312440"], ["Pink Pearl", "#ffafe0"], ["Moonlight", "#ffdb9d"]];
+  const presets = { kuromi: kuromiPresets, hangyodon: hangyodonPresets, nailong: nailongPresets, galaxy: galaxyPresets }[pack] ?? pixelPresets;
   for (const [label, color] of presets) preset.add(new Option(label, color));
   preset.add(new Option("Custom color", "custom"));
 

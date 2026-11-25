@@ -1,4 +1,4 @@
-import { activeThemePack, celestialIcons, hangyodonIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
+import { activeThemePack, celestialIcons, hangyodonIcons, kuromiIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
 
 const storageKey = "pandora-ii.course-icons";
 
@@ -73,14 +73,20 @@ const hangyodonGroup = {
   options: Object.values(hangyodonIcons).map(({ label, file }) => ({ label, id: file })),
 };
 
+const kuromiGroup = {
+  label: "Kuromi characters",
+  options: Object.values(kuromiIcons).map(({ label, file }) => ({ label, id: file })),
+};
+
 function availableGroups() {
   const pack = activeThemePack();
+  if (pack === "kuromi") return [...groups, kuromiGroup];
   if (pack === "hangyodon") return [...groups, hangyodonGroup];
   if (pack === "nailong") return [...groups, nailongGroup];
   return pack === "galaxy" ? [...groups, celestialGroup] : groups;
 }
 
-const options = new Map([...groups, celestialGroup, nailongGroup, hangyodonGroup].flatMap(({ options }) =>
+const options = new Map([...groups, celestialGroup, nailongGroup, hangyodonGroup, kuromiGroup].flatMap(({ options }) =>
   options.map((option) => [option.id, option]),
 ));
 
@@ -88,7 +94,8 @@ function hasIcon(id) {
   return options.has(id) &&
     (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy") &&
     (!id.startsWith("icons/profile/nailong-") || activeThemePack() === "nailong") &&
-    (!id.startsWith("icons/profile/hangyodon-") || activeThemePack() === "hangyodon");
+    (!id.startsWith("icons/profile/hangyodon-") || activeThemePack() === "hangyodon") &&
+    (!id.startsWith("icons/profile/kuromi-") || activeThemePack() === "kuromi");
 }
 
 function courseKey(code) {

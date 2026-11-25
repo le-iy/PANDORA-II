@@ -218,3 +218,50 @@
   --course-mint: var(--color-success-surface);
   --course-rose: light-dark(#f7d7e6, #4e344c);
 }
+
+:root[data-theme-pack="kuromi"] {
+  --color-background: light-dark(#f8effb, #19131f);
+  --color-surface: light-dark(#fffafd, #23192e);
+  --color-surface-muted: light-dark(#eee1f6, #312440);
+  --color-border: light-dark(#d9bfe8, #634775);
+  --color-text: light-dark(#3f234f, #fff1fd);
+  --color-text-muted: light-dark(#624573, #dbc4e5);
+  --color-sidebar: light-dark(#2f213d, #1f1628);
+  --color-sidebar-text: #fff1fd;
+  --color-sidebar-active: light-dark(#ecb2db, #765295);
+  --color-sidebar-active-text: light-dark(#3f234f, #fff1fd);
+  --color-primary: light-dark(#774593, #deb8fa);
+  --color-primary-text: light-dark(#fffafd, #23192e);
+  --color-success: light-dark(#456447, #c4dcad);
+  --color-success-surface: light-dark(#e9f1df, #354039);
+  --color-danger: light-dark(#922c67, #ffafe0);
+  --color-overlay: rgb(25 19 31 / 66%);
+  --color-tasks-due: light-dark(#f9ddf0, #4f304a);
+  --color-tasks-finished: light-dark(#e8d9f6, #3d2b50);
+}
+:root[data-theme-pack="kuromi"][data-accent="bubblegum"] {
+  --color-primary: light-dark(#922c67, #ffafe0);
+  --color-sidebar-active: light-dark(#f9ddf0, #74365e);
+}
+:root[data-theme-pack="kuromi"][data-accent="plum"] {
+  --color-primary: light-dark(#3f234f, #d8b7f1);
+  --color-sidebar-active: light-dark(#e7d3f6, #634775);
+}
+:root[data-theme-pack="kuromi"][data-accent="moonlight"] {
+  --color-primary: light-dark(#7d5625, #ffdb9d);
+  --color-sidebar-active: light-dark(#ffe8c5, #684e35);
+}
+:root[data-theme-pack="kuromi"] .home-dashboard {
+  --home-lavender: var(--color-surface-muted);
+  --home-yellow: light-dark(#f8e0ef, #3d2a53);
+}
+:root[data-theme-pack="kuromi"] .courses-screen {
+  --course-lavender: var(--color-surface-muted);
+  --course-mint: light-dark(#e8d9f6, #3d2b50);
+  --course-rose: light-dark(#f9ddf0, #4f304a);
+}
+@media (min-width: 520px) {
+  :root[data-theme-pack="kuromi"] .home-dashboard .home-title {
+    background: url("../assets/kuromi/icons/ui/header-sparkles.svg") right center / min(52%, 440px) auto no-repeat;
+  }
+}

@@ -1,4 +1,4 @@
-import { activeThemePack, celestialIcons, hangyodonIcons, nailongIcons, themeAsset, themePacks } from "./theme-packs.js";
+import { activeThemePack, celestialIcons, hangyodonIcons, kuromiIcons, nailongIcons, themeAsset, themePacks } from "./theme-packs.js";
 
 const trinkets = {
   scholar: { label: "Sleepy cat", file: "sleepy-cat-charm.svg" },
@@ -100,6 +100,7 @@ export const goalLimits = Object.freeze({
 });
 
 export function getProfileIcons(pack = activeThemePack()) {
+  if (pack === "kuromi") return { ...kuromiIcons, ...portraits };
   if (pack === "hangyodon") return { ...hangyodonIcons, ...portraits };
   if (pack === "nailong") return { ...nailongIcons, ...portraits };
   return pack === "galaxy" ? { ...celestialIcons, ...portraits } : profileIcons;
