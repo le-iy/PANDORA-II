@@ -469,3 +469,16 @@
   padding-top: 12px;
   border-top: 1px solid var(--color-border);
 }
+/* Compact courses grid */
+.courses-screen { gap: 10px; }
+.courses-screen > .courses-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, max(14rem, calc((100% - 36px) / 4))), 1fr)); gap: 12px; }
+.courses-screen .course-card { grid-template-rows: auto; gap: 7px; padding: 12px 14px; }
+.courses-screen .course-card .course-meta { column-gap: 6px; }
+.courses-screen .course-card .course-card-identity { gap: 6px; }
+.courses-screen .course-card .course-subject-icon { width: 28px; height: 28px; }
+.courses-screen .course-card .course-subject-icon img { width: 22px; height: 22px; }
+.courses-screen .course-card h2 { font-size: 1.0625rem; line-height: 1.25; }
+.courses-screen .course-card .course-type { padding: 2px 7px; font-size: .6875rem; }
+.courses-screen .course-card-footer { align-self: auto; padding-top: 6px; }
+.courses-screen .course-card-counts { font-size: .75rem; }
+.courses-screen .course-card:hover, .courses-screen .course-card:focus-within { border-color: var(--color-primary); }
