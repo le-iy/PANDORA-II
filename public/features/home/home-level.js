@@ -89,17 +89,26 @@ export async function renderHomeLevel(panel) {
     if (experience.atCap) {
       status.textContent = "Maximum level reached · All 20 ranks unlocked";
     } else {
-      const nextRank = experience.nextRank
-        ? ` · Next rank: ${experience.nextRank} (Lv. ${experience.nextRankLevel})`
-        : "";
-
-      status.textContent =
-        `${format(experience.levelExp)} / ${format(experience.expPerLevel)} EXP · ` +
-        `${format(experience.expToNextLevel)} EXP to Level ${format(experience.level + 1)}` +
-        nextRank;
+      const headline = document.createElement("strong");
+      headline.textContent = `${format(experience.expToNextLevel)} EXP to Level ${format(experience.level + 1)}`;
+      const detail = document.createElement("span");
+      const nextRank = experience.nextRank ? ` · Next rank: ${experience.nextRank} (Lv. ${experience.nextRankLevel})` : "";
+      detail.textContent = `${format(experience.levelExp)} / ${format(experience.expPerLevel)} EXP${nextRank}`;
+      status.replaceChildren(headline, detail);
     }
 
-    questGoal.block.before(createRankLadderButton(experience.level));
+    const rankTrigger = createRankLadderButton(experience.level);
+    rankTrigger.setAttribute("aria-label", "View rank ladder");
+    rankTrigger.title = "View rank ladder";
+    Object.assign(rankTrigger.style, {
+      display: "inline-grid", placeItems: "center", width: "44px",
+      padding: "0", border: "0", background: "transparent", cursor: "pointer",
+    });
+    badgeImage.replaceWith(rankTrigger);
+    rankTrigger.replaceChildren(badgeImage);
+    const showFallback = () => { rankTrigger.textContent = "Rank"; };
+    if (badgeImage.hidden) showFallback();
+    else badgeImage.addEventListener("error", showFallback, { once: true });
     expGoal.show(experience.todayExp, settings.dailyExpGoal, "EXP earned");
   } catch (error) {
     console.error("Could not load EXP.", error);

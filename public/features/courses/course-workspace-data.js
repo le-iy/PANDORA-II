@@ -1,3 +1,4 @@
+import { createTaskIcon } from "./course-icon.js";
 import { normalizeCourseCode } from "../../services/course-catalog.js";
 import { loadQuizzes } from "../../services/quiz-catalog.js";
 import {
@@ -18,6 +19,7 @@ function readTasks() {
 
 function describeTask(task) {
   return {
+    icon: createTaskIcon(task),
     title: task.title,
     detail: taskStatusLabel(task),
     href: task.id == null ? "#/tasks" : `#/tasks/${encodeURIComponent(task.id)}`,

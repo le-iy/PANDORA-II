@@ -1,3 +1,4 @@
+import { createTaskIcon } from "../courses/course-icon.js";
 import { parseScheduleDate, scheduleDateKey } from "../../services/schedule-events.js";
 import { readTasks } from "../../services/task-store.js";
 import { showHomeRows } from "./home-rows.js";
@@ -26,6 +27,7 @@ function taskRow(task, deadline, todayKey) {
   }
 
   return {
+    icon: createTaskIcon(task),
     title: task.title,
     detail: [
       task.courseCode,

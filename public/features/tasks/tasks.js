@@ -1,3 +1,5 @@
+import { activeThemePack } from "../../services/theme-packs.js";
+import { createTaskIcon, openCourseIconPicker } from "../courses/course-icon.js";
 import { getExperience } from "../../services/experience.js";
 import { readPreferences } from "../../services/preferences.js";
 import { parseScheduleDate, scheduleDateKey } from "../../services/schedule-events.js";
@@ -286,6 +288,23 @@ export function renderTasks(container, taskId = null) {
       addAction("Mark complete", () => completeTask(task, summary), true);
     }
 
+    addAction("Change icon", () => {
+      const pack = activeThemePack();
+      openCourseIconPicker(summary, {
+        kind: "task", name: task.title, choice: task.icons?.[pack],
+        onUse(id) {
+          const saved = saveChanges((items) => {
+            const current = items.find((item) => item?.id === task.id);
+            const icons = { ...current?.icons };
+            if (id) icons[pack] = id;
+            else delete icons[pack];
+            return changeTask(items, task.id, { icons });
+          }, "Task icon updated.");
+          if (!saved) throw new Error("Could not save task icon.");
+          queueMicrotask(() => restoreFocus(summary));
+        },
+      });
+    }, true);
     addAction("Edit", () => editTask(task, summary), true);
     addAction("Remove", () => {
       confirmRemoval(
@@ -312,7 +331,10 @@ export function renderTasks(container, taskId = null) {
     const title = taskButton(task.title, task, (trigger) => showDetails(task, trigger), true);
     title.className = "task-title-button";
     title.setAttribute("aria-label", `View task: ${task.title}`);
-    titleCell.append(title);
+    const identity = makeElement("div");
+    Object.assign(identity.style, { display: "flex", alignItems: "center", gap: "8px" });
+    identity.append(createTaskIcon(task), title);
+    titleCell.append(identity);
 
     const deadline = makeElement("td", deadlineText(task, date, todayKey));
     if (date && state !== "completed" && scheduleDateKey(date) < todayKey) {

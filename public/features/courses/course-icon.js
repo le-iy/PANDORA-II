@@ -171,14 +171,14 @@ export function createCourseIcon(code, choice = getCourseIconChoice(code)) {
   return icon;
 }
 
-export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }) {
+export function openCourseIconPicker(trigger, { code, name, choice = "", onUse, kind = "course" }) {
   const dialog = document.createElement("dialog");
   dialog.className = "course-dialog";
   dialog.setAttribute("aria-labelledby", "course-icon-picker-heading");
   dialog.style.width = "min(640px, calc(100% - 24px))";
 
   dialog.innerHTML = `
-    <h2 id="course-icon-picker-heading">Choose course icon</h2>
+    <h2 id="course-icon-picker-heading">Choose ${kind} icon</h2>
     <p data-course-name></p>
 
     <form>
@@ -208,7 +208,7 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }
   let selected = hasIcon(choice) ? choice : "";
 
   dialog.querySelector("[data-course-name]").textContent =
-    name ? `Pick an icon for ${name}.` : "Pick an icon for this course.";
+    name ? `Pick an icon for ${name}.` : `Pick an icon for this ${kind}.`;
 
   Object.assign(grid.style, {
     display: "grid",
@@ -296,4 +296,20 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse }
   document.body.append(dialog);
   dialog.showModal();
   category.focus();
+}
+
+export function createTaskIcon(task) {
+  const choice = task.icons?.[activeThemePack()];
+  const icon = document.createElement("span");
+  icon.className = "course-subject-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.style.flexShrink = "0";
+  const image = document.createElement("img");
+  image.alt = "";
+  image.width = image.height = 24;
+  const path = "icons/study-tools/assignment.svg";
+  image.addEventListener("error", () => { image.src = themeAsset(path); }, { once: true });
+  image.src = themeAsset(hasIcon(choice) ? choice : path);
+  icon.append(image);
+  return icon;
 }
