@@ -30,3 +30,5 @@ export async function listWallpapers() {
 
 export const readWallpaper = id => requestWallpaper("readonly", store => store.get(id));
 export const saveWallpaper = wallpaper => requestWallpaper("readwrite", store => store.put(wallpaper));
+
+export const restoreWallpaper = wallpaper => requestWallpaper("readwrite", store => store.add(wallpaper));

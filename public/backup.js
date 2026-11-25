@@ -38,7 +38,7 @@ exportButton.addEventListener("click", async () => {
     const backup = await createStudyBackup(includePdfs.checked);
     const entryCount = Object.keys(backup.entries).length;
 
-    if (!entryCount && !backup.pdfs.length) {
+    if (!entryCount && !backup.pdfs.length && !backup.wallpapers.length) {
       status.textContent = "No saved data to export yet.";
       return;
     }
@@ -53,7 +53,7 @@ exportButton.addEventListener("click", async () => {
 
     status.textContent =
       `Backup prepared with ${amount(entryCount, "entry", "entries")} ` +
-      `and ${amount(backup.pdfs.length, "PDF")}.`;
+      `${amount(backup.pdfs.length, "PDF")}, and ${amount(backup.wallpapers.length, "wallpaper")}.`;
   } catch (error) {
     console.error("Could not export backup.", error);
     status.textContent = includePdfs.checked
@@ -82,11 +82,14 @@ restoreForm.addEventListener("submit", async (event) => {
 
     summary.textContent =
       `Restore ${amount(pendingPlan.entries.length, "entry", "entries")} ` +
-      `and ${amount(pendingPlan.pdfs.length, "PDF")}. ` +
+      `${amount(pendingPlan.pdfs.length, "PDF")}, and ${amount(pendingPlan.wallpapers.length, "wallpaper")}. ` +
+      `${amount(pendingPlan.mergedEntries, "saved list")} will receive missing items. ` +
       `${amount(pendingPlan.skippedEntries, "entry", "entries")} and ` +
-      `${amount(pendingPlan.skippedPdfs, "PDF")} already exist in this browser.`;
+      `${amount(pendingPlan.skippedPdfs, "PDF")} already exist in this browser. ` +
+      `${amount(pendingPlan.skippedWallpapers, "existing wallpaper")} will be skipped. ` +
+      "Restore needs enough available browser storage.";
 
-    confirm.hidden = pendingPlan.entries.length + pendingPlan.pdfs.length === 0;
+    confirm.hidden = pendingPlan.entries.length + pendingPlan.pdfs.length + pendingPlan.wallpapers.length === 0;
     cancel.textContent = confirm.hidden ? "Close" : "Cancel";
     restoreStatus.textContent = "";
     status.textContent = "";
@@ -111,6 +114,8 @@ confirm.addEventListener("click", async () => {
   const progress = {
     restoredEntries: 0,
     restoredPdfs: 0,
+    restoredWallpapers: 0,
+    skippedWallpapers: pendingPlan.skippedWallpapers,
     skippedEntries: pendingPlan.skippedEntries,
     skippedPdfs: pendingPlan.skippedPdfs,
   };
@@ -123,17 +128,18 @@ confirm.addEventListener("click", async () => {
 
     status.textContent =
       `Restored ${amount(progress.restoredEntries, "entry", "entries")} and ` +
-      `${amount(progress.restoredPdfs, "PDF")}. ` +
+      `${amount(progress.restoredPdfs, "PDF")}, and ${amount(progress.restoredWallpapers, "wallpaper")}. ` +
       `Skipped ${amount(progress.skippedEntries, "existing entry", "existing entries")} ` +
-      `and ${amount(progress.skippedPdfs, "existing PDF")}.`;
+      `${amount(progress.skippedPdfs, "existing PDF")}, and ${amount(progress.skippedWallpapers, "existing wallpaper")}.`;
   } catch (error) {
     console.error("Could not finish restore.", error);
     applySavedSettings();
 
     restoreStatus.textContent =
       `Restore stopped after ${amount(progress.restoredEntries, "entry", "entries")} ` +
-      `and ${amount(progress.restoredPdfs, "PDF")}. ` +
-      "You can retry. Entries already restored will be skipped.";
+      `${amount(progress.restoredPdfs, "PDF")}, and ${amount(progress.restoredWallpapers, "wallpaper")}. ` +
+      (error.name === "QuotaExceededError" ? "Browser storage is full. Free up space and retry. " : "") +
+      "Review the same backup again before retrying. Already restored items will be skipped.";
   } finally {
     restoring = false;
     cancel.disabled = false;
