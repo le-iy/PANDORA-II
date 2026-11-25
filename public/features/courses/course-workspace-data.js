@@ -79,5 +79,8 @@ export async function loadWorkspaceRows(section, code) {
       typeof item?.title === "string" &&
       normalizeCourseCode(item.courseCode) === code,
     )
-    .map(section.describe);
+    .map((item) => ({
+      ...section.describe(item),
+      folderKey: JSON.stringify([section.id, item.source ?? "", item.id ?? [item.title, item.url ?? ""]]),
+    }));
 }

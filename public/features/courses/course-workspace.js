@@ -1,3 +1,4 @@
+import { mountCourseFolders } from "./course-folders.js";
 import {
   loadCourseCatalog,
   normalizeCourseCode,
@@ -258,6 +259,7 @@ export async function renderCourseWorkspace(container, code) {
       const rows = await loadWorkspaceRows(section, courseCode);
       if (workspace.parentElement !== container) return;
 
+      panels.find((entry) => entry.section === section).rows = rows;
       panel.showRows(rows);
       count.textContent = String(rows.length);
       count.hidden = false;
@@ -266,4 +268,8 @@ export async function renderCourseWorkspace(container, code) {
       if (workspace.parentElement === container) panel.showError();
     }
   }));
+
+  if (workspace.parentElement === container) {
+    mountCourseFolders(workspace, panelGrid, panels, courseCode);
+  }
 }

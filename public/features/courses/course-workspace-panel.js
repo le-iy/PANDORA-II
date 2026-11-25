@@ -1,4 +1,4 @@
-function createWorkspaceRow(row) {
+export function createWorkspaceRow(row) {
   const item = document.createElement("li");
   const name = document.createElement(row.href ? "a" : "strong");
   name.textContent = row.title;
@@ -68,11 +68,15 @@ export function createWorkspacePanel(section) {
   return {
     element: panel,
 
-    showRows(rows) {
+    showRows(rows, decorateRow) {
       count.hidden = false;
       count.textContent = String(rows.length);
       list.hidden = rows.length === 0;
-      list.replaceChildren(...rows.map(createWorkspaceRow));
+      list.replaceChildren(...rows.map((row) => {
+        const item = createWorkspaceRow(row);
+        decorateRow?.(row, item);
+        return item;
+      }));
       status.textContent = rows.length ? "" : section.empty;
     },
 

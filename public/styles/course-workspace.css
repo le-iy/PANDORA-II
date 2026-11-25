@@ -415,3 +415,42 @@
     justify-content: center;
   }
 }
+
+/* Course folders UI */
+.course-workspace-panel:has(> form.course-detail-navigation) { margin-block: 16px; }
+.course-workspace-panel:has(> form.course-detail-navigation) > h2 { margin: 0 0 12px; }
+.course-workspace-panel:has(> form.course-detail-navigation) .course-detail-navigation { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-block: 8px; }
+.course-workspace-panel:has(> form.course-detail-navigation) input, .course-workspace-panel select { box-sizing: border-box; min-height: 36px; max-width: 100%; padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font: inherit; }
+.course-workspace-panel:has(> form.course-detail-navigation) input { flex: 1 1 180px; min-width: 0; }
+.course-workspace-panel:has(> form.course-detail-navigation) details { margin-block: 8px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-muted); }
+.course-workspace-panel:has(> form.course-detail-navigation) summary { cursor: pointer; font-weight: 700; overflow-wrap: anywhere; }
+.course-workspace-panel:has(> form.course-detail-navigation) button:disabled { opacity: .55; cursor: default; }
+.course-workspace-panel:has(> form.course-detail-navigation) [role="status"]:empty { display: none; }
+@media (max-width: 560px) { .course-workspace-panel select { width: 100%; } }
+
+/* Compact course folders */
+.course-folders { border-block-start-width: 1px; }
+.course-folder-primary { background: var(--color-primary); color: var(--color-primary-text); }
+.course-folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; align-items: start; }
+.course-folder-grid:empty, .course-folders [role="status"]:empty, .course-folder-dialog [role="alert"]:empty { display: none; }
+.course-folder-card { position: relative; min-width: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-muted); }
+.course-folder-card:hover, .course-folder-card:has(> details[open]:first-child) { border-color: var(--color-primary); }
+.course-folder-card summary { cursor: pointer; list-style: none; }
+.course-folder-card summary::-webkit-details-marker { display: none; }
+.course-folder-card > details:first-child > summary { display: flex; gap: 10px; align-items: center; min-height: 64px; padding: 10px 54px 10px 12px; overflow-wrap: anywhere; }
+.course-folder-card summary small { display: block; color: var(--color-text-muted); }
+.course-folder-menu { position: absolute; top: 10px; inset-inline-end: 8px; }
+.course-folder-menu > summary { display: grid; place-items: center; width: 40px; height: 44px; border-radius: var(--radius-control); font-size: 1.25rem; }
+.course-folder-menu > summary:hover, .course-folder-menu[open] > summary { background: var(--color-surface); }
+.course-folder-menu > div { position: absolute; z-index: 3; inset-inline-end: 0; display: grid; min-width: 155px; padding: 5px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); box-shadow: 0 5px 18px #0002; }
+.course-folder-menu button { border-color: transparent; text-align: start; }
+.course-folder-menu button:disabled { opacity: .5; cursor: default; }
+.course-folder-menu button:last-child, .course-folder-dialog [role="alert"] { color: var(--color-danger); }
+.course-folder-content { padding: 12px; border-top: 1px solid var(--color-border); }
+.course-folder-dialog form { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.course-folder-dialog input, .course-folder-dialog [role="alert"] { flex: 1 0 100%; }
+.course-folder-dialog input { min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-muted); color: var(--color-text); font: inherit; }
+.course-folder-dialog button[type="submit"] { background: var(--color-primary); color: var(--color-primary-text); }
+.course-unfiled-title { font-size: 1.125rem; }
+
+/* Nested folder card polish */ .course-folders > .course-panel-header { justify-content: flex-start; gap: 12px; } .course-folder-card > button { font-weight: 400; } .course-folder-card > button strong { font-weight: 700; } .course-folder-card > button small { margin-top: 2px; color: var(--color-text-muted); font-size: .8125rem; font-weight: 400; }
