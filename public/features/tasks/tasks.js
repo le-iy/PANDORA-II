@@ -1,3 +1,4 @@
+import { globalIcons } from "../../services/theme-packs.js";
 import { activeThemePack } from "../../services/theme-packs.js";
 import { createTaskIcon, openCourseIconPicker } from "../courses/course-icon.js";
 import { getExperience } from "../../services/experience.js";
@@ -297,13 +298,18 @@ export function renderTasks(container, taskId = null) {
     addAction("Change icon", () => {
       const pack = activeThemePack();
       openCourseIconPicker(summary, {
-        kind: "task", name: task.title, choice: task.icons?.[pack],
+        kind: "task", name: task.title, choice: Object.hasOwn(globalIcons, task.icons?.global) ? task.icons.global : task.icons?.[pack],
         onUse(id) {
           const saved = saveChanges((items) => {
             const current = items.find((item) => item?.id === task.id);
             const icons = { ...current?.icons };
-            if (id) icons[pack] = id;
-            else delete icons[pack];
+            if (Object.hasOwn(globalIcons, id)) {
+              icons.global = id;
+            } else {
+              delete icons.global;
+              if (id) icons[pack] = id;
+              else delete icons[pack];
+            }
             return changeTask(items, task.id, { icons });
           }, "Task icon updated.");
           if (!saved) throw new Error("Could not save task icon.");

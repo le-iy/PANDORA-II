@@ -1,3 +1,5 @@
+import { builtInIconPacks } from "./theme-packs.js";
+import { globalIcons } from "./theme-packs.js";
 import { activeThemePack, celestialIcons, hangyodonIcons, kuromiIcons, nailongIcons, themeAsset, themePacks } from "./theme-packs.js";
 
 const trinkets = {
@@ -99,25 +101,37 @@ export const goalLimits = Object.freeze({
   dailyExpGoal: { min: 10, max: 1000 },
 });
 
-export function getProfileIcons(pack = activeThemePack()) {
+function getCustomProfileIcons() {
+  return Object.fromEntries(builtInIconPacks.flatMap(source =>
+    Object.entries(getPackProfileIcons(source)).map(([id, icon]) => {
+      const file = icon.file.includes("/") ? icon.file : (Object.hasOwn(portraits, id) ? "icons/profile/" : "illustrations/trinkets/") + icon.file;
+      return ["pack:" + source + ":" + id, { label: themePacks[source].label + " · " + icon.label, file, source }];
+    })
+  ));
+}
+
+function getPackProfileIcons(pack) {
+  if (pack === "custom") return getCustomProfileIcons();
   if (pack === "kuromi") return { ...kuromiIcons, ...portraits };
   if (pack === "hangyodon") return { ...hangyodonIcons, ...portraits };
   if (pack === "nailong") return { ...nailongIcons, ...portraits };
   return pack === "galaxy" ? { ...celestialIcons, ...portraits } : profileIcons;
 }
 
+export function getProfileIcons(pack = activeThemePack()) { return { ...getPackProfileIcons(pack), ...globalIcons }; }
+
 export function getProfileIcon(id, pack = activeThemePack()) {
   const options = getProfileIcons(pack);
   const icon = Object.hasOwn(options, id)
     ? options[id]
-    : options[themePacks[pack]?.defaultBadge ?? "scholar"];
+    : (options[themePacks[pack]?.defaultBadge ?? "scholar"] ?? profileIcons.scholar);
   const path = icon.file.includes("/")
     ? icon.file
     : Object.hasOwn(portraits, id)
       ? `icons/profile/${icon.file}`
       : `illustrations/trinkets/${icon.file}`;
 
-  return { label: icon.label, url: themeAsset(path, pack) };
+  return { label: icon.label, url: themeAsset(path, icon.source ?? pack) };
 }
 
 export const getScholarBadge = getProfileIcon;

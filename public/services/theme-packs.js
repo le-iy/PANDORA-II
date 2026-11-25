@@ -1,6 +1,14 @@
+export const builtInIconPacks = Object.freeze(["pixel", "galaxy", "nailong", "hangyodon", "kuromi"]);
+import globalIconFiles from "../assets/global-icons/index.js";
 const assetRoot = new URL("../assets/", import.meta.url);
 
 export const themePacks = Object.freeze({
+  custom: {
+    label: "Custom",
+    accents: { lavender: "Lavender", rose: "Rose", sage: "Sage" },
+    defaultAccent: "lavender",
+    defaultBadge: "scholar",
+  },
   pixel: {
     label: "Pixel",
     accents: { lavender: "Lavender", rose: "Rose", sage: "Sage" },
@@ -80,7 +88,20 @@ export function activeThemePack() {
   return Object.hasOwn(themePacks, pack) ? pack : "pixel";
 }
 
+export const globalIcons = Object.freeze(Object.fromEntries(globalIconFiles.map(file => {
+  const path = "global-icons/" + encodeURIComponent(file);
+  const label = "Global · " + file.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+  return [path, { label, file: path }];
+})));
+
 export function themeAsset(path, pack = activeThemePack()) {
+  if (Object.hasOwn(globalIcons, path)) return new URL(path, assetRoot).href;
+  const source = /^pack:(pixel|galaxy|nailong|hangyodon|kuromi):((?:icons|illustrations)\/[a-z0-9/-]+\.svg)$/i.exec(path);
+  if (source) return themeAsset(source[2], source[1]);
+  if (pack === "custom") {
+    const base = globalThis.document?.documentElement.dataset.customBase;
+    pack = builtInIconPacks.includes(base) ? base : "pixel";
+  }
   const artwork = pack === "nailong" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
     ? nailongIcons["nailong-naptime"].file
     : pack === "hangyodon" && path === "illustrations/calendar-sleepy-lavender-cat.svg"

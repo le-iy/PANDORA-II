@@ -31,3 +31,11 @@ textarea {
   outline: 2px solid var(--color-primary);
   outline-offset: 3px;
 }
+/* Custom workspace background */
+:root[data-theme-pack="custom"] body { background-image: var(--custom-workspace-image, none); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; }
+
+/* Custom layout preferences */
+:root[data-theme-pack="custom"][data-custom-corners="square"] { --radius-card: 0px; }
+:root[data-theme-pack="custom"][data-custom-spacing="compact"] body :is(.home-stat, .home-dashboard .home-panel, .courses-screen .course-card, .quiz-dashboard .quiz-dashboard-card, .repositories-screen .repository-stat, .repositories-screen .repository-library, .course-detail-screen .course-workspace-panel, .settings-preference-screen .settings-preferences > .settings-card) { padding: 10px 12px; }
+:root[data-theme-pack="custom"][data-custom-spacing="compact"] body :is(.courses-screen .courses-grid, .quiz-dashboard .quizzes-grid, .repositories-screen .repository-stats) { gap: 8px; }
+.settings-preference-screen [data-custom-layout] { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 8px 12px; max-width: 44rem; }

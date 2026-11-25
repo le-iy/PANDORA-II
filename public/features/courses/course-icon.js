@@ -1,3 +1,5 @@
+import { builtInIconPacks, themePacks } from "../../services/theme-packs.js";
+import { globalIcons } from "../../services/theme-packs.js";
 import { activeThemePack, celestialIcons, hangyodonIcons, kuromiIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
 
 const storageKey = "pandora-ii.course-icons";
@@ -78,19 +80,32 @@ const kuromiGroup = {
   options: Object.values(kuromiIcons).map(({ label, file }) => ({ label, id: file })),
 };
 
-function availableGroups() {
-  const pack = activeThemePack();
+function packGroups(pack) {
   if (pack === "kuromi") return [...groups, kuromiGroup];
   if (pack === "hangyodon") return [...groups, hangyodonGroup];
   if (pack === "nailong") return [...groups, nailongGroup];
   return pack === "galaxy" ? [...groups, celestialGroup] : groups;
 }
 
-const options = new Map([...groups, celestialGroup, nailongGroup, hangyodonGroup, kuromiGroup].flatMap(({ options }) =>
+function customIconGroups() {
+  return builtInIconPacks.flatMap(pack => packGroups(pack).map(group => ({
+    label: themePacks[pack].label + " · " + group.label,
+    options: group.options.map(option => ({ ...option, id: "pack:" + pack + ":" + option.id })),
+  })));
+}
+
+function availableGroups() {
+  const pack = activeThemePack();
+  return pack === "custom" ? customIconGroups() : packGroups(pack);
+}
+
+const globalGroup = { label: "Global", options: Object.entries(globalIcons).map(([id, { label }]) => ({ id, label })) };
+const options = new Map([...groups, celestialGroup, nailongGroup, hangyodonGroup, kuromiGroup, globalGroup, ...customIconGroups()].flatMap(({ options }) =>
   options.map((option) => [option.id, option]),
 ));
 
 function hasIcon(id) {
+  if (typeof id === "string" && id.startsWith("pack:")) return activeThemePack() === "custom" && options.has(id);
   return options.has(id) &&
     (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy") &&
     (!id.startsWith("icons/profile/nailong-") || activeThemePack() === "nailong") &&
@@ -114,6 +129,8 @@ function readIconChoices() {
 
 export function getCourseIconChoice(code) {
   try {
+    const global = localStorage.getItem(storageKey + ".global." + courseKey(code));
+    if (Object.hasOwn(globalIcons, global)) return global;
     const id = readIconChoices().get(courseKey(code));
     return hasIcon(id) ? id : "";
   } catch (error) {
@@ -133,12 +150,18 @@ export function saveCourseIconChoice(code, id) {
     throw new Error("Invalid course icon selection.");
   }
 
+  const globalKey = storageKey + ".global." + key;
+  if (Object.hasOwn(globalIcons, id)) {
+    localStorage.setItem(globalKey, id);
+    return;
+  }
   const choices = readIconChoices();
 
   if (id) choices.set(key, id);
   else choices.delete(key);
 
   localStorage.setItem(themeStorageKey(storageKey), JSON.stringify(Object.fromEntries(choices)));
+  localStorage.removeItem(globalKey);
 }
 
 export function createCourseIcon(code, choice = getCourseIconChoice(code)) {
@@ -216,7 +239,7 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse, 
     gap: "8px",
   });
 
-  const iconGroups = availableGroups();
+  const iconGroups = [...availableGroups(), ...(globalGroup.options.length ? [globalGroup] : [])];
   for (const [index, group] of iconGroups.entries()) {
     category.add(new Option(group.label, String(index)));
   }
@@ -299,7 +322,7 @@ export function openCourseIconPicker(trigger, { code, name, choice = "", onUse, 
 }
 
 export function createTaskIcon(task) {
-  const choice = task.icons?.[activeThemePack()];
+  const choice = Object.hasOwn(globalIcons, task.icons?.global) ? task.icons.global : task.icons?.[activeThemePack()];
   const icon = document.createElement("span");
   icon.className = "course-subject-icon";
   icon.setAttribute("aria-hidden", "true");
