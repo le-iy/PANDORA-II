@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="70" viewBox="0 0 80 70">
+<path fill="#328D89" opacity=".40" d="M40 1h12v2H40zM27 3h7v2h-7zM20 6h5v2h-5zM58 4h6v2h-6zM66 7h5v2h-5zM74 15h2v11h-2zM8 47h2v9H8zM13 57h3v2h-3zM24 63h9v2h-9zM38 66h14v2H38z"/>
+<path fill="#152a36" d="M44 13h6v2h-6zM42 15h8v2h-8zM36 17h6v2h-6zM52 17h2v2h-2zM36 19h6v2h-6zM52 19h2v2h-2zM30 21h6v2h-6zM54 21h4v2h-4zM54 23h4v2h-4zM26 25h2v2h-2zM52 25h2v2h-2zM24 27h2v2h-2zM52 27h2v2h-2zM22 29h4v2h-4zM48 29h2v2h-2zM24 31h2v2h-2zM48 31h2v2h-2zM26 33h2v2h-2zM40 33h2v2h-2zM48 33h2v2h-2zM30 35h10v2h-10zM48 35h2v2h-2zM30 37h6v2h-6zM32 39h4v2h-4zM40 39h2v2h-2zM52 39h2v2h-2zM30 41h2v2h-2zM40 41h2v2h-2zM54 41h4v2h-4zM30 43h2v2h-2zM38 43h2v2h-2zM42 43h4v2h-4zM54 43h4v2h-4zM26 45h2v2h-2zM54 45h4v2h-4zM26 47h2v2h-2zM34 47h2v2h-2zM46 47h4v2h-4zM54 47h4v2h-4zM30 49h4v2h-4zM50 49h4v2h-4zM30 51h4v2h-4zM50 51h4v2h-4z"/>
+<path fill="#de82a2" d="M42 17h2v2h-2zM50 17h2v2h-2zM46 27h2v2h-2zM26 31h4v2h-4zM42 31h2v2h-2zM32 41h2v2h-2zM42 41h2v2h-2zM50 41h4v2h-4z"/>
+<path fill="#de82a2" d="M44 17h6v2h-6zM44 31h2v2h-2zM34 41h2v2h-2zM32 45h2v2h-2z"/>
+<path fill="#de82a2" d="M42 19h2v2h-2zM50 19h2v2h-2zM50 21h4v2h-4zM30 23h6v2h-6zM50 23h4v2h-4zM28 25h2v2h-2zM46 25h4v2h-4zM48 27h2v2h-2zM40 29h8v2h-8zM30 31h10v2h-10zM30 33h10v2h-10zM42 33h2v2h-2zM36 37h4v2h-4zM42 39h2v2h-2zM46 39h4v2h-4zM36 43h2v2h-2zM50 43h4v2h-4zM28 45h2v2h-2zM34 45h2v2h-2zM50 45h4v2h-4zM28 47h2v2h-2zM50 47h4v2h-4z"/>
+<path fill="#effcfa" d="M44 19h6v2h-6zM38 21h6v2h-6zM36 23h6v2h-6zM30 25h6v2h-6zM26 29h4v2h-4zM44 33h2v2h-2zM40 35h4v2h-4zM40 37h2v2h-2zM36 39h4v2h-4zM34 43h2v2h-2zM30 45h2v2h-2zM30 47h2v2h-2z"/>
+<path fill="#267f9b" d="M44 21h6v2h-6zM44 23h6v2h-6zM38 25h8v2h-8zM36 27h4v2h-4zM30 29h10v2h-10zM44 35h2v2h-2zM44 37h2v2h-2zM44 39h2v2h-2zM46 43h4v2h-4z"/>
+<path fill="#4eb7ae" d="M36 25h2v2h-2zM30 27h6v2h-6zM46 33h2v2h-2zM38 41h2v2h-2zM32 43h2v2h-2z"/>
+<path fill="#152a36" d="M50 25h2v2h-2zM28 33h2v2h-2zM50 39h2v2h-2zM48 45h2v2h-2z"/>
+<path fill="#de82a2" d="M28 27h2v2h-2zM42 37h2v2h-2zM36 41h2v2h-2zM32 47h2v2h-2z"/>
+<path fill="#de82a2" d="M40 27h6v2h-6zM46 35h2v2h-2zM44 41h2v2h-2zM48 41h2v2h-2z"/>
+<path fill="#328D89" d="M68 9h2v3h3v2h-3v3h-2v-3h-3v-2h3zM9 20h2v2H9zM65 58h3v3h-3zM15 49h2v2h-2z"/></svg>

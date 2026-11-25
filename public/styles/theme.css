@@ -176,3 +176,45 @@
   --course-mint: var(--color-success-surface);
   --course-rose: light-dark(#fae0d2, #50332a);
 }
+
+:root[data-theme-pack="hangyodon"] {
+  --color-background: light-dark(#eaf9f7, #0b202b);
+  --color-surface: light-dark(#f9fefd, #16343f);
+  --color-surface-muted: light-dark(#d7f0ec, #1c414b);
+  --color-border: light-dark(#add8da, #3b6974);
+  --color-text: light-dark(#153d4b, #e9faf8);
+  --color-text-muted: light-dark(#3c6171, #b7d8df);
+  --color-sidebar: light-dark(#1b4051, #102d3a);
+  --color-sidebar-text: #e9faf8;
+  --color-sidebar-active: light-dark(#f2b7d0, #316273);
+  --color-sidebar-active-text: light-dark(#153d4b, #e9faf8);
+  --color-primary: light-dark(#226779, #7dcfcf);
+  --color-primary-text: light-dark(#f9fefd, #102d3a);
+  --color-success: light-dark(#176b65, #7ee0cc);
+  --color-success-surface: light-dark(#d3f2eb, #1b504d);
+  --color-danger: light-dark(#963d67, #ffc5d8);
+  --color-overlay: rgb(11 32 43 / 65%);
+  --color-tasks-due: light-dark(#f7d7e6, #4e344c);
+  --color-tasks-finished: var(--color-success-surface);
+}
+:root[data-theme-pack="hangyodon"][data-accent="seafoam"] {
+  --color-primary: light-dark(#176b65, #7ee0cc);
+  --color-sidebar-active: light-dark(#c2e9e6, #24595b);
+}
+:root[data-theme-pack="hangyodon"][data-accent="bubblegum"] {
+  --color-primary: light-dark(#963d67, #ffc5d8);
+  --color-sidebar-active: light-dark(#f7d7e6, #67425a);
+}
+:root[data-theme-pack="hangyodon"][data-accent="coral"] {
+  --color-primary: light-dark(#943f50, #ffa9ad);
+  --color-sidebar-active: light-dark(#ffdbde, #704651);
+}
+:root[data-theme-pack="hangyodon"] .home-dashboard {
+  --home-lavender: var(--color-surface-muted);
+  --home-yellow: light-dark(#f9e4ed, #304858);
+}
+:root[data-theme-pack="hangyodon"] .courses-screen {
+  --course-lavender: light-dark(#e0f1f8, #35475c);
+  --course-mint: var(--color-success-surface);
+  --course-rose: light-dark(#f7d7e6, #4e344c);
+}

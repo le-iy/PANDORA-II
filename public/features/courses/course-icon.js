@@ -1,4 +1,4 @@
-import { activeThemePack, celestialIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
+import { activeThemePack, celestialIcons, hangyodonIcons, nailongIcons, themeAsset, themeStorageKey } from "../../services/theme-packs.js";
 
 const storageKey = "pandora-ii.course-icons";
 
@@ -68,20 +68,27 @@ const nailongGroup = {
   options: Object.values(nailongIcons).map(({ label, file }) => ({ label, id: file })),
 };
 
+const hangyodonGroup = {
+  label: "Hangyodon characters",
+  options: Object.values(hangyodonIcons).map(({ label, file }) => ({ label, id: file })),
+};
+
 function availableGroups() {
   const pack = activeThemePack();
+  if (pack === "hangyodon") return [...groups, hangyodonGroup];
   if (pack === "nailong") return [...groups, nailongGroup];
   return pack === "galaxy" ? [...groups, celestialGroup] : groups;
 }
 
-const options = new Map([...groups, celestialGroup, nailongGroup].flatMap(({ options }) =>
+const options = new Map([...groups, celestialGroup, nailongGroup, hangyodonGroup].flatMap(({ options }) =>
   options.map((option) => [option.id, option]),
 ));
 
 function hasIcon(id) {
   return options.has(id) &&
     (!id.startsWith("illustrations/celestial/") || activeThemePack() === "galaxy") &&
-    (!id.startsWith("icons/profile/nailong-") || activeThemePack() === "nailong");
+    (!id.startsWith("icons/profile/nailong-") || activeThemePack() === "nailong") &&
+    (!id.startsWith("icons/profile/hangyodon-") || activeThemePack() === "hangyodon");
 }
 
 function courseKey(code) {

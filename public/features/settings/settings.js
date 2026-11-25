@@ -94,6 +94,7 @@ export function renderSettings(container) {
                   <option value="pixel">Pixel</option>
                   <option value="galaxy">Galaxy</option>
                   <option value="nailong">Nailong</option>
+                  <option value="hangyodon">Hangyodon</option>
                 </select>
               </label>
               <p>Each pack remembers its appearance when you save changes.</p>

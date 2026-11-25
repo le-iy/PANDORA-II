@@ -24,6 +24,12 @@ export const themePacks = Object.freeze({
     defaultAccent: "banana",
     defaultBadge: "nailong-happy",
   },
+  hangyodon: {
+    label: "Hangyodon",
+    accents: { lagoon: "Lagoon Blue", seafoam: "Seafoam", bubblegum: "Bubblegum Pink", coral: "Coral" },
+    defaultAccent: "lagoon",
+    defaultBadge: "hangyodon-classic",
+  },
 });
 
 const celestialNames = [
@@ -51,6 +57,12 @@ export const nailongIcons = Object.freeze(Object.fromEntries(nailongNames.map((n
   },
 ])));
 
+const hangyodonNames = ["boba-break","bookworm","bow-tie","bubble","chef","classic","confetti-win","detective","diver","donut-float","flower","headphones","heart-eyes","ice-cream","oh-no","onigiri-hug","party","peace-sign","pencil-patrol","raincoat","rainy-day","sailor","sayuri","sayuri-high-five","side-peek","skater","sleepy","study-buddy","wink","wrapped-up"];
+export const hangyodonIcons = Object.freeze(Object.fromEntries(hangyodonNames.map((name) => [
+  `hangyodon-${name}`,
+  { label: name.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" "), file: `icons/profile/hangyodon-${name}.svg` },
+])));
+
 export function activeThemePack() {
   const pack = globalThis.document?.documentElement.dataset.themePack;
   return Object.hasOwn(themePacks, pack) ? pack : "pixel";
@@ -59,7 +71,9 @@ export function activeThemePack() {
 export function themeAsset(path, pack = activeThemePack()) {
   const artwork = pack === "nailong" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
     ? nailongIcons["nailong-naptime"].file
-    : path;
+    : pack === "hangyodon" && path === "illustrations/calendar-sleepy-lavender-cat.svg"
+      ? hangyodonIcons["hangyodon-sleepy"].file
+      : path;
   return new URL(pack !== "pixel" && Object.hasOwn(themePacks, pack) ? `${pack}/${artwork}` : artwork, assetRoot).href;
 }
 
