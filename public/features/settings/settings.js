@@ -98,7 +98,6 @@ export function renderSettings(container) {
                   <option value="kuromi">Kuromi</option>
                 </select>
               </label>
-              <p>Each pack remembers its appearance when you save changes.</p>
 
               <label>
                 Color mode
@@ -235,6 +234,9 @@ export function renderSettings(container) {
   screen.querySelector("[data-backup]").href = backupUrl.href;
 
   function selectSection(key) {
+    for (const panel of form.querySelectorAll(".settings-preferences > [data-section]")) {
+      panel.hidden = panel.dataset.section !== key;
+    }
     for (const [id, control] of navButtons) {
       if (id === key) control.setAttribute("aria-current", "location");
       else control.removeAttribute("aria-current");
@@ -247,6 +249,8 @@ export function renderSettings(container) {
     const control = document.createElement("button");
     control.type = "button";
     control.textContent = label;
+    panel.id ||= "settings-section-" + key;
+    control.setAttribute("aria-controls", panel.id);
 
     control.addEventListener("click", () => {
       selectSection(key);
@@ -260,6 +264,10 @@ export function renderSettings(container) {
   }
 
   selectSection("profile");
+  form.addEventListener("invalid", (event) => {
+    const panel = event.target.closest("[data-section]");
+    if (panel?.hidden) selectSection(panel.dataset.section);
+  }, true);
 
   function rebuildProfileOptions() {
     iconInputs.clear();

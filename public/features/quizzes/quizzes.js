@@ -119,7 +119,7 @@ export async function renderQuizzes(
   loadDashboardStyles();
 
   const linked = quizId !== null;
-  const screen = element("section", "quiz-dashboard");
+  const screen = element("section", linked ? "quiz-dashboard quiz-detail" : "quiz-dashboard");
 
   screen.innerHTML = `
     <header class="quiz-dashboard-heading">
@@ -311,7 +311,12 @@ export async function renderQuizzes(
       heading.textContent = quiz.title;
       document.title = `${quiz.title} | PANDORA II`;
       status.textContent = "";
-      grid.replaceChildren(makeCard(quiz, getQuizState(quiz, history)));
+      const card = makeCard(quiz, getQuizState(quiz, history));
+      const title = document.createElement("h1");
+      title.className = "quiz-detail-title";
+      title.textContent = quiz.title;
+      card.querySelector(".quiz-card-title").replaceWith(title);
+      grid.replaceChildren(card);
       return;
     }
 

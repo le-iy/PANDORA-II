@@ -47,11 +47,12 @@ function taskButton(label, task, action, opensDialog = false) {
 function deadlineText(task, date, todayKey) {
   if (!date) return "No deadline";
 
-  const label = dateFormat.format(date);
+  const time = /^([01]\d|2[0-3]):[0-5]\d$/.test(task.deadlineTime ?? "") ? new Intl.DateTimeFormat("en-PH", { hour: "numeric", minute: "2-digit" }).format(new Date("2000-01-01T" + task.deadlineTime)) : "";
+  const label = [dateFormat.format(date), time].filter(Boolean).join(" · ");
   const key = scheduleDateKey(date);
 
   if (!task.completed && key < todayKey) return `Overdue · ${label}`;
-  if (!task.completed && key === todayKey) return "Due today";
+  if (!task.completed && key === todayKey) return time ? `Due today · ${time}` : "Due today";
 
   return label;
 }

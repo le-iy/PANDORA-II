@@ -468,3 +468,13 @@
 .course-detail-screen .course-panel-list .course-subject-icon img { display: block; width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated; }
 .course-detail-screen .course-panel-list li { gap: 5px; padding: 8px 10px; }
 .course-detail-screen .course-panel-list li > select { justify-self: start; width: auto; min-width: 0; max-width: 100%; min-height: 34px; font-size: .8125rem; }
+
+/* Course header actions */
+.course-detail-header:has(.course-header-menu:not([hidden])) { position: relative; padding-inline-end: max(56px, 4rem); }
+.course-header-menu { position: absolute; inset-block-start: 10px; inset-inline-end: 10px; z-index: 3; }
+.course-header-menu > summary { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font-size: 1.25rem; cursor: pointer; list-style: none; }
+.course-header-menu > summary::-webkit-details-marker { display: none; }
+.course-header-menu > summary:hover, .course-header-menu[open] > summary { border-color: var(--color-primary); }
+.course-header-menu > [data-course-actions] { position: absolute; inset-block-start: calc(100% + 5px); inset-inline-end: 0; display: grid; gap: 3px; min-width: 158px; padding: 5px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); box-shadow: 0 6px 18px #0002; }
+.course-header-menu .course-detail-shortcut { width: 100%; min-height: 36px; border-color: transparent; font-size: .875rem; }
+.course-header-menu .course-detail-shortcut:hover { background: var(--color-surface-muted); }

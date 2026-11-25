@@ -43,6 +43,7 @@ export function openScheduleDialog({
   onChange,
   chooseDate = false,
   fromRoute = false,
+  selectedEventIndex = null,
 }) {
   const dialog = document.createElement("dialog");
   dialog.className = "schedule-dialog";
@@ -69,6 +70,9 @@ export function openScheduleDialog({
       <label>
         Event title
         <input name="title" required>
+      </label>
+      <label>Description (optional)
+        <textarea name="description" rows="3" maxlength="1000" placeholder="Add notes for this event" style="box-sizing:border-box;width:100%;resize:vertical;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-control);background:var(--color-background);color:var(--color-text);font:inherit"></textarea>
       </label>
 
       <label>
@@ -99,6 +103,7 @@ export function openScheduleDialog({
   const formHeading = form.querySelector("[data-form-heading]");
   const dateInput = form.elements.namedItem("date");
   const titleInput = form.elements.namedItem("title");
+  const descriptionInput = form.elements.namedItem("description");
   const timeInput = form.elements.namedItem("time");
   const colorInput = form.elements.namedItem("eventColor");
   const iconInput = form.elements.namedItem("eventIcon");
@@ -143,6 +148,7 @@ export function openScheduleDialog({
   function resetEditor() {
     editing = null;
     titleInput.value = "";
+    descriptionInput.value = "";
     timeInput.value = "";
     colorInput.value = iconInput.value = "";
     formHeading.textContent = "Add event";
@@ -151,7 +157,7 @@ export function openScheduleDialog({
   }
 
   function sameEvent(current, original) {
-    return current?.title === original.title && current?.time === original.time && (current?.color ?? "") === (original.color ?? "") && (current?.icon ?? "") === (original.icon ?? "");
+    return current?.title === original.title && (current?.description ?? "") === (original.description ?? "") && current?.time === original.time && (current?.color ?? "") === (original.color ?? "") && (current?.icon ?? "") === (original.icon ?? "");
   }
 
   function refreshChangedEvents(events) {
@@ -254,6 +260,7 @@ export function openScheduleDialog({
         editing = { event, index };
         setEditorVisible(true);
         titleInput.value = event.title;
+        descriptionInput.value = event.description ?? "";
         timeInput.value = event.time;
         colorInput.value = eventColors.has(event.color) ? event.color : "";
         iconInput.value = eventIcons.has(event.icon) ? event.icon : "";
@@ -267,11 +274,18 @@ export function openScheduleDialog({
         confirmRemoval(item, event, index, remove);
       });
 
+      edit.dataset.scheduleEventIndex = String(index);
       edit.setAttribute("aria-label", `Edit ${event.title}`);
       remove.setAttribute("aria-label", `Delete ${event.title}`);
 
       actions.append(edit, remove);
       item.append(title, time, actions);
+      if (typeof event.description === "string" && event.description.trim()) {
+        const description = document.createElement("p");
+        description.textContent = event.description;
+        Object.assign(description.style, { gridColumn: "1 / -1", whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: ".8125rem", color: "var(--color-text-muted)" });
+        item.append(description);
+      }
       list.append(item);
     }
 
@@ -298,7 +312,7 @@ export function openScheduleDialog({
       return;
     }
 
-    const details = { title, time: timeInput.value, color: colorInput.value, icon: iconInput.value };
+    const details = { title, description: descriptionInput.value.trim(), time: timeInput.value, color: colorInput.value, icon: iconInput.value };
     const isEditing = editing !== null;
     let events;
 
@@ -353,4 +367,8 @@ export function openScheduleDialog({
   document.body.append(dialog);
   dialog.showModal();
   (chooseDate ? dateInput : close).focus();
+  if (!chooseDate && Number.isInteger(selectedEventIndex)) {
+    const selectedEdit = agenda.querySelector(`[data-schedule-event-index="${selectedEventIndex}"]`);
+    selectedEdit?.click();
+  }
 }

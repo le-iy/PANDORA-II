@@ -267,3 +267,52 @@
   padding-block-start: 12px;
   border-top: 1px solid var(--color-border);
 }
+/* Compact Settings layout */
+.settings-preference-screen .settings-page-header { position: sticky; top: 0; z-index: 4; padding-block: 8px; background: var(--color-background); }
+.settings-preference-screen .settings-preferences { align-items: start; gap: 12px; }
+.settings-preference-screen .settings-card { min-width: 0; padding: 12px 14px; gap: 8px; scroll-margin-top: 76px; }
+.settings-preference-screen .settings-card :is(h2, legend) { font-size: 1.0625rem; }
+.settings-preference-screen .settings-card :is(input:not([type="checkbox"]), select) { min-height: 38px; }
+.settings-preference-screen [data-section="notifications"] { background: var(--color-surface); }
+.settings-preference-screen [data-section="study"], .settings-preference-screen [data-section="backup"] { background: var(--color-surface-muted); }
+.settings-preference-screen .settings-reminders label { padding: 8px 10px; }
+@media (min-width: 1120px) {
+  .settings-preference-screen .settings-preference-nav { top: 72px; padding: 12px; }
+  .settings-preference-screen .settings-preference-nav button { min-height: 36px; padding-block: 5px; }
+  .settings-preference-screen .settings-card:is([data-section="appearance"], [data-section="study"]) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-preference-screen [data-section="appearance"] > :is(legend, p, label:has(select[name="themePack"])), .settings-preference-screen [data-section="study"] > :is(legend, label:last-of-type) { grid-column: 1 / -1; }
+}
+
+/* Settings section switcher */
+.settings-preference-screen .settings-preferences { grid-template-columns: minmax(0, 1fr); }
+.settings-preference-screen .settings-preferences > .settings-card[hidden] { display: none; }
+.settings-preference-screen .settings-preference-content { width: 100%; max-width: 54rem; }
+.settings-preference-screen .settings-preferences > .settings-card:not([hidden]) { border-radius: var(--radius-card); padding: clamp(14px, 2vw, 20px); }
+@media (max-width: 719px) { .settings-preference-screen .settings-profile-fields .settings-badge-preview button { margin-inline-start: 0; } }
+
+/* Settings panel hierarchy */
+.settings-dashboard.settings-preference-screen { width: 100%; max-width: none; }
+.settings-preference-screen .settings-preference-content { max-width: none; }
+.settings-preference-screen .settings-page-header { border-bottom: 1px solid var(--color-border); padding-block: 8px 12px; }
+.settings-preference-screen .settings-preference-nav { gap: 8px; padding: 10px; }
+.settings-preference-screen .settings-preference-nav h2 { margin-inline: 8px; color: var(--color-text-muted); font-size: .8125rem; }
+.settings-preference-screen .settings-preference-nav button:not([aria-current]) { background: transparent; border-color: transparent; }
+.settings-preference-screen .settings-preference-nav button:not([aria-current]):hover { background: var(--color-surface); border-color: var(--color-border); }
+.settings-preference-screen .settings-preferences > .settings-card:not([hidden]) { background: var(--color-surface); }
+.settings-preference-screen .settings-card :is(h2, legend) { color: var(--color-text); font-size: 1.25rem; font-weight: 750; }
+.settings-preference-screen .settings-card p { max-width: 62ch; }
+.settings-preference-screen .settings-form > .settings-actions { padding-top: 8px; border-top: 1px solid var(--color-border); }
+@media (min-width: 1120px) {
+  .settings-preference-screen .settings-preference-layout { grid-template-columns: 11rem minmax(0, 1fr); }
+  .settings-preference-screen .settings-card:is([data-section="appearance"], [data-section="study"]) { grid-template-columns: minmax(0, 1fr); }
+  .settings-preference-screen [data-section]:is([data-section="appearance"], [data-section="study"]) > label { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(10rem, 15rem); align-items: center; gap: 8px 14px; padding-block: 4px; }
+  .settings-preference-screen .settings-profile-fields { grid-template-columns: minmax(0, 1fr); }
+  .settings-preference-screen .settings-profile-fields > label { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(10rem, 15rem); align-items: center; }
+}
+
+/* Appearance field spacing */
+.settings-preference-screen .settings-card[data-section="appearance"] { gap: 10px; padding-block: 14px 18px; }
+.settings-preference-screen .settings-card[data-section="appearance"] > label { min-width: 0; padding-block: 0; }
+@media (min-width: 1120px) {
+  .settings-preference-screen .settings-card[data-section="appearance"] > label { grid-template-columns: minmax(9rem, 11rem) minmax(0, 18rem); justify-content: start; column-gap: 16px; }
+}

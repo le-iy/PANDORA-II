@@ -121,6 +121,10 @@ export async function renderCourseWorkspace(container, code) {
     <a class="course-detail-back" href="#/courses">← Back to Courses</a>
 
     <header class="course-detail-header">
+      <details class="course-header-menu" hidden>
+        <summary aria-label="Course actions">&#8943;</summary>
+        <div data-course-actions></div>
+      </details>
       <div class="course-detail-identity">
         <div data-course-icon></div>
         <div>
@@ -139,7 +143,6 @@ export async function renderCourseWorkspace(container, code) {
       </div>
     </header>
 
-    <nav class="course-detail-navigation" aria-label="Course sections" hidden></nav>
     <p data-course-feedback role="status" hidden></p>
     <div class="course-detail-panels" data-panels hidden></div>
   `;
@@ -149,7 +152,9 @@ export async function renderCourseWorkspace(container, code) {
   const heading = workspace.querySelector("h1");
   const status = workspace.querySelector("[data-course-status]");
   const codeLabel = workspace.querySelector("[data-course-code]");
-  const navigation = workspace.querySelector("nav");
+  const courseMenu = workspace.querySelector(".course-header-menu");
+  const menuTrigger = courseMenu.querySelector("summary");
+  const navigation = courseMenu.querySelector("[data-course-actions]");
   const panelGrid = workspace.querySelector("[data-panels]");
   const feedback = workspace.querySelector("[data-course-feedback]");
   const courseCode = normalizeCourseCode(code);
@@ -190,7 +195,7 @@ export async function renderCourseWorkspace(container, code) {
     control.className = "course-detail-shortcut";
     control.textContent = label;
     if (opensDialog) control.setAttribute("aria-haspopup", "dialog");
-    control.addEventListener("click", () => action(control));
+    control.addEventListener("click", () => { courseMenu.open = false; action(menuTrigger); });
     navigation.append(control);
     return control;
   }
@@ -212,18 +217,9 @@ export async function renderCourseWorkspace(container, code) {
     panel.element.dataset.courseSection = section.id;
     panelHeading.tabIndex = -1;
 
-    const control = addShortcut(section.label, () => {
-      panelHeading.focus({ preventScroll: true });
-      panel.element.scrollIntoView({ block: "nearest" });
-    });
-
-    const count = document.createElement("span");
-    count.className = "course-detail-shortcut-count";
-    count.hidden = true;
-    control.append(count);
     panelGrid.append(panel.element);
 
-    return { section, panel, count };
+    return { section, panel };
   });
 
   addShortcut("Change icon", (trigger) => {
@@ -252,18 +248,16 @@ export async function renderCourseWorkspace(container, code) {
   }, true);
   deleteButton.style.color = "var(--color-danger)";
 
-  navigation.hidden = false;
+  courseMenu.hidden = false;
   panelGrid.hidden = false;
 
-  await Promise.all(panels.map(async ({ section, panel, count }) => {
+  await Promise.all(panels.map(async ({ section, panel }) => {
     try {
       const rows = await loadWorkspaceRows(section, courseCode);
       if (workspace.parentElement !== container) return;
 
       panels.find((entry) => entry.section === section).rows = rows;
       panel.showRows(rows);
-      count.textContent = String(rows.length);
-      count.hidden = false;
     } catch (error) {
       console.error(`Could not load course ${section.id}.`, error);
       if (workspace.parentElement === container) panel.showError();

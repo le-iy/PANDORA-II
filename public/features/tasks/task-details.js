@@ -51,6 +51,17 @@ export function openTaskDetails(screen, task, { onEdit, onComplete, onClose }) {
     ? dateFormat.format(deadline)
     : "No deadline";
 
+  if (typeof task.description === "string" && task.description.trim()) {
+    const description = document.createElement("section");
+    const heading = document.createElement("h3");
+    heading.textContent = "Description";
+    const copy = document.createElement("p");
+    copy.textContent = task.description;
+    Object.assign(copy.style, { whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: "4px 0 12px" });
+    description.append(heading, copy);
+    dialog.querySelector(".task-detail-fields").after(description);
+  }
+
   let nextAction = onClose;
 
   function closeWith(action) {

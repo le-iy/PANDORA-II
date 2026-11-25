@@ -68,10 +68,16 @@ export function openTaskEditor(task, onSave, trigger) {
         Task title
         <input name="title" maxlength="120" required autofocus>
       </label>
+      <label>Description (optional)
+        <textarea name="description" rows="3" maxlength="1000" placeholder="Add notes for this task" style="box-sizing:border-box;width:100%;resize:vertical;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-control);background:var(--color-background);color:var(--color-text);font:inherit"></textarea>
+      </label>
 
       <label>
         Deadline (optional)
         <input name="deadline" type="date">
+      </label>
+      <label>Deadline time (optional)
+        <input name="deadlineTime" type="time">
       </label>
 
       <label>
@@ -106,7 +112,14 @@ export function openTaskEditor(task, onSave, trigger) {
   const save = form.querySelector('button[type="submit"]');
 
   titleInput.value = task?.title ?? "";
+  const descriptionInput = form.elements.namedItem("description");
+  descriptionInput.value = task?.description ?? "";
   deadlineInput.value = task?.deadline ?? "";
+  const timeInput = form.elements.namedItem("deadlineTime");
+  timeInput.value = task?.deadlineTime ?? "";
+  const syncDeadlineTime = () => { timeInput.disabled = !deadlineInput.value; };
+  deadlineInput.addEventListener("input", syncDeadlineTime);
+  syncDeadlineTime();
   const rewardInput = form.elements.namedItem("expReward");
   rewardInput.value = task?.expReward ?? 20;
 
@@ -135,7 +148,9 @@ export function openTaskEditor(task, onSave, trigger) {
 
     const details = {
       title: taskTitle,
+      description: descriptionInput.value.trim(),
       deadline: deadlineInput.value,
+      deadlineTime: deadlineInput.value ? timeInput.value : "",
       expReward,
       courseCode: courseInput.value,
     };

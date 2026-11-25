@@ -46,7 +46,7 @@ function formatTime(minutes) {
 
 function sortedEvents(date) {
   try {
-    return readScheduleEvents(date).sort(
+    return readScheduleEvents(date).map((event, index) => ({ ...event, calendarEventIndex: index })).sort(
       (a, b) =>
         (minutesFromTime(a.time) ?? 1440) -
         (minutesFromTime(b.time) ?? 1440),
@@ -202,7 +202,7 @@ export function renderSchedule(container, requestedDate = null) {
   }
 
   function openDay(date, trigger, options = {}) {
-    const { chooseDate = false, fromRoute = false } = options;
+    const { chooseDate = false, fromRoute = false, selectedEventIndex = null } = options;
     openedDay = date;
     refreshOnClose = false;
 
@@ -211,6 +211,7 @@ export function renderSchedule(container, requestedDate = null) {
       trigger,
       chooseDate,
       fromRoute,
+      selectedEventIndex,
       onChange(target, _count, revealDate) {
         refreshOnClose = true;
         showSidePanels();
@@ -258,7 +259,15 @@ export function renderSchedule(container, requestedDate = null) {
   }
 
   function makeEventButton(date, event, start) {
-    const control = button("schedule-time-event", event.title, () => openDay(date, control));
+    const control = button("schedule-time-event", event.title, () => openDay(date, control, { selectedEventIndex: event.calendarEventIndex }));
+    if (event.task) {
+      const link = element("a", "schedule-time-event");
+      link.href = event.task.id == null ? "#/tasks" : "#/tasks/" + encodeURIComponent(event.task.id);
+      link.title = event.title;
+      Object.assign(link.style, { color: "var(--color-text)", textDecoration: "none", borderInlineStart: "3px solid var(--color-primary)" });
+      link.append(element("strong", "", event.title), element("span", "schedule-time-label", formatTime(start) + (event.task.completed ? " · Done" : " · Due")));
+      return link;
+    }
     const label = start === null ? "No time set" : formatTime(start);
     const title = element("strong", "", event.title);
     control.replaceChildren(element("span", "schedule-time-label", label), title);
@@ -267,10 +276,33 @@ export function renderSchedule(container, requestedDate = null) {
     return control;
   }
 
-  function showWeek() {
+  function readDeadlinesByDate() {
+    const byDate = new Map();
+    try {
+      for (const task of readTasks()) {
+        if (typeof task?.title !== "string") continue;
+        const date = parseScheduleDate(task.deadline);
+        if (!date) continue;
+        const key = scheduleDateKey(date);
+        if (!byDate.has(key)) byDate.set(key, []);
+        byDate.get(key).push(task);
+      }
+    } catch (error) {
+      console.error("Could not load calendar deadlines.", error);
+    }
+    return byDate;
+  }
+
+  function showWeek(deadlines) {
     const first = shiftCalendarDays(activeDate, -calendarWeekdayOffset(activeDate, weekStart));
     const dates = Array.from({ length: 7 }, (_, index) => shiftCalendarDays(first, index));
-    const dayEvents = dates.map(sortedEvents);
+    const dayEvents = dates.map((date) => {
+      const events = sortedEvents(date) ?? [];
+      const tasks = (deadlines.get(scheduleDateKey(date)) ?? [])
+        .filter(task => minutesFromTime(task.deadlineTime ?? "") !== null)
+        .map(task => ({ title: task.title, time: task.deadlineTime, task }));
+      return [...events, ...tasks].sort((a, b) => (minutesFromTime(a.time) ?? 1440) - (minutesFromTime(b.time) ?? 1440));
+    });
     const labels = calendarWeekdayLabels(weekStart);
     const times = dayEvents.flatMap((events) =>
       (events ?? []).map((event) => minutesFromTime(event.time))
@@ -311,6 +343,15 @@ export function renderSchedule(container, requestedDate = null) {
           untimed.append(makeEventButton(date, event, null));
         }
       }
+      for (const task of deadlines.get(scheduleDateKey(date)) ?? []) {
+        if (minutesFromTime(task.deadlineTime ?? "") !== null) continue;
+        const link = element("a", "schedule-time-event");
+        link.href = task.id == null ? "#/tasks" : "#/tasks/" + encodeURIComponent(task.id);
+        link.title = task.title;
+        Object.assign(link.style, { color: "var(--color-text)", textDecoration: "none", borderInlineStart: "3px solid var(--color-primary)" });
+        link.append(element("strong", "", task.title), element("span", "schedule-time-label", task.completed ? "Due · Done" : "Due"));
+        untimed.append(link);
+      }
       table.append(untimed);
     }
 
@@ -324,27 +365,30 @@ export function renderSchedule(container, requestedDate = null) {
       const track = element("div", "schedule-time-track");
       track.style.setProperty("--schedule-hours", endHour - startHour);
 
-      // Place overlapping events in separate lanes within the same day.
-      const lanes = [];
-      const blocks = [];
-
+      const groups = [];
       for (const event of dayEvents[index] ?? []) {
         const start = minutesFromTime(event.time);
         if (start === null) continue;
-
         const end = Math.min(1440, start + 60);
-        let lane = lanes.findIndex((availableAt) => availableAt <= start);
-        if (lane === -1) lane = lanes.length;
-        lanes[lane] = end;
-        blocks.push({ event, start, end, lane });
+        const last = groups.at(-1);
+        if (last && start < last.end) {
+          last.events.push({ event, start });
+          last.end = Math.max(last.end, end);
+        } else {
+          groups.push({ start, end, events: [{ event, start }] });
+        }
       }
 
-      for (const { event, start, end, lane } of blocks) {
-        const control = makeEventButton(date, event, start);
+      for (const group of groups) {
+        const { event, start } = group.events[0];
+        const grouped = group.events.length > 1;
+        const control = makeEventButton(date, grouped ? { title: `${group.events.length} overlapping events` } : event, start);
+        control.title = group.events.map(entry => `${formatTime(entry.start)} · ${entry.event.title}`).join("\u000A");
+        if (grouped) control.setAttribute("aria-label", `${group.events.length} overlapping events starting at ${formatTime(start)}. Open day events.`);
         control.style.setProperty("--event-top", (start - startHour * 60) / 60);
-        control.style.setProperty("--event-length", (end - start) / 60);
-        control.style.setProperty("--event-left", `${lane / lanes.length * 100}%`);
-        control.style.setProperty("--event-width", `${100 / lanes.length}%`);
+        control.style.setProperty("--event-length", Math.min(1, (group.end - start) / 60));
+        control.style.setProperty("--event-left", "0%");
+        control.style.setProperty("--event-width", "100%");
         track.append(control);
       }
 
@@ -355,7 +399,7 @@ export function renderSchedule(container, requestedDate = null) {
     calendar.replaceChildren(heading, scroller);
   }
 
-  function showMonth() {
+  function showMonth(deadlines) {
     const first = firstOfMonth(activeDate);
     const weekdayRow = element("div", "schedule-grid");
     const days = element("div", "schedule-grid");
@@ -380,6 +424,14 @@ export function renderSchedule(container, requestedDate = null) {
         control.append(badge);
       }
 
+      const due = deadlines.get(scheduleDateKey(date)) ?? [];
+      if (due.length) {
+        const badge = element("span", "schedule-event-count", due.length + " due");
+        badge.setAttribute("aria-hidden", "true");
+        control.append(badge);
+        control.setAttribute("aria-label", control.getAttribute("aria-label") + ", " + due.length + (due.length === 1 ? " task due" : " tasks due"));
+        control.title = due.map(task => task.title).join(String.fromCharCode(10));
+      }
       days.append(control);
     }
 
@@ -399,8 +451,9 @@ export function renderSchedule(container, requestedDate = null) {
       control.setAttribute("aria-label", `${direction} ${view}`);
     }
 
-    if (view === "week") showWeek();
-    else showMonth();
+    const deadlines = readDeadlinesByDate();
+    if (view === "week") showWeek(deadlines);
+    else showMonth(deadlines);
   }
 
   for (const control of stepButtons) {
