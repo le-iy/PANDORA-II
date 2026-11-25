@@ -1,3 +1,4 @@
+import { loadCourseCatalog } from "../../services/course-catalog.js";
 import {
   removeSavedResource,
   resolveResourceUrl,
@@ -231,10 +232,11 @@ export function openResourceDialog(screen, trigger, {
       </label>
 
       <label>
-        Course code (optional)
-        <input name="courseCode" maxlength="12">
+        Course (optional)
+        <select name="courseCode" aria-describedby="resource-course-status"><option value="">No course</option></select>
       </label>
 
+      <p id="resource-course-status" aria-live="polite"></p>
       <p class="resource-feedback" role="status"></p>
 
       <div class="resource-actions">
@@ -254,7 +256,24 @@ export function openResourceDialog(screen, trigger, {
     const saveLabel = save.textContent.trim();
 
     title.value = resource?.title ?? "";
-    courseCode.value = resource?.courseCode ?? "";
+    const selectedCode = resource?.courseCode ?? "";
+    if (selectedCode) courseCode.add(new Option(selectedCode, selectedCode));
+    courseCode.value = selectedCode;
+    const courseStatus = form.querySelector("#resource-course-status");
+    loadCourseCatalog().then(courses => {
+      if (!form.isConnected) return;
+      for (const { code, name } of courses) {
+        if (!code || !name) continue;
+        const label = code + " · " + name;
+        const existing = [...courseCode.options].find(option => option.value === code);
+        if (existing) existing.textContent = label;
+        else courseCode.add(new Option(label, code));
+      }
+      if (!courses.length) courseStatus.textContent = "No courses available yet.";
+    }).catch(error => {
+      console.error("Could not load repository courses.", error);
+      if (form.isConnected) courseStatus.textContent = "Could not load courses. You can still save this resource.";
+    });
     if (!isPdf && resource) source.value = resource.url;
 
     if (isPdf) {
