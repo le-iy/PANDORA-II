@@ -118,8 +118,6 @@ export async function renderCourseWorkspace(container, code) {
   workspace.setAttribute("aria-labelledby", "course-workspace-heading");
 
   workspace.innerHTML = `
-    <a class="course-detail-back" href="#/courses">← Back to Courses</a>
-
     <header class="course-detail-header">
       <details class="course-header-menu" hidden>
         <summary aria-label="Course actions">&#8943;</summary>
