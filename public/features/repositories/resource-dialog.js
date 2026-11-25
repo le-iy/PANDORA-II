@@ -90,7 +90,7 @@ export function openResourceDialog(screen, trigger, {
   catalog,
   onSaved,
   onRemoved,
-  fallbackFocus,
+  fallbackFocus, courseCode: presetCourseCode = "", folderPicker = null,
 }) {
   loadPopupStyles();
 
@@ -256,9 +256,9 @@ export function openResourceDialog(screen, trigger, {
     const saveLabel = save.textContent.trim();
 
     title.value = resource?.title ?? "";
-    const selectedCode = resource?.courseCode ?? "";
+    const selectedCode = presetCourseCode || resource?.courseCode || "";
     if (selectedCode) courseCode.add(new Option(selectedCode, selectedCode));
-    courseCode.value = selectedCode;
+    courseCode.value = selectedCode; courseCode.disabled = Boolean(presetCourseCode); if (folderPicker) courseCode.closest("label").after(folderPicker.element);
     const courseStatus = form.querySelector("#resource-course-status");
     loadCourseCatalog().then(courses => {
       if (!form.isConnected) return;
@@ -421,7 +421,7 @@ export function openResourceDialog(screen, trigger, {
     if (target?.isConnected) target.focus();
   }, { once: true });
 
-  screen.append(dialog);
+  let popupHost = null; if (!screen.closest(".repositories-screen")) { if (!document.head.querySelector("[data-course-repository-styles]")) { const stylesheet = document.createElement("link"); stylesheet.rel = "stylesheet"; stylesheet.href = new URL("../../styles/repositories.css", import.meta.url).href; stylesheet.dataset.courseRepositoryStyles = ""; document.head.append(stylesheet); } popupHost = document.createElement("div"); popupHost.className = "repositories-screen"; popupHost.style.display = "contents"; screen.append(popupHost); popupHost.append(dialog); dialog.addEventListener("close", () => popupHost.remove(), { once: true }); } else { screen.append(dialog); }
   dialog.showModal();
   focusTarget.focus();
 }

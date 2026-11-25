@@ -1,3 +1,4 @@
+ import { loadCourseCounts } from "./course-counts.js";
 import { courseSemesterLabel } from "../../services/course-catalog.js";
 import { activeThemePack, themeStorageKey } from "../../services/theme-packs.js";
 import {
@@ -261,7 +262,7 @@ function describeCounts({ tasks, quizzes }) {
   return [
     tasks === null ? "Tasks unavailable" : `${tasks} ${tasks === 1 ? "task" : "tasks"}`,
     quizzes === null ? "Quizzes unavailable" : `${quizzes} ${quizzes === 1 ? "quiz" : "quizzes"}`,
-  ].join(" · ");
+  ].join(" \u00B7 ");
 }
 
 export function createCourseCard(course, counts) {

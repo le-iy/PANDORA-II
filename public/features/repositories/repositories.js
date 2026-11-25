@@ -1,4 +1,4 @@
-import { themeAsset } from "../../services/theme-packs.js";
+
 import { loadResourceCatalog } from "../../services/resource-catalog.js";
 import { createResourceCard, resourceRouteId } from "./resource-card.js";
 import { openResourceDialog } from "./resource-dialog.js";
@@ -66,13 +66,6 @@ export async function renderRepositories(container, requestedId = null) {
       </section>
 
       <aside class="repository-aside" aria-label="Collection tools" hidden>
-        <section class="repository-upload">
-          <img src="${themeAsset("icons/resources/repository-folder.svg")}" width="40" height="40" alt="">
-          <h2>Add study materials</h2>
-          <button class="resource-primary" type="button" data-browse
-            aria-haspopup="dialog">Browse files</button>
-        </section>
-
         <section class="repository-collection">
           <h2>Your collection</h2>
           <dl>
@@ -88,7 +81,7 @@ export async function renderRepositories(container, requestedId = null) {
 
   const addLink = screen.querySelector("[data-add-link]");
   const addPdf = screen.querySelector("[data-add-pdf]");
-  const browse = screen.querySelector("[data-browse]");
+  
   const toolbar = screen.querySelector(".resource-toolbar");
   const search = toolbar.querySelector("input");
   const sort = toolbar.querySelector("select");
@@ -181,14 +174,14 @@ export async function renderRepositories(container, requestedId = null) {
 
   addLink.addEventListener("click", () => showDialog(addLink));
   addPdf.addEventListener("click", () => showDialog(addPdf, null, "pdf"));
-  browse.addEventListener("click", () => showDialog(browse, null, "pdf"));
+  
 
   toolbar.hidden = false;
   screen.querySelector("[data-repository-stats]").hidden = false;
   screen.querySelector(".repository-aside").hidden = false;
   addLink.disabled = false;
   addPdf.disabled = pdfUnavailable;
-  browse.disabled = pdfUnavailable;
+  
   refreshCollection();
 
   if (requestedId !== null) {

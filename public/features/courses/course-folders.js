@@ -1,3 +1,5 @@
+import { renderQuizEditor } from "../quizzes/quiz-editor.js"; import { saveCustomQuiz } from "../../services/quiz-catalog.js"; import { folderPicker } from "./course-quick-actions.js";
+import { createCourseQuickActions } from "./course-quick-actions.js"; import { loadWorkspaceRows } from "./course-workspace-data.js";
 import { themeAsset } from "../../services/theme-packs.js";
 import { createWorkspaceRow } from "./course-workspace-panel.js";
 
@@ -108,7 +110,7 @@ export function mountCourseFolders(workspace, panelGrid, panels, courseCode) {
     item.append(select);
   }
 
-  let activeFolder = null;
+  let activeFolder = null; const createQuizAction = button("+ Create Quiz", () => { const host = workspace.parentElement; if (!host) return; const picker = folderPicker(courseCode, activeFolder); function restore() { host.replaceChildren(workspace); createQuizAction.focus(); } renderQuizEditor(host, { presetCourseCode: courseCode, folderPicker: picker, onCancel: restore, onSave(quiz) { const saved = { ...quiz, courseCode }; if (!saveCustomQuiz(saved)) return false; try { picker.assign("quizzes", { ...saved, source: "custom" }); } catch (error) { console.error("Quiz saved but folder assignment failed.", error); alert("Quiz saved. Move it to the desired folder manually."); } restore(); void (async () => { const latest = JSON.parse(localStorage.getItem(key) ?? "{}"); assignments = latest.assignments ?? {}; folders = latest.folders ?? []; const entry = panels.find(item => item.section.id === "quizzes"); entry.rows = await loadWorkspaceRows(entry.section, courseCode); render(); })().catch(console.error); return true; } }); }); createQuizAction.classList.add("course-folder-primary"); panels.find(entry => entry.section.id === "quizzes").panel.element.querySelector(".course-panel-header").append(createQuizAction); const quickActions = createCourseQuickActions(courseCode, async () => { const latest = JSON.parse(localStorage.getItem(key) ?? "{}"); folders = latest.folders ?? []; assignments = latest.assignments ?? {}; await Promise.all(panels.map(async entry => { entry.rows = await loadWorkspaceRows(entry.section, courseCode); })); render(); }, () => activeFolder); const taskAction = quickActions.children[0]; const resourceAction = quickActions.children[1]; const taskHeader = panelGrid.querySelector("[data-course-section=tasks] .course-panel-header"); const resourceHeader = panelGrid.querySelector("[data-course-section=resources] .course-panel-header"); if (taskHeader) taskHeader.append(taskAction); if (resourceHeader) resourceHeader.append(resourceAction);
 
   function parentOf(folder) {
     return folder.parentId ?? null;
@@ -291,3 +293,4 @@ export function mountCourseFolders(workspace, panelGrid, panels, courseCode) {
   });
   render();
 }
+

@@ -106,7 +106,7 @@ async function populateCourseSelect(select, status, savedCode) {
   }
 }
 
-export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
+export function renderQuizEditor(container, { onSave, onCancel, quiz = null, presetCourseCode = "", folderPicker = null }) {
   const editor = document.createElement("section");
   editor.className = "quiz-workspace quiz-editor";
 
@@ -158,7 +158,7 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   const form = editor.querySelector("form");
   const title = form.elements.namedItem("title");
   const course = form.elements.namedItem("courseCode");
-  const courseStatus = form.querySelector("[data-course-status]");
+  const courseStatus = form.querySelector("[data-course-status]"); if (folderPicker) course.closest("label").after(folderPicker.element);
   const list = form.querySelector("[data-questions]");
   const count = form.querySelector("[data-question-count]");
   const nav = form.querySelector("[data-question-links]");
@@ -170,8 +170,8 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   rewardInput.value = quiz?.expReward ?? 100;
   title.value = quiz?.title ?? "";
 
-  function markCurrent(fieldset) {
-    const index = Array.from(list.children).indexOf(fieldset);
+  const questionControls = document.createElement("div"); questionControls.className = "quiz-editor-pagination"; const previousQuestion = document.createElement("button"); previousQuestion.type = "button"; previousQuestion.textContent = "Previous"; const nextQuestion = document.createElement("button"); nextQuestion.type = "button"; nextQuestion.textContent = "Next"; const positionLabel = document.createElement("span"); positionLabel.setAttribute("aria-live", "polite"); questionControls.append(previousQuestion, positionLabel, nextQuestion); list.after(questionControls); const builderLayout = document.createElement("div"); builderLayout.className = "quiz-builder-layout"; const questionArea = document.createElement("div"); questionArea.className = "quiz-builder-main"; const sidebar = document.createElement("aside"); sidebar.className = "quiz-builder-sidebar"; const settings = document.createElement("section"); settings.className = "quiz-builder-settings"; const settingsTitle = document.createElement("h2"); settingsTitle.textContent = "Quiz details"; settings.append(settingsTitle); for (const label of Array.from(form.children).filter(el => el.tagName === "LABEL")) settings.append(label); const navigator = form.querySelector(".quiz-question-nav"); const addQuestion = form.querySelector("[data-add-question]"); const navigatorHeading = document.createElement("h2"); navigatorHeading.textContent = "Questions"; navigator.prepend(navigatorHeading); navigator.append(addQuestion); questionArea.append(list, questionControls); sidebar.append(settings, navigator); builderLayout.append(questionArea, sidebar); form.prepend(builderLayout); function moveQuestion(offset) { const fields = Array.from(list.children); const current = fields.findIndex(field => !field.hidden); const target = fields[current + offset]; if (target) markCurrent(target); } previousQuestion.addEventListener("click", () => moveQuestion(-1)); nextQuestion.addEventListener("click", () => moveQuestion(1)); function validateEditor() { for (const control of Array.from(form.elements)) { if (control.willValidate && !control.validity.valid) { const fieldset = control.closest(".quiz-editor-question"); if (fieldset) markCurrent(fieldset); control.reportValidity(); return false; } } return true; } form.noValidate = true; function markCurrent(fieldset) {
+    const index = Array.from(list.children).indexOf(fieldset); if (index < 0) return; for (const field of list.children) field.hidden = field !== fieldset; positionLabel.textContent = `Question ${index + 1} of ${list.children.length}`; previousQuestion.disabled = index === 0; nextQuestion.disabled = index === list.children.length - 1;
 
     for (const [position, button] of Array.from(nav.children).entries()) {
       if (position === index) {
@@ -197,8 +197,8 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
 
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = label;
-      button.addEventListener("click", () => fieldset.querySelector("textarea").focus());
+      button.textContent = String(index + 1); button.setAttribute("aria-label", label); button.title = label;
+      button.addEventListener("click", () => markCurrent(fieldset));
       return button;
     });
 
@@ -250,13 +250,13 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
         status.textContent =
           `Complete the prompt, choices, and answer for Question ${index + 1}.`;
         const invalid = prompt.value.trim() ? options[emptyChoice] ?? answer : prompt;
-        invalid.focus();
+        markCurrent(fieldset); invalid.focus();
         return null;
       }
 
       if (imageData && !imageAlt) {
         status.textContent = `Describe the image for Question ${index + 1}.`;
-        alt.focus();
+        markCurrent(fieldset); alt.focus();
         return null;
       }
 
@@ -340,14 +340,14 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
   });
 
   preview.addEventListener("click", () => {
-    if (!form.reportValidity()) return;
+    if (!validateEditor()) return;
 
     const details = readQuiz();
     if (details) showQuizPreview(editor, details, preview);
   });
 
   form.addEventListener("submit", (event) => {
-    event.preventDefault();
+    event.preventDefault(); if (!validateEditor()) return;
 
     const details = readQuiz();
     if (!details) return;
@@ -359,5 +359,5 @@ export function renderQuizEditor(container, { onSave, onCancel, quiz = null }) {
 
   container.replaceChildren(editor);
   title.focus();
-  void populateCourseSelect(course, courseStatus, normalizeCourseCode(quiz?.courseCode));
+  void populateCourseSelect(course, courseStatus, normalizeCourseCode(presetCourseCode || quiz?.courseCode)).then(() => { if (presetCourseCode) course.disabled = true; });
 }

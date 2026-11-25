@@ -19,11 +19,11 @@ function addCourseOptions(select, courses, selectedCode) {
   select.value = selectedCode;
 }
 
-export function openTaskEditor(task, onSave, trigger) {
+export function openTaskEditor(task, onSave, trigger, options = {}) {
   const isEditing = task !== null;
   const title = isEditing ? "Edit task" : "Add task";
   const action = isEditing ? "Save changes" : "Add task";
-  const selectedCode = typeof task?.courseCode === "string" ? task.courseCode : "";
+  const selectedCode = options.courseCode ?? (typeof task?.courseCode === "string" ? task.courseCode : "");
 
   const dialog = document.createElement("dialog");
   dialog.className = "task-editor task-form-dialog";
@@ -108,7 +108,7 @@ export function openTaskEditor(task, onSave, trigger) {
   const deadlineInput = form.elements.namedItem("deadline");
   const courseInput = form.elements.namedItem("courseCode");
   const courseStatus = form.querySelector("#task-course-status");
-  const feedback = form.querySelector("[data-feedback]");
+  const feedback = form.querySelector("[data-feedback]"); if (options.folderPicker) courseInput.closest("label").after(options.folderPicker.element);
   const save = form.querySelector('button[type="submit"]');
 
   titleInput.value = task?.title ?? "";
@@ -188,7 +188,7 @@ export function openTaskEditor(task, onSave, trigger) {
   }).finally(() => {
     if (!dialog.open) return;
 
-    courseInput.disabled = false;
+    courseInput.disabled = Boolean(options.courseCode);
     save.disabled = false;
   });
 }
