@@ -5,7 +5,7 @@ const resourcesUrl = new URL("data/resources.json", publicUrl);
 const storageKey = "pandora-ii.saved-resources";
 const pdfUrls = new Map();
 
-export const maxPdfBytes = 40 * 1024 * 1024;
+export const maxPdfBytes = 40 * 1024 * 1024; export const academicFileExtensions = ".pdf,.doc,.docx,.odt,.rtf,.ppt,.pptx,.odp,.xls,.xlsx,.ods,.csv,.txt,.md"; export function academicFileType(filename) { const ext = String(filename ?? "").split(".").pop().toLowerCase(); if(ext==="pdf")return "pdf"; if(["doc","docx","odt","rtf"].includes(ext))return "document"; if(["ppt","pptx","odp"].includes(ext))return "presentation"; if(["xls","xlsx","ods","csv"].includes(ext))return "spreadsheet"; if(["txt","md"].includes(ext))return "text"; return null; }
 
 function requireList(items) {
   if (!Array.isArray(items)) throw new Error("Invalid resource list.");
@@ -36,7 +36,7 @@ function exposePdf(record) {
     id: record.id,
     title: record.title,
     courseCode: record.courseCode,
-    type: "pdf",
+    type: academicFileType(record.filename) ?? "pdf",
     source: "uploaded",
     url,
     filename: record.filename,
@@ -77,7 +77,7 @@ export function resolveResourceUrl(value, { absolute = false } = {}) {
 }
 
 export function resourceTypeLabel(resource) {
-  return resource.type === "pdf" ? "PDF" : "Link";
+  return ({pdf:"PDF",document:"Document",presentation:"Presentation",spreadsheet:"Spreadsheet",text:"Text",link:"Link"})[resource.type] ?? "File";
 }
 
 export async function loadResourceCatalog({ onPdfError } = {}) {
@@ -155,10 +155,10 @@ export function saveResourceLink(details, catalog, existingId = null) {
 
 export async function saveResourcePdf({ title, courseCode, file }) {
   if (!(file instanceof File) || file.size === 0 || file.size > maxPdfBytes) {
-    throw new Error("Choose a PDF file up to 40 MB.");
+    throw new Error("Choose a supported file up to 40 MB.");
   }
 
-  if (await file.slice(0, 5).text() !== "%PDF-") {
+  const type = academicFileType(file.name); if (!type) throw new Error("Unsupported file format."); if (type === "pdf" && await file.slice(0, 5).text() !== "%PDF-") {
     throw new Error("Choose a valid PDF file.");
   }
 
@@ -168,7 +168,7 @@ export async function saveResourcePdf({ title, courseCode, file }) {
     courseCode: normalizeCode(courseCode),
     filename: file.name,
     addedAt: new Date().toISOString(),
-    file: file.slice(0, file.size, "application/pdf"),
+    file: file.slice(0, file.size, type === "pdf" ? "application/pdf" : "application/octet-stream"),
   };
 
   await storePdf(record);

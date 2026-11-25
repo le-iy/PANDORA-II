@@ -6,7 +6,7 @@ export function createResourceIcon(resource) {
   const wrapper = document.createElement("span");
 
   wrapper.className = "resource-file-icon";
-  wrapper.setAttribute("aria-hidden", "true");
+  wrapper.setAttribute("aria-hidden", "true"); if(resource.type !== "pdf" && resource.type !== "link"){const label=document.createElement("span");label.textContent=(resource.filename?.split(".").pop() || resource.type).toUpperCase();label.style.fontSize=".625rem";label.style.fontWeight="700";wrapper.append(label);return wrapper;}
 
   const image = document.createElement("img");
   image.width = 24;

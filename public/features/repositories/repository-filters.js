@@ -1,8 +1,8 @@
 const filters = [
   { id: "all", label: "All items", empty: "No resources yet." },
   { id: "pdf", label: "PDFs", empty: "No PDFs yet." },
-  { id: "link", label: "Links", empty: "No links yet." },
-  { id: "uploaded", label: "Uploaded PDFs", empty: "No uploaded PDFs yet." },
+  { id: "document", label: "Documents", empty: "No documents yet." }, { id: "presentation", label: "Presentations", empty: "No presentations yet." }, { id: "spreadsheet", label: "Spreadsheets", empty: "No spreadsheets yet." }, { id: "text", label: "Text files", empty: "No text files yet." }, { id: "link", label: "Links", empty: "No links yet." },
+  { id: "uploaded", label: "Uploaded files", empty: "No uploaded files yet." },
 ];
 
 function matchesFilter(resource, filterId) {

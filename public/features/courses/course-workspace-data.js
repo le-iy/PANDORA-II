@@ -40,8 +40,8 @@ function describeResource(resource) {
   return {
     title: resource.title,
     detail: resourceTypeLabel(resource),
-    href: resolveResourceUrl(resource.url)?.href,
-    newTab: true,
+    href: resource.type === "pdf" || resource.type === "link" ? resolveResourceUrl(resource.url)?.href : `#/repositories/${encodeURIComponent(resource.source+":"+resource.id)}`,
+    newTab: resource.type === "pdf" || resource.type === "link",
     icon: createResourceIcon(resource),
   };
 }

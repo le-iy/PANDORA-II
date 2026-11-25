@@ -17,7 +17,7 @@ export async function renderRepositories(container, requestedId = null) {
         <button class="resource-secondary" type="button" data-add-link
           aria-haspopup="dialog" disabled>+ Save a link</button>
         <button class="resource-primary" type="button" data-add-pdf
-          aria-haspopup="dialog" disabled>+ Upload PDF</button>
+          aria-haspopup="dialog" disabled>+ Upload file</button>
       </div>
     </header>
 
@@ -70,9 +70,9 @@ export async function renderRepositories(container, requestedId = null) {
         <section class="repository-collection">
           <h2>Your collection</h2>
           <dl>
-            <dt>PDF documents</dt><dd data-collection-pdfs></dd>
+            <dt>Document files</dt><dd data-collection-pdfs></dd>
             <dt>Links</dt><dd data-collection-links></dd>
-            <dt>Uploaded PDFs</dt><dd data-collection-uploads></dd>
+            <dt>Uploaded files</dt><dd data-collection-uploads></dd>
             <dt>Uploaded size</dt><dd data-collection-size></dd>
           </dl>
         </section>
@@ -133,7 +133,7 @@ export async function renderRepositories(container, requestedId = null) {
 
     table.hidden = visible.length === 0;
     status.textContent = pdfUnavailable
-      ? `${summary} Uploaded PDFs couldn’t be loaded.`
+      ? `${summary} Uploaded files couldn’t be loaded.`
       : summary;
   }
 

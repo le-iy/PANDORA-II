@@ -11,7 +11,7 @@ export function formatResourceSize(bytes) {
 }
 
 export function showRepositoryOverview(screen, resources, uploadsUnavailable) {
-  const pdfs = resources.filter((item) => item.type === "pdf").length;
+  const pdfs = resources.filter((item) => item.type !== "link").length;
   const links = resources.filter((item) => item.type === "link").length;
   const uploads = resources.filter((item) => item.source === "uploaded");
   const bytes = uploads.reduce((total, item) => total + (item.sizeBytes ?? 0), 0);
@@ -21,7 +21,7 @@ export function showRepositoryOverview(screen, resources, uploadsUnavailable) {
 
   const stats = [
     ["All items", knownCount(resources.length), "lavender"],
-    ["PDF files", knownCount(pdfs), "rose"],
+    ["Document files", knownCount(pdfs), "rose"],
     ["Links", String(links), "mint"],
     ["Uploaded size", storage, "yellow"],
   ];

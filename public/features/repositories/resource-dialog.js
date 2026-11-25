@@ -30,7 +30,7 @@ export function createResourceOpenLink(resource) {
   link.href = url.href;
   link.target = "_blank";
   link.rel = "noopener noreferrer";
-  link.textContent = resource.type === "pdf" ? "Open PDF" : "Open link";
+  link.textContent = resource.type === "pdf" ? "Open PDF" : resource.type === "link" ? "Open link" : "Download"; if(resource.type !== "pdf" && resource.type !== "link"){link.download=resource.filename || resource.title; link.removeAttribute("target");}
   link.setAttribute(
     "aria-label",
     `${link.textContent}: ${resource.title} (opens in a new tab)`,
@@ -151,7 +151,7 @@ export function openResourceDialog(screen, trigger, {
   function showDetails() {
     setView(resourceTypeLabel(resource), resource.title);
 
-    const destination = resource.type === "pdf"
+    const destination = resource.type !== "link"
       ? resource.filename || (
         resource.source === "uploaded" ? "" : resource.url
       )
@@ -159,7 +159,7 @@ export function openResourceDialog(screen, trigger, {
 
     const info = createInfo([
       ["Course", resource.courseCode || "No course assigned"],
-      [resource.type === "pdf" ? "File" : "URL", destination],
+      [resource.type !== "link" ? "File" : "URL", destination],
       ["Source", resource.source === "uploaded" ? "Uploaded from this browser" : ""],
     ]);
 
@@ -199,7 +199,7 @@ export function openResourceDialog(screen, trigger, {
     const isPdf = mode === "pdf" && !resource;
     setView(
       "Repositories",
-      isPdf ? "Upload PDF" : resource ? "Edit link" : "Save a link",
+      isPdf ? "Upload file" : resource ? "Edit link" : "Save a link",
     );
 
     const form = document.createElement("form");
@@ -208,11 +208,11 @@ export function openResourceDialog(screen, trigger, {
       ? `
         <div class="resource-popup-file">
           <label>
-            PDF file
-            <input name="file" type="file" accept=".pdf,application/pdf"
+            Document file
+            <input name="file" type="file" accept=".pdf,.doc,.docx,.odt,.rtf,.ppt,.pptx,.odp,.xls,.xlsx,.ods,.csv,.txt,.md"
               aria-describedby="resource-file-hint" required>
           </label>
-          <p id="resource-file-hint">PDF files up to 40 MB.</p>
+          <p id="resource-file-hint">PDF, Word, PowerPoint, Excel, OpenDocument and text files up to 40 MB.</p>
           <p data-file-selection aria-live="polite" hidden></p>
         </div>
       `
@@ -242,7 +242,7 @@ export function openResourceDialog(screen, trigger, {
       <div class="resource-actions">
         <button class="resource-secondary" type="button" data-cancel>Cancel</button>
         <button class="resource-primary" type="submit">
-          ${isPdf ? "Save PDF" : resource ? "Save changes" : "Save link"}
+          ${isPdf ? "Save file" : resource ? "Save changes" : "Save link"}
         </button>
       </div>
     `;
@@ -321,7 +321,7 @@ export function openResourceDialog(screen, trigger, {
 
       busy = true;
       form.inert = true;
-      save.textContent = isPdf ? "Saving PDF…" : "Saving…";
+      save.textContent = isPdf ? "Saving file…" : "Saving…";
       status.textContent = "";
 
       let saved;
