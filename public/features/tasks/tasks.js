@@ -264,15 +264,20 @@ export function renderTasks(container, taskId = null) {
   }
 
   function createActionMenu(task, state) {
-    const menu = makeElement("details", undefined, "task-row-menu");
-    const summary = makeElement("summary", "⋯");
+    const menu = makeElement("div", undefined, "task-row-menu");
+    const summary = makeElement("button", "⋯");
     summary.setAttribute("aria-label", `Actions for ${task.title}`);
 
     const panel = makeElement("div", undefined, "task-row-menu-panel");
+    summary.type = "button";
+    panel.id = "task-actions-" + crypto.randomUUID();
+    panel.setAttribute("popover", "auto");
+    summary.setAttribute("popovertarget", panel.id);
+    summary.setAttribute("aria-controls", panel.id);
 
     function addAction(label, action, opensDialog = false) {
       panel.append(taskButton(label, task, () => {
-        menu.open = false;
+        panel.hidePopover();
         summary.focus();
         action();
       }, opensDialog));

@@ -1,3 +1,25 @@
+import { themeAsset } from "../../services/theme-packs.js";
+
+const eventColors = new Map([["lavender", "#A477D4"], ["rose", "#DF78AE"], ["mint", "#55AD8A"], ["sky", "#5DA5E0"], ["amber", "#DEAA50"]]);
+const eventIcons = new Map([["exam", "icons/study-tools/exam-prep.svg"], ["study", "icons/study-tools/study-timer.svg"], ["assignment", "icons/study-tools/assignment.svg"], ["research", "icons/study-tools/research.svg"], ["reminder", "icons/navigation/schedule.svg"]]);
+
+export function decorateScheduleEvent(card, event, title) {
+  const color = eventColors.get(event.color);
+  if (color) {
+    card.style.background = "color-mix(in srgb, " + color + " 24%, var(--color-surface))";
+    card.style.borderInlineStart = "3px solid " + color;
+  }
+  const asset = eventIcons.get(event.icon);
+  if (!asset) return;
+  const icon = document.createElement("img");
+  icon.src = themeAsset(asset);
+  icon.alt = "";
+  icon.width = icon.height = 16;
+  Object.assign(icon.style, { marginInlineEnd: "5px", verticalAlign: "middle", objectFit: "contain", imageRendering: "pixelated" });
+  icon.addEventListener("error", () => icon.remove(), { once: true });
+  title.prepend(icon);
+}
+
 import {
   parseScheduleDate,
   readScheduleEvents,
@@ -54,6 +76,13 @@ export function openScheduleDialog({
         <input name="time" type="time">
       </label>
 
+      <label>Event color
+        <select name="eventColor"><option value="">Theme default</option><option value="lavender">Lavender</option><option value="rose">Rose</option><option value="mint">Mint</option><option value="sky">Sky blue</option><option value="amber">Amber</option></select>
+      </label>
+      <label>Event visual
+        <select name="eventIcon"><option value="">No icon</option><option value="exam">Exam</option><option value="study">Study session</option><option value="assignment">Assignment</option><option value="research">Research</option><option value="reminder">Reminder</option></select>
+      </label>
+
       <div class="schedule-actions">
         <button type="submit">Add event</button>
         <button type="button" data-cancel-edit hidden>Cancel edit</button>
@@ -71,6 +100,8 @@ export function openScheduleDialog({
   const dateInput = form.elements.namedItem("date");
   const titleInput = form.elements.namedItem("title");
   const timeInput = form.elements.namedItem("time");
+  const colorInput = form.elements.namedItem("eventColor");
+  const iconInput = form.elements.namedItem("eventIcon");
   const save = form.querySelector('[type="submit"]');
   const cancelEdit = form.querySelector("[data-cancel-edit]");
   const feedback = dialog.querySelector("[data-feedback]");
@@ -79,9 +110,27 @@ export function openScheduleDialog({
   let confirmation = null;
 
   heading.textContent = chooseDate ? "Add event" : dateFormat.format(date);
-  agenda.hidden = chooseDate;
+  const addForDay = makeButton("+ Add event", () => {
+    feedback.textContent = "";
+    setEditorVisible(true);
+    (form.hidden ? addForDay : titleInput).focus();
+  });
+  agenda.after(addForDay);
+
+  function setEditorVisible(visible) {
+    agenda.hidden = visible;
+    addForDay.hidden = visible;
+    form.hidden = !visible;
+    cancelEdit.hidden = chooseDate || !visible;
+    if (!chooseDate) cancelEdit.textContent = "Back to events";
+  }
+
+  setEditorVisible(chooseDate);
   formHeading.hidden = chooseDate;
-  form.querySelector("[data-date-field]").hidden = !chooseDate;
+  const dateField = form.querySelector("[data-date-field]");
+  dateField.hidden = !chooseDate;
+  titleInput.closest("label").after(dateField);
+  titleInput.placeholder = "e.g. Networking quiz";
   dateInput.disabled = !chooseDate;
   dateInput.required = chooseDate;
   dateInput.value = scheduleDateKey(date);
@@ -95,13 +144,14 @@ export function openScheduleDialog({
     editing = null;
     titleInput.value = "";
     timeInput.value = "";
+    colorInput.value = iconInput.value = "";
     formHeading.textContent = "Add event";
     save.textContent = "Add event";
-    cancelEdit.hidden = true;
+    setEditorVisible(chooseDate);
   }
 
   function sameEvent(current, original) {
-    return current?.title === original.title && current?.time === original.time;
+    return current?.title === original.title && current?.time === original.time && (current?.color ?? "") === (original.color ?? "") && (current?.icon ?? "") === (original.icon ?? "");
   }
 
   function refreshChangedEvents(events) {
@@ -109,7 +159,7 @@ export function openScheduleDialog({
     showEvents(events);
     onChange(date, events.length);
     feedback.textContent = "The event list changed. Select the event again.";
-    titleInput.focus();
+    (form.hidden ? addForDay : titleInput).focus();
   }
 
   function confirmRemoval(item, event, index, triggerButton) {
@@ -157,7 +207,7 @@ export function openScheduleDialog({
       showEvents(events);
       onChange(date, events.length);
       feedback.textContent = "Event deleted.";
-      titleInput.focus();
+      (form.hidden ? addForDay : titleInput).focus();
     });
 
     remove.className = "schedule-danger";
@@ -190,6 +240,7 @@ export function openScheduleDialog({
       const item = document.createElement("li");
       const title = document.createElement("strong");
       title.textContent = event.title;
+      decorateScheduleEvent(item, event, title);
 
       const time = document.createElement("span");
       time.textContent = event.time || "No time set";
@@ -201,12 +252,15 @@ export function openScheduleDialog({
         clearConfirmation();
         feedback.textContent = "";
         editing = { event, index };
+        setEditorVisible(true);
         titleInput.value = event.title;
         timeInput.value = event.time;
+        colorInput.value = eventColors.has(event.color) ? event.color : "";
+        iconInput.value = eventIcons.has(event.icon) ? event.icon : "";
         formHeading.textContent = "Edit event";
         save.textContent = "Save changes";
         cancelEdit.hidden = false;
-        titleInput.focus();
+        (form.hidden ? addForDay : titleInput).focus();
       });
 
       const remove = makeButton("Delete", () => {
@@ -229,7 +283,7 @@ export function openScheduleDialog({
   cancelEdit.addEventListener("click", () => {
     resetEditor();
     feedback.textContent = "";
-    titleInput.focus();
+    (form.hidden ? addForDay : titleInput).focus();
   });
 
   form.addEventListener("submit", (event) => {
@@ -244,7 +298,7 @@ export function openScheduleDialog({
       return;
     }
 
-    const details = { title, time: timeInput.value };
+    const details = { title, time: timeInput.value, color: colorInput.value, icon: iconInput.value };
     const isEditing = editing !== null;
     let events;
 
@@ -279,7 +333,7 @@ export function openScheduleDialog({
     resetEditor();
     showEvents(events);
     feedback.textContent = isEditing ? "Changes saved." : "Event added.";
-    titleInput.focus();
+    (form.hidden ? addForDay : titleInput).focus();
   });
 
   dialog.addEventListener("close", () => {

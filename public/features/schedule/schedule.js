@@ -1,4 +1,4 @@
-import { openScheduleDialog } from "./schedule-dialog.js";
+import { decorateScheduleEvent, openScheduleDialog } from "./schedule-dialog.js";
 import { readPreferences } from "../../services/preferences.js";
 import { datesInMonth, firstOfMonth } from "../../services/calendar-month.js";
 import {
@@ -79,9 +79,11 @@ function fillList(list, entries, message) {
     return;
   }
 
-  for (const { title, detail } of entries) {
+  for (const { title, detail, event } of entries) {
     const item = element("li");
-    item.append(element("strong", "", title), element("span", "", detail));
+    const heading = element("strong", "", title);
+    if (event) decorateScheduleEvent(item, event, heading);
+    item.append(heading, element("span", "", detail));
     list.append(item);
   }
 }
@@ -168,6 +170,7 @@ export function renderSchedule(container, requestedDate = null) {
         const minutes = minutesFromTime(event.time);
         return {
           title: event.title,
+          event,
           detail: minutes === null ? "No time set" : formatTime(minutes),
         };
       }),
@@ -257,7 +260,9 @@ export function renderSchedule(container, requestedDate = null) {
   function makeEventButton(date, event, start) {
     const control = button("schedule-time-event", event.title, () => openDay(date, control));
     const label = start === null ? "No time set" : formatTime(start);
-    control.prepend(element("span", "schedule-time-label", label));
+    const title = element("strong", "", event.title);
+    control.replaceChildren(element("span", "schedule-time-label", label), title);
+    decorateScheduleEvent(control, event, title);
     control.setAttribute("aria-haspopup", "dialog");
     return control;
   }

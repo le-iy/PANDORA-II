@@ -188,3 +188,19 @@
     grid-template-columns: minmax(0, 1fr) minmax(220px, 27%);
   }
 }
+/* Compact weekly event cards */
+
+.schedule-screen .schedule-time-event { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 3px; padding: 4px 6px; border-radius: 8px; }
+.schedule-screen .schedule-time-track .schedule-time-event { inset-block-start: calc(var(--event-top) * var(--schedule-hour) + 3px); inset-inline-start: calc(var(--event-left) + 3px); width: max(0px, calc(var(--event-width) - 6px)); height: max(0px, calc(var(--event-length) * var(--schedule-hour) - 6px)); }
+.schedule-screen .schedule-time-event > strong { display: block; order: -1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .75rem; line-height: 1.2; }
+.schedule-screen .schedule-time-event > strong img { display: inline-block; width: 14px; height: 14px; }
+.schedule-screen .schedule-time-event .schedule-time-label { margin: 0; font-size: .6875rem; }
+.schedule-screen [data-agenda-list] li { gap: 3px; padding: 8px 10px; }
+.schedule-screen [data-agenda-list] li > strong { font-size: .875rem; }
+.schedule-screen [data-agenda-list] li > span { color: var(--color-text-muted); font-size: .75rem; }
+
+/* Aligned weekly timetable */
+.schedule-screen .schedule-time-grid { --schedule-hour: 52px; }
+.schedule-screen .schedule-time-scroll { max-height: clamp(360px, 58dvh, 660px); overscroll-behavior: contain; }
+.schedule-screen .schedule-time-grid > :is(.schedule-time-corner, .schedule-time-day) { position: sticky; inset-block-start: 0; z-index: 2; }
+.schedule-screen .schedule-time-track { background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--schedule-hour) - 1px), color-mix(in srgb, var(--color-border) 60%, var(--color-surface)) calc(var(--schedule-hour) - 1px), color-mix(in srgb, var(--color-border) 60%, var(--color-surface)) var(--schedule-hour)); }

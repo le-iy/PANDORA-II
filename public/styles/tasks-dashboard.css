@@ -200,3 +200,11 @@
 .task-quest-table tbody th .course-subject-icon { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 6px; background: var(--color-surface-muted); }
 .task-quest-table tbody th .course-subject-icon img { display: block; width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated; }
 .task-quest-table tbody .task-title-button { min-width: 0; text-align: start; }
+
+/* Floating task actions */
+.tasks-dashboard .task-row-menu > button { min-height: 32px; padding: 2px 9px; }
+.tasks-dashboard .task-row-menu-panel[popover] { display: none; position: fixed; inset: auto; position-area: block-end span-inline-start; position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline; margin: 5px 0; gap: 3px; width: max-content; max-width: calc(100vw - 24px); max-height: min(18rem, calc(100dvh - 24px)); overflow: auto; padding: 5px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); box-shadow: 0 6px 20px rgb(0 0 0 / 16%); }
+.tasks-dashboard .task-row-menu-panel[popover]:popover-open { display: grid; }
+.tasks-dashboard .task-row-menu-panel button { min-height: 34px; padding: 5px 10px; border-color: transparent; }
+.tasks-dashboard .task-row-menu-panel button:hover { background: var(--color-surface-muted); }
+.tasks-dashboard .task-row-menu-panel button:last-child { color: var(--color-danger); }

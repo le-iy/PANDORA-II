@@ -1,8 +1,8 @@
 .repositories-screen {
-  --repo-lavender: light-dark(#e9def0, #382c42);
-  --repo-rose: light-dark(#efdce9, #432b40);
-  --repo-mint: light-dark(#dcebe3, #263e35);
-  --repo-yellow: light-dark(#f6e6ad, #463b24);
+  --repo-lavender: var(--color-surface-muted);
+  --repo-rose: var(--color-tasks-due, var(--color-surface-muted));
+  --repo-mint: var(--color-success-surface, var(--color-surface-muted));
+  --repo-yellow: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
   display: grid;
   gap: 16px;
 }
@@ -385,3 +385,15 @@
   .repository-table td[data-label="Added"]::before { content: "Added · "; }
   .repository-table td[data-label="Size or source"]::before { content: "Size or source · "; }
 }
+
+/* Themed repositories layout */
+.repositories-screen { gap: 12px; }
+.repositories-screen .repository-stat { padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+.repositories-screen .repository-stat dt { font-size: .8125rem; }
+.repositories-screen .resource-toolbar :is(input, select) { min-height: 40px; padding-block: 6px; }
+.repositories-screen :is(.repository-library, .repository-upload, .repository-collection) { border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+.repositories-screen .repository-library { background: var(--color-surface); }
+.repositories-screen .repository-upload { background: color-mix(in srgb, var(--repo-rose) 55%, var(--color-surface)); }
+.repositories-screen .repository-collection { background: var(--color-surface-muted); }
+.repositories-screen .repository-library:has(> .repository-table[hidden]) > .repository-heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.repositories-screen .repository-library:has(> .repository-table[hidden]) [data-results]:not(:empty) { display: grid; place-items: center; min-height: 84px; padding: 12px; border-radius: var(--radius-control); background: var(--color-surface-muted); text-align: center; }
